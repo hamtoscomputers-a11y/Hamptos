@@ -103,11 +103,9 @@ const Index = () => {
 
       <CategoryProductsSection category={networkingCategory} />
 
+      <PromoBanner slide={slides?.[4]} aspectClassName="aspect-[1199/263]" contained className="mb-8" />
+
       <div className="w-full">
-
-
-
-        <PromoBanner slide={slides?.[4]} className="mb-6" />
 
         {/* Networking Products & Servers */}
         {homeCategories[1]?.showinhome == 1 && (

@@ -8,23 +8,35 @@ export interface BannerSlide {
 
 interface PromoBannerProps {
   slide?: BannerSlide
-  /** Figma banner frame is 1512x388.19. */
+  /**
+   * Tailwind aspect class matching the artwork's own ratio, so the image never
+   * crops. Defaults to the full-bleed hero banner (Figma 1512x389).
+   */
+  aspectClassName?: string
+  /**
+   * Constrain the banner to the page container and round its corners, rather
+   * than bleeding edge to edge (Figma 1199x263, radius 12).
+   */
+  contained?: boolean
   className?: string
 }
-
-const BANNER_ASPECT = "aspect-[1512/389]"
 
 const isExternal = (link: string) => /^https?:\/\//i.test(link) || !link.startsWith("/")
 
 /**
- * Full-bleed promotional banner driven by `/api/v1/website/slider`.
+ * Promotional banner driven by `/api/v1/website/slider`.
  *
  * Renders nothing when the ERP has no banner in that slot, so an unset slide
  * collapses instead of leaving a blank frame. `link` and `caption` come from
- * the slider payload — marketing can change the artwork, destination and alt
- * text without a deploy.
+ * the slider payload — marketing can change artwork, destination and alt text
+ * without a deploy.
  */
-const PromoBanner = ({ slide, className = "" }: PromoBannerProps) => {
+const PromoBanner = ({
+  slide,
+  aspectClassName = "aspect-[1512/389]",
+  contained = false,
+  className = "",
+}: PromoBannerProps) => {
   if (!slide?.image) return null
 
   const image = (
@@ -32,31 +44,37 @@ const PromoBanner = ({ slide, className = "" }: PromoBannerProps) => {
       src={slide.image}
       alt={slide.caption || ""}
       loading="lazy"
-      className={`w-full object-cover ${BANNER_ASPECT}`}
+      className={`w-full object-cover ${aspectClassName} ${contained ? "rounded-xl" : ""}`}
     />
   )
 
   const link = slide.link?.trim()
-  if (!link) return <section className={`w-full ${className}`}>{image}</section>
-
-  return (
-    <section className={`w-full ${className}`}>
-      {isExternal(link) ? (
-        <a
-          href={link.startsWith("http") ? link : `https://${link}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
-        >
-          {image}
-        </a>
-      ) : (
-        <Link to={link} className="block">
-          {image}
-        </Link>
-      )}
-    </section>
+  const body = !link ? (
+    image
+  ) : isExternal(link) ? (
+    <a
+      href={link.startsWith("http") ? link : `https://${link}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block"
+    >
+      {image}
+    </a>
+  ) : (
+    <Link to={link} className="block">
+      {image}
+    </Link>
   )
+
+  if (contained) {
+    return (
+      <section className={className}>
+        <div className="container mx-auto px-4">{body}</div>
+      </section>
+    )
+  }
+
+  return <section className={`w-full ${className}`}>{body}</section>
 }
 
 export default PromoBanner
