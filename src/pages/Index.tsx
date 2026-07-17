@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react"
 import BrandsWeCarrySection from "@/components/BrandsWeCarrySection"
-import NewsletterSection from "@/components/NewsletterSection"
-import SwitchesCategorySection from "@/components/SwitchesCategorySection"
 import BestSellingHighlight from "@/components/home/BestSellingHighlight"
 import BestSellingSection from "@/components/home/BestSellingSection"
 import BestSellingShowcase from "@/components/home/BestSellingShowcase"
@@ -14,6 +12,8 @@ import FeaturedProducts from "@/components/home/FeaturedProducts"
 import HeroSlider from "@/components/home/HeroSlider"
 import ItemsYouMayLike from "@/components/home/ItemsYouMayLike"
 import LatestProducts from "@/components/home/LatestProducts"
+import NewsletterPanel from "@/components/home/NewsletterPanel"
+import PrototypeNote from "@/components/home/PrototypeNote"
 import PromoBanner from "@/components/home/PromoBanner"
 import ServiceFeatures from "@/components/home/ServiceFeatures"
 
@@ -53,12 +53,13 @@ const Index = () => {
     [homeCategories],
   )
 
-  // Subcategories, flattened across every parent. A child links via its
-  // parent's id plus `parent_id` — the ERP's convention, matching the header
-  // menu, where `parent_id` confusingly carries the *child* id.
+  // Subcategories, flattened across the home-flagged parents only — a parent
+  // hidden from the homepage must not leak its children back in.
+  // A child links via its parent's id plus `parent_id`: the ERP's convention,
+  // matching the header menu, where `parent_id` carries the *child* id.
   const subCategories = useMemo(
     () =>
-      categories.flatMap((parent: any) =>
+      homeCategories.flatMap((parent: any) =>
         (parent.children ?? []).map((child: any) => ({
           id: child.id,
           name: child.name,
@@ -66,7 +67,7 @@ const Index = () => {
           href: `/products?category=${parent.id}&parent_id=${child.id}`,
         })),
       ),
-    [categories],
+    [homeCategories],
   )
 
   const [slides, setSlides] = useState<any[]>([])
@@ -97,7 +98,7 @@ const Index = () => {
 
       <HeroSlider slides={slides} isLoading={slidesLoading} />
 
-      <CategoryIconRail categories={categories} isLoading={categoriesLoading} error={categoriesError} />
+      <CategoryIconRail categories={homeCategories} isLoading={categoriesLoading} error={categoriesError} />
 
       <BestSellingSection categories={homeCategories} />
 
@@ -118,7 +119,7 @@ const Index = () => {
       <CategoryTileGrid
         title="Top Categories"
         subtitle="Explore top trusted brands in IT products, all in one place."
-        categories={categories}
+        categories={homeCategories}
         isLoading={categoriesLoading}
       />
 
@@ -133,23 +134,9 @@ const Index = () => {
         isLoading={categoriesLoading}
       />
 
-      <div className="w-full">
+      <PrototypeNote />
 
-        {/* Networking Products & Servers */}
-        {homeCategories[1]?.showinhome == 1 && (
-          <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 mb-8">
-            <div className="bg-white rounded-lg p-4 sm:p-6">
-              <SwitchesCategorySection homeCategories={homeCategories} />
-            </div>
-          </div>
-        )}
-
-      </div>
-
-      {/* Newsletter Section */}
-      <div className="mb-8">
-        <NewsletterSection />
-      </div>
+      <NewsletterPanel />
 
       <div className="mb-8">
         <div className="rounded-lg">
