@@ -19,9 +19,27 @@ interface ProductCarouselSectionProps {
   exploreHref?: string
   /** Optional category chips rendered under the subtitle. */
   chips?: CarouselChip[]
+  /** `dark` renders the navy full-bleed treatment; cards stay white either way. */
+  tone?: "light" | "dark"
 }
 
 const SKELETON_COUNT = 5
+
+const TONE = {
+  light: {
+    section: "bg-white",
+    title: "text-brand-700",
+    subtitle: "text-ink-slate",
+    arrow:
+      "border-surface-muted bg-white/90 text-ink-steel shadow-sm hover:bg-brand-100 hover:text-brand-700 2xl:bg-white 2xl:shadow-none",
+  },
+  dark: {
+    section: "bg-ink-slate",
+    title: "text-white",
+    subtitle: "text-white/75",
+    arrow: "border-white/30 bg-white/10 text-white hover:bg-white hover:text-ink-slate",
+  },
+} as const
 
 /**
  * Shared home-page product carousel: heading block, Explore All action, and a
@@ -39,18 +57,21 @@ const ProductCarouselSection = ({
   error,
   exploreHref = "/products",
   chips = [],
+  tone = "light",
 }: ProductCarouselSectionProps) => {
   // Nothing to merchandise and no way to recover — drop the section rather
   // than leave an empty frame on the page.
   if (error || (!isLoading && products.length === 0)) return null
 
+  const styles = TONE[tone]
+
   return (
-    <section aria-label={title} className="bg-white py-10">
+    <section aria-label={title} className={`py-10 ${styles.section}`}>
       <div className="container mx-auto px-4">
         <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold text-brand-700">{title}</h2>
-            <p className="mt-1 max-w-2xl text-sm text-ink-slate">{subtitle}</p>
+            <h2 className={`text-2xl font-semibold ${styles.title}`}>{title}</h2>
+            <p className={`mt-1 max-w-2xl text-sm ${styles.subtitle}`}>{subtitle}</p>
 
             {chips.length > 0 && (
               <ul className="mt-4 flex flex-wrap gap-2">
@@ -80,7 +101,7 @@ const ProductCarouselSection = ({
         {isLoading ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
             {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
-              <div key={index} className="animate-pulse rounded-lg border border-surface-muted">
+              <div key={index} className="animate-pulse rounded-lg border border-surface-muted bg-white">
                 <div className="aspect-[4/3] rounded-t-lg bg-gray-100" />
                 <div className="space-y-2 p-3">
                   <div className="h-3 w-16 rounded bg-gray-100" />
@@ -103,8 +124,8 @@ const ProductCarouselSection = ({
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-1 hidden h-9 w-9 border-surface-muted bg-white/90 text-ink-steel shadow-sm hover:bg-brand-100 hover:text-brand-700 sm:flex 2xl:-left-11 2xl:bg-white 2xl:shadow-none" />
-            <CarouselNext className="right-1 hidden h-9 w-9 border-surface-muted bg-white/90 text-ink-steel shadow-sm hover:bg-brand-100 hover:text-brand-700 sm:flex 2xl:-right-11 2xl:bg-white 2xl:shadow-none" />
+            <CarouselPrevious className={`left-1 hidden h-9 w-9 sm:flex 2xl:-left-11 ${styles.arrow}`} />
+            <CarouselNext className={`right-1 hidden h-9 w-9 sm:flex 2xl:-right-11 ${styles.arrow}`} />
           </Carousel>
         )}
       </div>

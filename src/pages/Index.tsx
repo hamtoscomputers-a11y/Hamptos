@@ -6,6 +6,7 @@ import LatestProductsSection from "@/components/LatestProductsSection"
 import NewsletterSection from "@/components/NewsletterSection"
 import SwitchesCategorySection from "@/components/SwitchesCategorySection"
 import TopCategories from "@/components/TopCategories"
+import BestSellingHighlight from "@/components/home/BestSellingHighlight"
 import BestSellingSection from "@/components/home/BestSellingSection"
 import BestSellingShowcase from "@/components/home/BestSellingShowcase"
 import CategoryIconRail from "@/components/home/CategoryIconRail"
@@ -104,6 +105,8 @@ const Index = () => {
       <CategoryProductsSection category={networkingCategory} />
 
       <PromoBanner slide={slides?.[4]} aspectClassName="aspect-[1199/263]" contained className="mb-8" />
+
+      <BestSellingHighlight />
 
       <div className="w-full">
 
