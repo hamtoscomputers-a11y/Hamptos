@@ -11,24 +11,15 @@ import CategoryIconRail from "@/components/home/CategoryIconRail"
 import CategoryProductsSection from "@/components/home/CategoryProductsSection"
 import FeaturedProducts from "@/components/home/FeaturedProducts"
 import HeroSlider from "@/components/home/HeroSlider"
+import ItemsYouMayLike from "@/components/home/ItemsYouMayLike"
 import LatestProducts from "@/components/home/LatestProducts"
 import PromoBanner from "@/components/home/PromoBanner"
 import ServiceFeatures from "@/components/home/ServiceFeatures"
 import TopCategoriesGrid from "@/components/home/TopCategoriesGrid"
 import { ProductService } from "@/api"
 import { useCategories } from "../api/hooks/useCategories"
-import { useProducts } from "../api/hooks/useProducts"
 
 const Index = () => {
-  const productParams = useMemo(
-    () => ({
-      limit: 10,
-      start: 1,
-      include: "brand,category,photos",
-    }),
-    [],
-  )
-
   const categoryParams = useMemo(
     () => ({
       limit: 100,
@@ -39,7 +30,6 @@ const Index = () => {
   )
 
   const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useCategories(categoryParams)
-  useProducts(productParams)
 
   const categories = useMemo(() => {
     if (!categoriesData?.data) return []
@@ -111,6 +101,8 @@ const Index = () => {
       <TopCategoriesGrid categories={categories} isLoading={categoriesLoading} />
 
       <LatestProducts />
+
+      <ItemsYouMayLike />
 
       <div className="w-full">
 
