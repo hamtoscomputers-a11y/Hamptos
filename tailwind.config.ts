@@ -52,6 +52,8 @@ export default {
 					slate: '#2A4153',
 					steel: '#7890A5',
 					muted: '#595959',
+					soft: '#4F697D',
+					faint: '#989494',
 				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

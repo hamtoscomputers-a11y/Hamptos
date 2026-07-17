@@ -13,7 +13,7 @@ import HeroSlider from "@/components/home/HeroSlider"
 import ItemsYouMayLike from "@/components/home/ItemsYouMayLike"
 import LatestProducts from "@/components/home/LatestProducts"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
-import PrototypeNote from "@/components/home/PrototypeNote"
+import PrototypeNote from "@/components/PrototypeNote"
 import PromoBanner from "@/components/home/PromoBanner"
 import ServiceFeatures from "@/components/home/ServiceFeatures"
 
