@@ -39,6 +39,7 @@ export default {
 					accent: '#E7F4FD',
 					muted: '#E5E5E5',
 					promo: '#EFF5FF',
+					subtle: '#F3F3F3',
 				},
 				// Stock / delivery affirmatives, sampled from the Figma product card.
 				success: {

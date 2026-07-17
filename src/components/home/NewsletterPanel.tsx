@@ -44,9 +44,11 @@ const NewsletterPanel = () => {
   }
 
   return (
-    <section aria-label={TITLE} className="w-full px-4 sm:px-6 lg:px-16">
-      <div className="rounded-t-[2.5rem] bg-brand-800 px-6 py-10 sm:px-10 md:px-14 lg:py-14">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
+    // Full-bleed panel with container-aligned content, matching the navy
+    // best-seller section directly above it.
+    <section aria-label={TITLE} className="w-full">
+      <div className="rounded-t-[2.5rem] bg-brand-800 py-10 lg:py-14">
+        <div className="container mx-auto grid grid-cols-1 items-center gap-8 px-4 lg:grid-cols-2 lg:gap-12">
           {/* Left: copy */}
           <div className="text-white">
             <h2 className="text-3xl font-bold leading-tight md:text-4xl">{TITLE}</h2>

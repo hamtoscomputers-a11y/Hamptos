@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import BrandsWeCarrySection from "@/components/BrandsWeCarrySection"
 import BestSellingHighlight from "@/components/home/BestSellingHighlight"
+import BrandsCarousel from "@/components/home/BrandsCarousel"
 import BestSellingSection from "@/components/home/BestSellingSection"
 import BestSellingShowcase from "@/components/home/BestSellingShowcase"
 import CategoryIconRail from "@/components/home/CategoryIconRail"
@@ -138,11 +138,7 @@ const Index = () => {
 
       <NewsletterPanel />
 
-      <div className="mb-8">
-        <div className="rounded-lg">
-          <BrandsWeCarrySection />
-        </div>
-      </div>
+      <BrandsCarousel />
     </div>
   )
 }
