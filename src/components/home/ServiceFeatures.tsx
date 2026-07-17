@@ -1,5 +1,5 @@
 import { CONTACT } from "@/components/header/navigation"
-import { SERVICE_FEATURES } from "./serviceFeatures"
+import { SERVICE_FEATURES } from "./serviceFeaturesData"
 
 /**
  * Slim trust/reassurance strip between the header and the hero slider.
