@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react"
 import BrandsWeCarrySection from "@/components/BrandsWeCarrySection"
-import LatestProductsSection from "@/components/LatestProductsSection"
 import NewsletterSection from "@/components/NewsletterSection"
 import SwitchesCategorySection from "@/components/SwitchesCategorySection"
 import BestSellingHighlight from "@/components/home/BestSellingHighlight"
@@ -12,6 +11,7 @@ import CategoryIconRail from "@/components/home/CategoryIconRail"
 import CategoryProductsSection from "@/components/home/CategoryProductsSection"
 import FeaturedProducts from "@/components/home/FeaturedProducts"
 import HeroSlider from "@/components/home/HeroSlider"
+import LatestProducts from "@/components/home/LatestProducts"
 import PromoBanner from "@/components/home/PromoBanner"
 import ServiceFeatures from "@/components/home/ServiceFeatures"
 import TopCategoriesGrid from "@/components/home/TopCategoriesGrid"
@@ -110,6 +110,8 @@ const Index = () => {
 
       <TopCategoriesGrid categories={categories} isLoading={categoriesLoading} />
 
+      <LatestProducts />
+
       <div className="w-full">
 
         {/* Networking Products & Servers */}
@@ -121,12 +123,6 @@ const Index = () => {
           </div>
         )}
 
-        {/* Latest Products Section */}
-        <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 mb-8">
-          <div className="bg-white rounded-lg p-4 sm:p-6">
-            <LatestProductsSection />
-          </div>
-        </div>
       </div>
 
       {/* Newsletter Section */}
