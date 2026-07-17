@@ -9,8 +9,10 @@ import NewsletterSection from "@/components/NewsletterSection"
 import SwitchesCategorySection from "@/components/SwitchesCategorySection"
 import TelephoneCategorySection from "@/components/TelephoneCategorySection"
 import TopCategories from "@/components/TopCategories"
+import BestSellingSection from "@/components/home/BestSellingSection"
 import CategoryIconRail from "@/components/home/CategoryIconRail"
 import HeroSlider from "@/components/home/HeroSlider"
+import PromoBanner from "@/components/home/PromoBanner"
 import ServiceFeatures from "@/components/home/ServiceFeatures"
 import { ProductService } from "@/api"
 import { useCategories } from "../api/hooks/useCategories"
@@ -81,6 +83,10 @@ const Index = () => {
 
       <CategoryIconRail categories={categories} isLoading={categoriesLoading} error={categoriesError} />
 
+      <BestSellingSection categories={homeCategories} />
+
+      <PromoBanner slide={slides?.[3]} />
+
       <div className="w-full">
         {/* Today Deals Section */}
         {homeCategories[0]?.showinhome == 1 && (
@@ -88,18 +94,6 @@ const Index = () => {
             <div className="bg-white rounded-lg p-4 sm:p-6">
               <TelephoneCategorySection homeCategories={homeCategories} />
             </div>
-          </div>
-        )}
-
-        {/* Gaming Banner Section */}
-        {slides?.[3]?.image && (
-          <div className="w-full mb-8">
-            <img
-              src={slides[3].image}
-              alt=""
-              aria-hidden
-              className="w-full h-auto object-cover rounded-lg"
-            />
           </div>
         )}
 
@@ -117,16 +111,7 @@ const Index = () => {
           </div>
         </div>
 
-        {slides?.[4]?.image && (
-          <div className="w-full mb-6">
-            <img
-              src={slides[4].image}
-              alt=""
-              aria-hidden
-              className="w-full h-auto object-cover rounded-lg"
-            />
-          </div>
-        )}
+        <PromoBanner slide={slides?.[4]} className="mb-6" />
 
         {/* Networking Products & Servers */}
         {homeCategories[1]?.showinhome == 1 && (

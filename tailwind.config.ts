@@ -22,6 +22,8 @@ export default {
 				// Hamtos brand scale, sampled from the Figma header design.
 				// Ordered light -> dark; `brand-700` is the primary blue.
 				brand: {
+					100: '#DAE7FF',
+					200: '#BFD6FF',
 					300: '#47A9F6',
 					400: '#1C8ACF',
 					500: '#1985C9',
@@ -35,6 +37,19 @@ export default {
 					DEFAULT: '#FDFDFD',
 					line: '#D9D9D9',
 					accent: '#E7F4FD',
+					muted: '#E5E5E5',
+				},
+				// Stock / delivery affirmatives, sampled from the Figma product card.
+				success: {
+					DEFAULT: '#2BA459',
+					dark: '#00650C',
+					light: '#B8E9BD',
+				},
+				ink: {
+					DEFAULT: '#101010',
+					slate: '#2A4153',
+					steel: '#7890A5',
+					muted: '#595959',
 				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
