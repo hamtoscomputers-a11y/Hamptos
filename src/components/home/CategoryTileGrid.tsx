@@ -2,19 +2,21 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { iconForCategory } from "./categoryIcons"
 
-export interface TopCategory {
+export interface CategoryTile {
   id: string
   name: string
   image?: string
+  /** Where the tile links. Defaults to the top-level category listing. */
+  href?: string
 }
 
-interface TopCategoriesGridProps {
-  categories: TopCategory[]
+interface CategoryTileGridProps {
+  title: string
+  subtitle: string
+  categories: CategoryTile[]
   isLoading?: boolean
 }
 
-const TITLE = "Top Categories"
-const SUBTITLE = "Explore top trusted brands in IT products, all in one place."
 const SKELETON_COUNT = 8
 
 /**
@@ -30,7 +32,7 @@ const isRealImage = (image?: string) => !!image && !/no_image/i.test(image)
  * still reads as itself rather than as a generic placeholder. Also covers an
  * image that 404s at runtime.
  */
-const CategoryArtwork = ({ category }: { category: TopCategory }) => {
+const CategoryArtwork = ({ category }: { category: CategoryTile }) => {
   const [failed, setFailed] = useState(false)
   const showImage = isRealImage(category.image) && !failed
 
@@ -58,15 +60,16 @@ const CategoryArtwork = ({ category }: { category: TopCategory }) => {
   )
 }
 
-const TopCategoriesGrid = ({ categories, isLoading = false }: TopCategoriesGridProps) => {
+/** Four-up grid of category tiles. Shared by the top-level and sub category sections. */
+const CategoryTileGrid = ({ title, subtitle, categories, isLoading = false }: CategoryTileGridProps) => {
   if (!isLoading && categories.length === 0) return null
 
   return (
-    <section aria-label={TITLE} className="bg-white py-12">
+    <section aria-label={title} className="bg-white py-12">
       <div className="container mx-auto px-4">
         <header className="mb-8">
-          <h2 className="text-2xl font-semibold text-brand-700">{TITLE}</h2>
-          <p className="mt-2 text-sm text-ink">{SUBTITLE}</p>
+          <h2 className="text-2xl font-semibold text-brand-700">{title}</h2>
+          <p className="mt-2 text-sm text-ink">{subtitle}</p>
         </header>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:gap-6">
@@ -80,7 +83,7 @@ const TopCategoriesGrid = ({ categories, isLoading = false }: TopCategoriesGridP
             : categories.map((category) => (
                 <Link
                   key={category.id}
-                  to={`/products?category=${category.id}`}
+                  to={category.href ?? `/products?category=${category.id}`}
                   className="group flex flex-col rounded-xl border border-surface-muted bg-white p-4 transition-shadow hover:shadow-md"
                 >
                   <div className="flex aspect-[4/3] items-center justify-center overflow-hidden">
@@ -98,4 +101,4 @@ const TopCategoriesGrid = ({ categories, isLoading = false }: TopCategoriesGridP
   )
 }
 
-export default TopCategoriesGrid
+export default CategoryTileGrid

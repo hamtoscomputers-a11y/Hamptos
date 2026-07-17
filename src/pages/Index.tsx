@@ -9,13 +9,14 @@ import BestSellingSection from "@/components/home/BestSellingSection"
 import BestSellingShowcase from "@/components/home/BestSellingShowcase"
 import CategoryIconRail from "@/components/home/CategoryIconRail"
 import CategoryProductsSection from "@/components/home/CategoryProductsSection"
+import CategoryTileGrid from "@/components/home/CategoryTileGrid"
 import FeaturedProducts from "@/components/home/FeaturedProducts"
 import HeroSlider from "@/components/home/HeroSlider"
 import ItemsYouMayLike from "@/components/home/ItemsYouMayLike"
 import LatestProducts from "@/components/home/LatestProducts"
 import PromoBanner from "@/components/home/PromoBanner"
 import ServiceFeatures from "@/components/home/ServiceFeatures"
-import TopCategoriesGrid from "@/components/home/TopCategoriesGrid"
+
 import { ProductService } from "@/api"
 import { useCategories } from "../api/hooks/useCategories"
 
@@ -50,6 +51,22 @@ const Index = () => {
   const networkingCategory = useMemo(
     () => homeCategories.find((category) => /networking/i.test(category.name)),
     [homeCategories],
+  )
+
+  // Subcategories, flattened across every parent. A child links via its
+  // parent's id plus `parent_id` — the ERP's convention, matching the header
+  // menu, where `parent_id` confusingly carries the *child* id.
+  const subCategories = useMemo(
+    () =>
+      categories.flatMap((parent: any) =>
+        (parent.children ?? []).map((child: any) => ({
+          id: child.id,
+          name: child.name,
+          image: child.image_url || child.image || "",
+          href: `/products?category=${parent.id}&parent_id=${child.id}`,
+        })),
+      ),
+    [categories],
   )
 
   const [slides, setSlides] = useState<any[]>([])
@@ -98,11 +115,23 @@ const Index = () => {
 
       <BestSellingHighlight />
 
-      <TopCategoriesGrid categories={categories} isLoading={categoriesLoading} />
+      <CategoryTileGrid
+        title="Top Categories"
+        subtitle="Explore top trusted brands in IT products, all in one place."
+        categories={categories}
+        isLoading={categoriesLoading}
+      />
 
       <LatestProducts />
 
       <ItemsYouMayLike />
+
+      <CategoryTileGrid
+        title="Explore Other Categories"
+        subtitle="Explore top trusted brands in IT products, all in one place."
+        categories={subCategories}
+        isLoading={categoriesLoading}
+      />
 
       <div className="w-full">
 
