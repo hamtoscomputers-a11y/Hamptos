@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import { useCarouselAutoplay } from "@/hooks/useCarouselAutoplay"
 import { useWebsiteBrands } from "@/api/hooks/useProducts"
 
 const TITLE = "Brands we carry"
@@ -9,8 +10,16 @@ const SKELETON_COUNT = 6
 const ARROW =
   "hidden h-9 w-9 border-surface-line bg-white/90 text-ink-steel shadow-sm hover:bg-brand-100 hover:text-brand-700 sm:flex 2xl:bg-white 2xl:shadow-none"
 
+/**
+ * Slots per breakpoint, topping out at 6 — below the number of brands, so the
+ * rail always has somewhere to scroll. Embla disables the loop (greying out both
+ * arrows and stalling autoplay) the moment every slide fits on screen.
+ */
+const ITEM_BASIS = "basis-1/2 pl-4 sm:basis-1/3 md:basis-1/4 lg:basis-1/6"
+
 /** Brand logo rail, linking into each brand's product listing. */
 const BrandsCarousel = () => {
+  const { setApi, pauseProps } = useCarouselAutoplay()
   const { data, isLoading, error } = useWebsiteBrands()
   const brands = (data?.data ?? []).filter((brand: any) => brand?.image)
 
@@ -31,13 +40,10 @@ const BrandsCarousel = () => {
             ))}
           </div>
         ) : (
-          <Carousel opts={{ align: "start", loop: false }}>
+          <Carousel setApi={setApi} opts={{ align: "start", loop: true }} {...pauseProps}>
             <CarouselContent className="-ml-4">
               {brands.map((brand: any) => (
-                <CarouselItem
-                  key={brand.id}
-                  className="basis-1/2 pl-4 sm:basis-1/3 md:basis-1/4 lg:basis-1/6"
-                >
+                <CarouselItem key={brand.id} className={ITEM_BASIS}>
                   <Link
                     to={`/brand/${brand.id}/products`}
                     className="flex h-28 items-center justify-center rounded-lg border border-surface-line bg-white p-4 transition-shadow hover:shadow-md"

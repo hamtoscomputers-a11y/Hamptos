@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { iconForCategory } from "./categoryIcons"
+import { CATEGORY_IMAGE_FALLBACK, isRealImage } from "./categoryImage"
 
 export interface CategoryTile {
   id: string
@@ -20,42 +20,21 @@ interface CategoryTileGridProps {
 const SKELETON_COUNT = 8
 
 /**
- * The ERP returns a sentinel placeholder rather than an empty field when a
- * category has no artwork, so it has to be filtered out by name — otherwise
- * every imageless category renders the same "no image" graphic.
- */
-const isRealImage = (image?: string) => !!image && !/no_image/i.test(image)
-
-/**
- * Tile artwork: the ERP image when there is one, otherwise the category's own
- * line icon — the same mapping the icon rail uses, so an imageless category
- * still reads as itself rather than as a generic placeholder. Also covers an
- * image that 404s at runtime.
+ * Tile artwork: the ERP image when there is one, otherwise the empty
+ * placeholder. Also covers an image that 404s at runtime.
  */
 const CategoryArtwork = ({ category }: { category: CategoryTile }) => {
   const [failed, setFailed] = useState(false)
-  const showImage = isRealImage(category.image) && !failed
+  const src = isRealImage(category.image) && !failed ? category.image : CATEGORY_IMAGE_FALLBACK
 
-  if (showImage) {
-    return (
-      <img
-        src={category.image}
-        alt=""
-        aria-hidden
-        loading="lazy"
-        className="max-h-full w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-        onError={() => setFailed(true)}
-      />
-    )
-  }
-
-  const Icon = iconForCategory(category.name)
   return (
-    <Icon
-      size={64}
-      strokeWidth={1}
+    <img
+      src={src}
+      alt=""
       aria-hidden
-      className="text-ink-steel transition-transform duration-300 group-hover:scale-105 group-hover:text-brand-700"
+      loading="lazy"
+      className="max-h-full w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+      onError={() => setFailed(true)}
     />
   )
 }

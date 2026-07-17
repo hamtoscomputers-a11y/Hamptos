@@ -1,9 +1,19 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
-import { iconForCategory } from "./categoryIcons"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import { useCarouselAutoplay } from "@/hooks/useCarouselAutoplay"
+import { CATEGORY_IMAGE_FALLBACK, isRealImage } from "./categoryImage"
 
 interface RailCategory {
   id: string
   name: string
+  image?: string
 }
 
 interface CategoryIconRailProps {
@@ -14,53 +24,87 @@ interface CategoryIconRailProps {
 
 const SKELETON_COUNT = 9
 
+const ARROW =
+  "hidden h-9 w-9 border-surface-line bg-white/90 text-ink-steel shadow-sm hover:bg-brand-100 hover:text-brand-700 sm:flex 2xl:bg-white 2xl:shadow-none"
+
+/**
+ * Slots per breakpoint, topping out at 9. Deliberately fewer than the catalogue
+ * has categories: a rail that fits entirely on screen has nowhere to scroll, so
+ * embla disables the loop and greys out both arrows. Keeping a couple of
+ * categories off-screen is what keeps the arrows live and autoplay moving.
+ */
+const ITEM_BASIS = "basis-1/3 sm:basis-1/5 md:basis-1/6 lg:basis-[14.2857%] xl:basis-[11.1111%]"
+
+/** Rail artwork: the ERP image when there is one, otherwise the empty placeholder. */
+const RailArtwork = ({ category }: { category: RailCategory }) => {
+  const [failed, setFailed] = useState(false)
+  const src = isRealImage(category.image) && !failed ? category.image : CATEGORY_IMAGE_FALLBACK
+
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden
+      loading="lazy"
+      className="h-16 w-16 object-contain"
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
 /**
  * Horizontal icon rail beneath the hero, linking into the live catalogue.
  *
  * Categories come from the API, so the rail always reflects the real
- * catalogue; each name is mapped onto a line icon (see `categoryIcons`).
+ * catalogue, artwork included.
  */
 const CategoryIconRail = ({ categories, isLoading, error }: CategoryIconRailProps) => {
+  const { setApi, pauseProps } = useCarouselAutoplay()
+
   // The header's All Categories menu is the fallback path, so a failed rail
   // stays silent rather than pushing an error banner into the hero area.
   if (error) return null
 
   return (
     <section aria-label="Shop by category" className="bg-white">
-      <div className="container mx-auto px-4">
-        <div className="custom-scrollbar overflow-x-auto py-5">
-          <ul className="flex min-w-max items-start justify-center gap-2 sm:gap-4">
-            {isLoading
-              ? Array.from({ length: SKELETON_COUNT }).map((_, index) => (
-                  <li key={index} className="w-28 flex-shrink-0 animate-pulse text-center">
-                    <div className="mx-auto h-10 w-10 rounded-full bg-gray-200" />
-                    <div className="mx-auto mt-3 h-3 w-16 rounded bg-gray-200" />
-                  </li>
-                ))
-              : categories.map((category) => {
-                  const Icon = iconForCategory(category.name)
-
-                  return (
-                    <li key={category.id} className="w-28 flex-shrink-0">
-                      <Link
-                        to={`/products?category=${category.id}`}
-                        className="group flex flex-col items-center gap-3 rounded-lg px-2 py-3 text-center transition-colors hover:bg-surface-accent"
-                      >
-                        <Icon
-                          size={36}
-                          strokeWidth={1.25}
-                          className="text-brand-950 transition-colors group-hover:text-brand-700"
-                          aria-hidden
-                        />
-                        <span className="text-xs font-medium capitalize text-brand-950 transition-colors group-hover:text-brand-700">
-                          {category.name.toLowerCase()}
-                        </span>
-                      </Link>
-                    </li>
-                  )
-                })}
+      <div className="container mx-auto px-4 py-5">
+        {isLoading ? (
+          <ul className="flex items-start justify-center gap-2 sm:gap-4">
+            {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
+              <li key={index} className="w-28 flex-shrink-0 animate-pulse text-center">
+                <div className="mx-auto h-10 w-10 rounded-full bg-gray-200" />
+                <div className="mx-auto mt-3 h-3 w-16 rounded bg-gray-200" />
+              </li>
+            ))}
           </ul>
-        </div>
+        ) : (
+          <Carousel
+            setApi={setApi}
+            opts={{ align: "start", loop: true }}
+            // Inset the track so the arrows sit in a gutter instead of over the
+            // labels; above 2xl they move outside the container entirely.
+            className="sm:px-10 2xl:px-0"
+            {...pauseProps}
+          >
+            <CarouselContent className="-ml-2">
+              {categories.map((category) => (
+                <CarouselItem key={category.id} className={`pl-2 ${ITEM_BASIS}`}>
+                  <Link
+                    to={`/products?category=${category.id}`}
+                    className="group flex flex-col items-center gap-3 rounded-lg px-2 py-3 text-center transition-colors hover:bg-surface-accent"
+                  >
+                    <RailArtwork category={category} />
+                    <span className="text-xs font-medium capitalize text-brand-950 transition-colors group-hover:text-brand-700">
+                      {category.name.toLowerCase()}
+                    </span>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className={`left-0 2xl:-left-11 ${ARROW}`} />
+            <CarouselNext className={`right-0 2xl:-right-11 ${ARROW}`} />
+          </Carousel>
+        )}
       </div>
     </section>
   )
