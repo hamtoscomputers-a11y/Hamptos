@@ -5,11 +5,11 @@ import BrandsWeCarrySection from "@/components/BrandsWeCarrySection"
 import LatestProductsSection from "@/components/LatestProductsSection"
 import NewsletterSection from "@/components/NewsletterSection"
 import SwitchesCategorySection from "@/components/SwitchesCategorySection"
-import TelephoneCategorySection from "@/components/TelephoneCategorySection"
 import TopCategories from "@/components/TopCategories"
 import BestSellingSection from "@/components/home/BestSellingSection"
 import BestSellingShowcase from "@/components/home/BestSellingShowcase"
 import CategoryIconRail from "@/components/home/CategoryIconRail"
+import CategoryProductsSection from "@/components/home/CategoryProductsSection"
 import FeaturedProducts from "@/components/home/FeaturedProducts"
 import HeroSlider from "@/components/home/HeroSlider"
 import PromoBanner from "@/components/home/PromoBanner"
@@ -53,6 +53,14 @@ const Index = () => {
 
   const homeCategories = categories.filter((category) => category.showinhome == 1)
 
+  // Resolved by name, not by array index: the ERP owns category ordering and
+  // the showinhome flag, so an index silently points at the wrong category
+  // whenever either changes.
+  const networkingCategory = useMemo(
+    () => homeCategories.find((category) => /networking/i.test(category.name)),
+    [homeCategories],
+  )
+
   const [slides, setSlides] = useState<any[]>([])
   const [slidesLoading, setSlidesLoading] = useState(true)
 
@@ -93,15 +101,9 @@ const Index = () => {
 
       <FeaturedProducts />
 
+      <CategoryProductsSection category={networkingCategory} />
+
       <div className="w-full">
-        {/* Today Deals Section */}
-        {homeCategories[0]?.showinhome == 1 && (
-          <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 mb-8">
-            <div className="bg-white rounded-lg p-4 sm:p-6">
-              <TelephoneCategorySection homeCategories={homeCategories} />
-            </div>
-          </div>
-        )}
 
 
 
