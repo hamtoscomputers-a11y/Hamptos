@@ -5,7 +5,6 @@ import BrandsWeCarrySection from "@/components/BrandsWeCarrySection"
 import LatestProductsSection from "@/components/LatestProductsSection"
 import NewsletterSection from "@/components/NewsletterSection"
 import SwitchesCategorySection from "@/components/SwitchesCategorySection"
-import TopCategories from "@/components/TopCategories"
 import BestSellingHighlight from "@/components/home/BestSellingHighlight"
 import BestSellingSection from "@/components/home/BestSellingSection"
 import BestSellingShowcase from "@/components/home/BestSellingShowcase"
@@ -15,6 +14,7 @@ import FeaturedProducts from "@/components/home/FeaturedProducts"
 import HeroSlider from "@/components/home/HeroSlider"
 import PromoBanner from "@/components/home/PromoBanner"
 import ServiceFeatures from "@/components/home/ServiceFeatures"
+import TopCategoriesGrid from "@/components/home/TopCategoriesGrid"
 import { ProductService } from "@/api"
 import { useCategories } from "../api/hooks/useCategories"
 import { useProducts } from "../api/hooks/useProducts"
@@ -108,6 +108,8 @@ const Index = () => {
 
       <BestSellingHighlight />
 
+      <TopCategoriesGrid categories={categories} isLoading={categoriesLoading} />
+
       <div className="w-full">
 
         {/* Networking Products & Servers */}
@@ -118,11 +120,6 @@ const Index = () => {
             </div>
           </div>
         )}
-
-        {/* Top Categories Section */}
-        <div className="mb-8">
-          <TopCategories categories={categories} />
-        </div>
 
         {/* Latest Products Section */}
         <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 mb-8">
