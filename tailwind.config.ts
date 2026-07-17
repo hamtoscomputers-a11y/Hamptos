@@ -19,6 +19,23 @@ export default {
 		},
 		extend: {
 			colors: {
+				// Hamtos brand scale, sampled from the Figma header design.
+				// Ordered light -> dark; `brand-700` is the primary blue.
+				brand: {
+					300: '#47A9F6',
+					400: '#1C8ACF',
+					500: '#1985C9',
+					600: '#147FC2',
+					700: '#1A74BB',
+					800: '#07619A',
+					900: '#004672',
+					950: '#1A2834',
+				},
+				surface: {
+					DEFAULT: '#FDFDFD',
+					line: '#D9D9D9',
+					accent: '#E7F4FD',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -62,6 +79,9 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			backgroundImage: {
+				'brand-gradient': 'linear-gradient(90deg, #1C8ACF 0%, #1A74BB 100%)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
