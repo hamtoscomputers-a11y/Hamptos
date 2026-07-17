@@ -38,6 +38,7 @@ export default {
 					line: '#D9D9D9',
 					accent: '#E7F4FD',
 					muted: '#E5E5E5',
+					promo: '#EFF5FF',
 				},
 				// Stock / delivery affirmatives, sampled from the Figma product card.
 				success: {
@@ -97,6 +98,8 @@ export default {
 			},
 			backgroundImage: {
 				'brand-gradient': 'linear-gradient(90deg, #1C8ACF 0%, #1A74BB 100%)',
+				// Mint -> ice-blue wash behind the best-seller showcase tiles.
+				'promo-gradient': 'linear-gradient(135deg, #DFF5EC 0%, #E7F4FD 100%)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

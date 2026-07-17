@@ -76,16 +76,18 @@ const ProductCarouselCard = ({ product }: ProductCarouselCardProps) => {
             <p className="text-xs text-ink-muted/80 line-through">AED {formatAed(originalPrice)}</p>
           )}
         </div>
-
-        {!inStock && (
-          <Link
-            to="/get-quote"
-            className="mt-2 block rounded bg-brand-200 py-2 text-center text-[11px] font-bold tracking-wide text-brand-950 transition-colors hover:bg-brand-300 hover:text-white"
-          >
-            GET QUOTATION
-          </Link>
-        )}
       </div>
+
+      {/* Sits outside the padded body so it spans the full card width, flush
+          with the card edges as per the design. */}
+      {!inStock && (
+        <Link
+          to="/get-quote"
+          className="block bg-brand-200 py-2.5 text-center text-[11px] font-bold tracking-wide text-brand-950 transition-colors hover:bg-brand-300 hover:text-white"
+        >
+          GET QUOTATION
+        </Link>
+      )}
     </article>
   )
 }

@@ -1,16 +1,16 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import BestSelling from "@/components/BestSelling"
 import BrandsWeCarrySection from "@/components/BrandsWeCarrySection"
-import FeaturedProductsSection from "@/components/FeaturedProductsSection"
 import LatestProductsSection from "@/components/LatestProductsSection"
 import NewsletterSection from "@/components/NewsletterSection"
 import SwitchesCategorySection from "@/components/SwitchesCategorySection"
 import TelephoneCategorySection from "@/components/TelephoneCategorySection"
 import TopCategories from "@/components/TopCategories"
 import BestSellingSection from "@/components/home/BestSellingSection"
+import BestSellingShowcase from "@/components/home/BestSellingShowcase"
 import CategoryIconRail from "@/components/home/CategoryIconRail"
+import FeaturedProducts from "@/components/home/FeaturedProducts"
 import HeroSlider from "@/components/home/HeroSlider"
 import PromoBanner from "@/components/home/PromoBanner"
 import ServiceFeatures from "@/components/home/ServiceFeatures"
@@ -87,6 +87,12 @@ const Index = () => {
 
       <PromoBanner slide={slides?.[3]} />
 
+      <div className="my-8">
+        <BestSellingShowcase />
+      </div>
+
+      <FeaturedProducts />
+
       <div className="w-full">
         {/* Today Deals Section */}
         {homeCategories[0]?.showinhome == 1 && (
@@ -97,19 +103,7 @@ const Index = () => {
           </div>
         )}
 
-        {/* Featured Products Section */}
-        <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 mb-8">
-          <div className="rounded-lg p-4 sm:p-6" style={{ backgroundColor: "#f5f5f5" }}>
-            <FeaturedProductsSection />
-          </div>
-        </div>
 
-        {/* Best Selling Products */}
-        <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 mb-8">
-          <div className="rounded-lg p-4 sm:p-6" style={{ backgroundColor: "#e7f1fb" }}>
-            <BestSelling />
-          </div>
-        </div>
 
         <PromoBanner slide={slides?.[4]} className="mb-6" />
 
