@@ -5,6 +5,7 @@ import ProductFilters from "@/components/products/ProductFilters"
 import ListingToolbar, { SORT_OPTIONS, type SortValue } from "@/components/products/ListingToolbar"
 import TypeChip from "@/components/products/TypeChip"
 import Pagination from "@/components/products/Pagination"
+import RelatedProducts from "@/components/products/RelatedProducts"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useProductSearch, useProducts, useProductsByBrand, useBrands } from "@/api/hooks/useProducts"
 import { useProductsByCategory, useCategories } from "@/api/hooks/useCategories"
@@ -632,6 +633,7 @@ const ProductsPage = () => {
   }
 
   return (
+    <>
     <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 py-6 sm:py-8 flex flex-col lg:flex-row gap-6 lg:gap-8">
       {/* Mobile Filter Button */}
       <div className="lg:hidden flex justify-end mb-4">
@@ -749,6 +751,14 @@ const ProductsPage = () => {
         )}
       </div>
     </div>
+
+    <RelatedProducts
+      products={sortedProducts}
+      fallbackProducts={allData?.data || []}
+      shownIds={paginatedProducts.map((item: any) => String(item?.id))}
+      isLoading={isLoading}
+    />
+    </>
   )
 }
 

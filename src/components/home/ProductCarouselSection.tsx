@@ -11,7 +11,8 @@ export interface CarouselChip {
 
 interface ProductCarouselSectionProps {
   title: string
-  subtitle: string
+  /** Omitted by rails the Figma shows as a bare heading, e.g. Related Product. */
+  subtitle?: string
   products: CardProduct[]
   isLoading: boolean
   error?: unknown
@@ -21,6 +22,9 @@ interface ProductCarouselSectionProps {
   chips?: CarouselChip[]
   /** `dark` renders the navy full-bleed treatment; cards stay white either way. */
   tone?: "light" | "dark"
+  /** Centred heading with no Explore All, per the Related Product frame. */
+  align?: "split" | "center"
+  showExplore?: boolean
 }
 
 const SKELETON_COUNT = 5
@@ -58,6 +62,8 @@ const ProductCarouselSection = ({
   exploreHref = "/products",
   chips = [],
   tone = "light",
+  align = "split",
+  showExplore = true,
 }: ProductCarouselSectionProps) => {
   // Nothing to merchandise and no way to recover — drop the section rather
   // than leave an empty frame on the page.
@@ -68,10 +74,14 @@ const ProductCarouselSection = ({
   return (
     <section aria-label={title} className={`py-10 ${styles.section}`}>
       <div className="container mx-auto px-4">
-        <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <header
+          className={`mb-6 flex flex-wrap gap-4 ${
+            align === "center" ? "justify-center text-center" : "items-end justify-between"
+          }`}
+        >
           <div>
             <h2 className={`text-2xl font-semibold ${styles.title}`}>{title}</h2>
-            <p className={`mt-1 max-w-2xl text-sm ${styles.subtitle}`}>{subtitle}</p>
+            {subtitle && <p className={`mt-1 max-w-2xl text-sm ${styles.subtitle}`}>{subtitle}</p>}
 
             {chips.length > 0 && (
               <ul className="mt-4 flex flex-wrap gap-2">
@@ -89,13 +99,15 @@ const ProductCarouselSection = ({
             )}
           </div>
 
-          <Link
-            to={exploreHref}
-            className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-800"
-          >
-            Explore All
-            <ArrowRight size={16} aria-hidden />
-          </Link>
+          {showExplore && (
+            <Link
+              to={exploreHref}
+              className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-800"
+            >
+              Explore All
+              <ArrowRight size={16} aria-hidden />
+            </Link>
+          )}
         </header>
 
         {isLoading ? (
