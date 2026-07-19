@@ -33,12 +33,16 @@ export default {
 					900: '#004672',
 					950: '#1A2834',
 				},
+				// Active-filter chip on the product listing toolbar.
+				highlight: '#FF9C56',
 				surface: {
 					DEFAULT: '#FDFDFD',
 					line: '#D9D9D9',
 					accent: '#E7F4FD',
 					// Collapse-toggle chip on the filter sidebar.
 					chip: '#B5E1FC',
+					// Product-card image well.
+					placeholder: '#E7E7E7',
 					muted: '#E5E5E5',
 					promo: '#EFF5FF',
 					subtle: '#F3F3F3',
@@ -56,6 +60,7 @@ export default {
 					// Filter sidebar: section headings, option labels, secondary text.
 					deep: '#00131F',
 					body: '#515151',
+					charcoal: '#414141',
 					grey: '#777777',
 					slate: '#2A4153',
 					steel: '#7890A5',

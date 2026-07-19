@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductFilters from "@/components/products/ProductFilters"
+import ListingToolbar, { SORT_OPTIONS, type SortValue } from "@/components/products/ListingToolbar"
+import TypeChip from "@/components/products/TypeChip"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useProductSearch, useProducts, useProductsByBrand, useBrands } from "@/api/hooks/useProducts"
 import { useProductsByCategory, useCategories } from "@/api/hooks/useCategories"
@@ -22,11 +24,17 @@ const ProductsPage = () => {
   // Always use high limit when category or brand is selected to ensure we get all products for frontend filtering
   // This is necessary because we filter by brand/subcategory on the frontend
   const effectiveLimit = (category || brand) ? 1000 : limit
+  // Filtering client-side needs the whole set, not one API page.
+  const allProductsLimit = params.get("in_stock") === "1" ? 1000 : limit
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false) // State for mobile sidebar
   const [priceMin, setPriceMin] = useState(params.get("price_min") || "")
   const [priceMax, setPriceMax] = useState(params.get("price_max") || "")
-  const includeOutOfStock = params.get("in_stock") === "0"
+  // Out-of-stock products show by default (the ERP carries little stock);
+  // `in_stock=1` is the opt-in to hide them.
+  const includeOutOfStock = params.get("in_stock") !== "1"
+  const sortParam = params.get("sort") || "popularity"
+  const sort: SortValue = (SORT_OPTIONS.some((o) => o.value === sortParam) ? sortParam : "popularity") as SortValue
 
   // Scroll to top when component mounts and when tab changes
   useEffect(() => {
@@ -119,8 +127,8 @@ const ProductsPage = () => {
     isLoading: allLoading,
     error: allError,
   } = useProducts({
-    limit,
-    start: (page - 1) * limit,
+    limit: allProductsLimit,
+    start: allProductsLimit === limit ? (page - 1) * limit : 0,
     include: "brand,category,photos",
   });
 
@@ -471,13 +479,24 @@ const ProductsPage = () => {
     setIsSidebarOpen(false)
   }
 
-  // Out-of-stock products are hidden by default; `in_stock=0` opts them back in.
+  // Unchecking "Include Out of Stock" narrows to in-stock only via `in_stock=1`.
   const handleIncludeOutOfStockChange = (next: boolean) => {
     const searchParams = new URLSearchParams(location.search)
     if (next) {
-      searchParams.set("in_stock", "0")
-    } else {
       searchParams.delete("in_stock")
+    } else {
+      searchParams.set("in_stock", "1")
+    }
+    searchParams.delete("page")
+    navigate({ search: searchParams.toString() })
+  }
+
+  const handleSortChange = (value: SortValue) => {
+    const searchParams = new URLSearchParams(location.search)
+    if (value === "popularity") {
+      searchParams.delete("sort")
+    } else {
+      searchParams.set("sort", value)
     }
     searchParams.delete("page")
     navigate({ search: searchParams.toString() })
@@ -503,7 +522,7 @@ const ProductsPage = () => {
 
   // Determine if we're using frontend filtering (category/brand/subcategory selected)
   // Note: When search + brand is used, we filter search results on frontend
-  const isFrontendFiltering = !!(category || brand || subcategory || (search && brand))
+  const isFrontendFiltering = !!(category || brand || subcategory || (search && brand) || !includeOutOfStock)
   
   // Calculate pagination
   // When filters are applied, we filter on frontend, so use filtered products length
@@ -559,17 +578,32 @@ const ProductsPage = () => {
   
   // Slice products for current page only when using frontend filtering
   // When no filters, products are already paginated by the API
+  const sortedProducts = useMemo(() => {
+    const copy = [...products]
+    switch (sort) {
+      case "price_asc":
+        return copy.sort((a: any, b: any) => Number(a.price) - Number(b.price))
+      case "price_desc":
+        return copy.sort((a: any, b: any) => Number(b.price) - Number(a.price))
+      case "name_asc":
+        return copy.sort((a: any, b: any) => String(a.name || "").localeCompare(String(b.name || "")))
+      default:
+        // `views` is the ERP's own popularity counter.
+        return copy.sort((a: any, b: any) => Number(b.views || 0) - Number(a.views || 0))
+    }
+  }, [products, sort])
+
   const paginatedProducts = useMemo(() => {
     if (isFrontendFiltering) {
       // Frontend filtering: slice the filtered products array
       const startIndex = (page - 1) * limit
       const endIndex = startIndex + limit
-      return products.slice(startIndex, endIndex)
+      return sortedProducts.slice(startIndex, endIndex)
     } else {
       // Server-side pagination: use products directly (already paginated by API)
-      return products
+      return sortedProducts
     }
-  }, [products, page, limit, isFrontendFiltering])
+  }, [sortedProducts, page, limit, isFrontendFiltering])
 
   const handlePageChange = (newPage: number) => {
     // Prevent invalid page numbers
@@ -604,7 +638,7 @@ const ProductsPage = () => {
       <div
         className={`fixed inset-y-0 left-0 h-full w-64 bg-white z-50 shadow-lg transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:relative lg:h-auto lg:w-[197px] lg:flex-shrink-0 lg:translate-x-0 lg:overflow-visible lg:bg-transparent lg:shadow-none transition-transform duration-300 ease-in-out overflow-y-auto`}
+        } lg:relative lg:h-auto lg:w-[214px] lg:flex-shrink-0 lg:translate-x-0 lg:overflow-visible lg:border-r lg:border-surface-muted lg:bg-transparent lg:pr-4 lg:shadow-none transition-transform duration-300 ease-in-out overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 lg:p-0">
@@ -649,29 +683,32 @@ const ProductsPage = () => {
 
       {/* Main Content */}
       <div className="flex-1">
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 text-center sm:text-left mb-2 sm:mb-0">
-            {(() => {
-              // Build heading based on active filters
-              if (search && brand) {
-                return `Search Results for "${search}" - ${brandName} Products`;
-              } else if (search && category) {
-                return `Search Results for "${search}" - ${categoryName}`;
-              } else if (search) {
-                return `Search Results for "${search}"`;
-              } else if (brand && category) {
-                return `${brandName} Products in ${categoryName}`;
-              } else if (brand) {
-                return `${brandName} Products`;
-              } else if (category) {
-                return `Products in ${categoryName}`;
-              } else {
-                return "All Products";
-              }
-            })()}
-          </h2>
-          {/* Add sorting/view mode toggles here if needed */}
-        </div>
+        <h2 className="mb-3 text-xl font-bold text-brand-700 sm:text-2xl">
+          {(() => {
+            if (search && brand) return `Search Results for "${search}" - ${brandName} Products`
+            if (search && category) return `Search Results for "${search}" - ${categoryName}`
+            if (search) return `Search Results for "${search}"`
+            if (brand && category) return `${brandName} Products in ${categoryName}`
+            if (brand) return `${brandName} Products`
+            if (category) return categoryName
+            return "All Products"
+          })()}
+        </h2>
+
+        <ListingToolbar
+          rangeStart={totalFilteredProducts === 0 ? 0 : (page - 1) * limit + 1}
+          rangeEnd={Math.min(page * limit, totalFilteredProducts)}
+          total={totalFilteredProducts}
+          crumb={categoryName || brandName || undefined}
+          sort={sort}
+          onSortChange={handleSortChange}
+        />
+
+        {(categoryName || brandName) && (
+          <div className="mt-4">
+            <TypeChip value={categoryName || brandName} />
+          </div>
+        )}
 
         {/* Product grid */}
         {isLoading && <div className="text-center py-8 text-gray-600">Loading products...</div>}

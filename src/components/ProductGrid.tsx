@@ -192,7 +192,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           {viewMode === "grid" ? (
             <div
               className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${
-                window.location.href.includes("/products") ? "lg:grid-cols-4 gap-4 sm:gap-6" : "lg:grid-cols-5 gap-4 sm:gap-6"
+                window.location.href.includes("/products") ? "lg:grid-cols-4 gap-[15px]" : "lg:grid-cols-5 gap-4 sm:gap-6"
               } items-stretch`}
             >
               {validProducts.map((product) => (
