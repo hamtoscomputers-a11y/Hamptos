@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ChevronRight, Package } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { Link } from "react-router-dom"
 
 interface Category {
@@ -20,41 +20,39 @@ const AllCategoriesMenu = ({ categories, isLoading, error, onNavigate }: AllCate
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   if (isLoading) {
-    return <div className="p-6 text-center text-sm text-gray-500">Loading categories...</div>
+    return <div className="p-6 text-center text-sm text-white/70">Loading categories...</div>
   }
 
   if (error) {
-    return <div className="bg-red-50 p-6 text-center text-sm text-red-500">Failed to load categories</div>
+    return <div className="p-6 text-center text-sm text-white">Failed to load categories</div>
   }
 
   return (
-    <div className="custom-scrollbar max-h-[70vh] overflow-y-auto">
+    <div className="dark-scrollbar h-[264px] overflow-y-auto">
       {categories.map((category) => {
         const children = category.children ?? []
         const hasChildren = children.length > 0
         const isExpanded = expandedId === category.id
 
         return (
-          <div key={category.id} className="border-b border-gray-100 last:border-b-0">
-            <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-gray-50">
+          <div key={category.id} className="border-b border-surface-line/[0.13] last:border-b-0">
+            {/* Selection colors in the Figma are FFFFFF/004672 — hover inverts the row. */}
+            <div className="group flex items-center transition-colors hover:bg-white">
               <Link
                 to={`/products?category=${category.id}`}
-                className="group flex flex-1 items-center gap-2"
+                className="flex-1 py-1 pl-4 text-[13px] text-white transition-colors group-hover:text-ink-navy"
                 onClick={onNavigate}
               >
-                <Package size={16} className="flex-shrink-0 text-brand-700" aria-hidden />
-                <span className="text-sm font-medium text-brand-950 transition-colors group-hover:text-brand-700">
-                  {category.name}
-                </span>
+                {category.name}
               </Link>
 
-              {hasChildren && (
+              {hasChildren ? (
                 <button
                   type="button"
                   aria-label={`${isExpanded ? "Collapse" : "Expand"} ${category.name}`}
                   aria-expanded={isExpanded}
                   onClick={() => setExpandedId(isExpanded ? null : category.id)}
-                  className="p-1 text-gray-400 hover:text-brand-700"
+                  className="px-3 py-1 text-white transition-colors group-hover:text-ink-navy"
                 >
                   <ChevronRight
                     size={16}
@@ -62,20 +60,30 @@ const AllCategoriesMenu = ({ categories, isLoading, error, onNavigate }: AllCate
                     aria-hidden
                   />
                 </button>
+              ) : (
+                /* Keeps the row rhythm of the design; the chevron reads as "go to category". */
+                <Link
+                  to={`/products?category=${category.id}`}
+                  tabIndex={-1}
+                  aria-hidden
+                  className="px-3 py-1 text-white transition-colors group-hover:text-ink-navy"
+                  onClick={onNavigate}
+                >
+                  <ChevronRight size={16} />
+                </Link>
               )}
             </div>
 
             {hasChildren && isExpanded && (
-              <div className="border-t border-gray-100 bg-gray-50 py-2">
+              <div className="border-t border-surface-line/[0.13] bg-black/15">
                 {children.map((child) => (
                   <Link
                     key={child.id}
                     to={`/products?category=${category.id}&parent_id=${child.id}`}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-brand-700 hover:text-white"
+                    className="block py-2 pl-8 pr-4 text-[13px] text-white/85 transition-colors hover:bg-white hover:text-ink-navy"
                     onClick={onNavigate}
                   >
-                    <ChevronRight size={12} className="flex-shrink-0 opacity-60" aria-hidden />
-                    <span>{child.name}</span>
+                    {child.name}
                   </Link>
                 ))}
               </div>

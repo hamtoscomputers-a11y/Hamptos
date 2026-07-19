@@ -22,22 +22,23 @@ const CategoryNav = ({
   onToggleMenu,
   onCloseMenu,
 }: CategoryNavProps) => (
-  <nav aria-label="Categories" className="hidden border-t border-surface-line bg-white md:block">
+  <nav aria-label="Categories" className="hidden bg-ink-navy md:block">
     <div className="container mx-auto px-4">
-      <div className="flex h-14 items-center gap-6">
-        <div className="relative">
+      <div className="flex h-[52px] items-center gap-6">
+        {/* Full-height so the dropdown's `top-full` lands on the bar's bottom edge, not the button's. */}
+        <div className="relative flex h-full items-center">
           <button
             type="button"
             onClick={onToggleMenu}
             aria-expanded={isMenuOpen}
-            className="flex items-center gap-2 text-sm font-semibold text-brand-950 hover:text-brand-700"
+            className="flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-brand-300"
           >
             <Menu size={18} aria-hidden />
             All Categories
           </button>
 
           {isMenuOpen && (
-            <div className="absolute left-0 top-full z-[100] mt-2 w-[400px] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-2xl">
+            <div className="absolute left-0 top-full z-[100] w-[250px] overflow-hidden bg-ink-navy shadow-2xl">
               <AllCategoriesMenu
                 categories={categories}
                 isLoading={isLoading}
@@ -53,7 +54,7 @@ const CategoryNav = ({
             <li key={label}>
               <NavLink
                 to={href}
-                className="whitespace-nowrap text-sm text-brand-950 transition-colors hover:text-brand-700"
+                className="whitespace-nowrap text-sm text-white transition-colors hover:text-brand-300"
               >
                 {label}
               </NavLink>

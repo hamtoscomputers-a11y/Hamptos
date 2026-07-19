@@ -49,6 +49,8 @@ export default {
 				},
 				ink: {
 					DEFAULT: '#101010',
+					// Nav bar / category dropdown fill, per the Figma nav frame.
+					navy: '#042B43',
 					slate: '#2A4153',
 					steel: '#7890A5',
 					muted: '#595959',

@@ -82,7 +82,8 @@ const Header = () => {
 
       {isCategoryMenuOpen && (
         <div
-          className="fixed inset-0 z-[90] hidden bg-black/25 md:block"
+          /* Invisible catcher: closes the menu on an outside click without dimming the page. */
+          className="fixed inset-0 z-[90] hidden md:block"
           onClick={() => setIsCategoryMenuOpen(false)}
           aria-hidden
         />
