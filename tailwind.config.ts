@@ -43,6 +43,9 @@ export default {
 					chip: '#B5E1FC',
 					// Product-card image well.
 					placeholder: '#E7E7E7',
+					// Purchase rail: payment-partner card outline, quantity control outline.
+					card: '#D4D4D4',
+					control: '#B8B8B8',
 					muted: '#E5E5E5',
 					promo: '#EFF5FF',
 					subtle: '#F3F3F3',
@@ -52,9 +55,14 @@ export default {
 					DEFAULT: '#2BA459',
 					dark: '#00650C',
 					light: '#B8E9BD',
+					// Product detail purchase rail: "In Stock" and the Add To Cart fill.
+					bright: '#1E9F17',
+					deep: '#169A48',
 				},
 				ink: {
 					DEFAULT: '#101010',
+					// Product detail page: the product title.
+					title: '#1F1F1F',
 					// Nav bar / category dropdown fill, per the Figma nav frame.
 					navy: '#042B43',
 					// Filter sidebar: section headings, option labels, secondary text.

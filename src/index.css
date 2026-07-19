@@ -131,3 +131,16 @@
 .scrollbar-hidden::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
+
+/* The ERP's key_information is free-form HTML; the Figma renders it as a
+   tight bullet list, so normalise whatever markup comes back. */
+.product-key-info ul,
+.product-key-info ol {
+  list-style: disc;
+  padding-left: 1.1rem;
+}
+
+.product-key-info li + li,
+.product-key-info p + p {
+  margin-top: 0.35rem;
+}
