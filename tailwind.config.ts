@@ -45,6 +45,8 @@ export default {
 					placeholder: '#E7E7E7',
 					// Purchase rail: payment-partner card outline, quantity control outline.
 					card: '#D4D4D4',
+					// Product detail: the active tab's fill.
+					tab: '#BDE4FD',
 					control: '#B8B8B8',
 					muted: '#E5E5E5',
 					promo: '#EFF5FF',
@@ -63,6 +65,8 @@ export default {
 					DEFAULT: '#101010',
 					// Product detail page: the product title.
 					title: '#1F1F1F',
+					// Product detail: label on the active tab.
+					midnight: '#02273F',
 					// Nav bar / category dropdown fill, per the Figma nav frame.
 					navy: '#042B43',
 					// Filter sidebar: section headings, option labels, secondary text.

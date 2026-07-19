@@ -2,27 +2,29 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useParams, Link, useLocation } from "react-router-dom"
-import { useProductById } from "@/api/hooks/useProducts"
+import { useProductById, useProducts } from "@/api/hooks/useProducts"
+import { useProductsByCategory } from "@/api/hooks/useCategories"
 import ProductGallery from "@/components/products/ProductGallery"
 import ProductSummary from "@/components/products/ProductSummary"
 import PurchasePanel from "@/components/products/PurchasePanel"
+import ProductTabs, { type TabKey } from "@/components/products/ProductTabs"
+import RelatedProducts from "@/components/products/RelatedProducts"
 import { addToCart } from "@/store/cartSlice"
 import { useDispatch } from "react-redux"
 import { toast } from "@/hooks/use-toast"
-import { Button } from "@/components/ui/button"
 import { Helmet } from 'react-helmet-async';
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>()
   const location = useLocation()
-  const [selectedTab, setSelectedTab] = useState("Key Information")
+  const [selectedTab, setSelectedTab] = useState<TabKey>("key")
   const [quantity, setQuantity] = useState(1)
   const tabsRef = useRef<HTMLDivElement>(null)
 
   // The ERP carries no datasheet URL, so the button opens the spec tabs, which
   // hold the same detail content.
   const handleViewDatasheet = () => {
-    setSelectedTab("Product Description")
+    setSelectedTab("specs")
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     tabsRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" })
   }
@@ -44,6 +46,17 @@ const ProductDetail = () => {
   // Use passed data if available, otherwise use fetched data
   const apiResponse = passedProductData || responseData
   const data = (apiResponse as any)?.data || apiResponse
+
+  // Pools for the Related Product rail. Same category first; the catalogue-wide
+  // pool covers a category that holds nothing but this product. Both must be
+  // called before the early returns below, so they read straight off `data`.
+  const relatedCategoryId = (data as any)?.category?.id || ""
+  const { data: relatedCategoryData, isLoading: relatedLoading } = useProductsByCategory(relatedCategoryId, {
+    limit: 20,
+    start: 1,
+    include: "brand,category,photos",
+  })
+  const { data: relatedPoolData } = useProducts({ limit: 20, start: 0, include: "brand,category,photos" })
 
   // Scroll to top when component mounts and when tab changes
   useEffect(() => {
@@ -106,10 +119,6 @@ const ProductDetail = () => {
   }
   console.log(product)
 
-  const handleQuantityChange = (change: number) => {
-    setQuantity((prev) => Math.max(1, prev + change))
-  }
-
   const handleAddToCart = () => {
     dispatch(
       addToCart({
@@ -132,7 +141,6 @@ const ProductDetail = () => {
     })
   }
 
-  const tabs = ["Key Information", "Product details for Invoice", "Product Description", "Reviews"]
   const categoryName = typeof data.category === "object" && data.category ? (data.category as any).name : ""
 
   // Get photos - API returns photos array with photo_url
@@ -194,61 +202,23 @@ const ProductDetail = () => {
             />
           </div>
 
-            {/* Product Tabs */}
-            <div ref={tabsRef} className="border-t border-gray-200 mt-4 sm:mt-6">
-              <div className="flex overflow-x-auto whitespace-nowrap px-4 sm:px-6 md:px-8 bg-gray-50 border-b border-gray-200">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab}
-                    className={`py-3 px-4 sm:px-6 font-medium text-sm sm:text-base border-b-2 transition-colors duration-200 flex-shrink-0 ${
-                      selectedTab === tab
-                        ? "border-blue-600 text-blue-600 bg-white"
-                        : "border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                    }`}
-                    onClick={() => setSelectedTab(tab)}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-              <div className="p-4 sm:p-6 md:p-8 bg-white">
-                {selectedTab === "Key Information" && (
-                  <div>
-                    <div
-                      className="prose prose-sm sm:prose-base mb-4 text-gray-700 max-w-none"
-                      dangerouslySetInnerHTML={{ __html: product.key_information }}
-                    />
-                  </div>
-                )}
-                {selectedTab === "Product details for Invoice" && (
-                  <div>
-                    <h3 className="font-semibold mb-4 text-lg sm:text-xl">Product Details for Invoice</h3>
-                    <div
-                      className="text-gray-700 prose prose-sm sm:prose-base max-w-none"
-                      dangerouslySetInnerHTML={{ __html: product.details }}
-                    />
-                  </div>
-                )}
-                {selectedTab === "Product Description" && (
-                  <div>
-                    <h3 className="font-semibold mb-4 text-lg sm:text-xl">Product Description</h3>
-                    <div
-                      className="text-gray-700 prose prose-sm sm:prose-base max-w-none"
-                      dangerouslySetInnerHTML={{ __html: product.product_details }}
-                    />
-                  </div>
-                )}
-                {selectedTab === "Reviews" && (
-                  <div>
-                    <h3 className="font-semibold mb-4 text-lg sm:text-xl">Customer Reviews</h3>
-                    <p className="text-gray-700 text-sm sm:text-base">
-                      No reviews yet. Be the first to review this product!
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
+          <div ref={tabsRef}>
+            <ProductTabs
+              active={selectedTab}
+              onActiveChange={setSelectedTab}
+              keyInformation={product.key_information}
+              details={product.details}
+              specifications={product.product_details}
+            />
+          </div>
         </div>
+
+        <RelatedProducts
+          products={relatedCategoryData?.products || []}
+          fallbackProducts={relatedPoolData?.data || []}
+          shownIds={[String(product.id)]}
+          isLoading={relatedLoading}
+        />
       </div>
     </>
   )
