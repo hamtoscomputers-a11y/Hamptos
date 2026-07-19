@@ -61,6 +61,9 @@ export default {
 					deep: '#00131F',
 					body: '#515151',
 					charcoal: '#414141',
+					// Pagination: inactive page numbers, and the Next button fill.
+					pewter: '#32414E',
+					graphite: '#2D2D2D',
 					grey: '#777777',
 					slate: '#2A4153',
 					steel: '#7890A5',

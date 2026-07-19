@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import ProductFilters from "@/components/products/ProductFilters"
 import ListingToolbar, { SORT_OPTIONS, type SortValue } from "@/components/products/ListingToolbar"
 import TypeChip from "@/components/products/TypeChip"
+import Pagination from "@/components/products/Pagination"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useProductSearch, useProducts, useProductsByBrand, useBrands } from "@/api/hooks/useProducts"
 import { useProductsByCategory, useCategories } from "@/api/hooks/useCategories"
@@ -27,6 +28,7 @@ const ProductsPage = () => {
   // Filtering client-side needs the whole set, not one API page.
   const allProductsLimit = params.get("in_stock") === "1" ? 1000 : limit
 
+  const resultsRef = useRef<HTMLDivElement>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false) // State for mobile sidebar
   const [priceMin, setPriceMin] = useState(params.get("price_min") || "")
   const [priceMax, setPriceMax] = useState(params.get("price_max") || "")
@@ -619,6 +621,14 @@ const ProductsPage = () => {
     }
     // Use replace: false to allow browser back/forward navigation
     navigate({ search: searchParams.toString() }, { replace: false })
+
+    // Paging from the bottom would otherwise leave the reader mid-list while the
+    // new page renders above them, so ease back up to the top of the results.
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    resultsRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start",
+    })
   }
 
   return (
@@ -682,7 +692,7 @@ const ProductsPage = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1">
+      <div ref={resultsRef} className="flex-1 scroll-mt-6">
         <h2 className="mb-3 text-xl font-bold text-brand-700 sm:text-2xl">
           {(() => {
             if (search && brand) return `Search Results for "${search}" - ${brandName} Products`
@@ -714,7 +724,7 @@ const ProductsPage = () => {
         {isLoading && <div className="text-center py-8 text-gray-600">Loading products...</div>}
         {error && <div className="text-center py-8 text-red-500">Failed to load products.</div>}
         {!isLoading && !error && (
-          <>
+          <div className="animate-in fade-in-0 duration-300 motion-reduce:animate-none">
             <ProductGrid
               products={paginatedProducts.map((item: any) => ({
                 id: item.id,
@@ -734,52 +744,8 @@ const ProductsPage = () => {
               title=""
             />
 
-            {/* Pagination */}
-            {totalPages > 0 && (
-              <div className="flex justify-center mt-6 sm:mt-8 space-x-1 sm:space-x-2 flex-wrap">
-                <button
-                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm transition-colors duration-200 ${
-                    page === 1
-                      ? "bg-[#1A74BB] text-white cursor-not-allowed opacity-70"
-                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                  }`}
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
-                >
-                  Previous
-                </button>
-
-                {Array.from({ length: totalPages }).map((_, idx) => {
-                  const pageNum = idx + 1
-                  return (
-                    <button
-                      key={pageNum}
-                      className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm transition-colors duration-200 ${
-                        pageNum === page
-                          ? "bg-[#1A74BB] text-white"
-                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                      }`}
-                      onClick={() => handlePageChange(pageNum)}
-                    >
-                      {pageNum}
-                    </button>
-                  )
-                })}
-
-                <button
-                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm transition-colors duration-200 ${
-                    page >= totalPages
-                      ? "bg-[#1A74BB] text-white cursor-not-allowed opacity-70"
-                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                  }`}
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= totalPages}
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </>
+            <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
+          </div>
         )}
       </div>
     </div>
