@@ -135,6 +135,15 @@ const ProductsPage = () => {
     include: "brand,category,photos",
   });
 
+  // Pool for the Related Product rail only. The listing query above is paged, so
+  // on an unfiltered page everything it returns is already on screen and nothing
+  // is left over to recommend. This one ignores paging.
+  const { data: relatedPoolData } = useProducts({
+    limit: 40,
+    start: 0,
+    include: "brand,category,photos",
+  });
+
   const navigationState = location.state as { products?: any[]; categoryId?: string; parentId?: string } | undefined
 
   // Decide which data to show and apply filters on frontend
@@ -183,7 +192,12 @@ const ProductsPage = () => {
       } else {
         // Fallback: if category data is not loaded yet, use empty array to avoid showing wrong data
         baseProducts = [];
-        console.warn('Category data not loaded yet or empty', { category, categoryData });
+        // A settled request that resolved the category but returned nothing is an
+        // empty category, not a fault — the empty state covers it. Only warn when
+        // the id didn't resolve at all, since that fails silently with a 200.
+        if (!categoryLoading && !categoryError && !categoryData?.category) {
+          console.warn('Category id did not resolve', { category, categoryData });
+        }
       }
       // Log if API returned fewer products than total (indicates pagination issue)
       if (categoryData && categoryData.total && categoryData.products) {
@@ -410,7 +424,7 @@ const ProductsPage = () => {
     })
     
     return finalProducts;
-  }, [navigationState, search, searchData, brand, brandData, category, categoryData, subcategory, allData, priceMin, priceMax, brands, includeOutOfStock]);
+  }, [navigationState, search, searchData, brand, brandData, category, categoryData, categoryLoading, categoryError, subcategory, allData, priceMin, priceMax, brands, includeOutOfStock]);
 
   // Determine loading and error states based on active filters
   // When both search and brand are active, we use brandData, so wait for brandLoading
@@ -754,7 +768,7 @@ const ProductsPage = () => {
 
     <RelatedProducts
       products={sortedProducts}
-      fallbackProducts={allData?.data || []}
+      fallbackProducts={relatedPoolData?.data || []}
       shownIds={paginatedProducts.map((item: any) => String(item?.id))}
       isLoading={isLoading}
     />
