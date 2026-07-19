@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import ProductFilters from "@/components/products/ProductFilters"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useProductSearch, useProducts, useProductsByBrand, useBrands } from "@/api/hooks/useProducts"
 import { useProductsByCategory, useCategories } from "@/api/hooks/useCategories"
@@ -25,6 +26,7 @@ const ProductsPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false) // State for mobile sidebar
   const [priceMin, setPriceMin] = useState(params.get("price_min") || "")
   const [priceMax, setPriceMax] = useState(params.get("price_max") || "")
+  const includeOutOfStock = params.get("in_stock") === "0"
 
   // Scroll to top when component mounts and when tab changes
   useEffect(() => {
@@ -379,11 +381,12 @@ const ProductsPage = () => {
       console.log('After subcategory filter:', { beforeCount, afterCount: filteredProducts.length, subcategory, subcategoryIdNum });
     }
     
-    // Apply price filter on frontend
+    // Apply price filter on frontend, plus stock unless out-of-stock is opted in.
     const finalProducts = filteredProducts.filter((item: any) => {
       const price = Number(item.price);
       if (priceMin && price < Number(priceMin)) return false;
       if (priceMax && price > Number(priceMax)) return false;
+      if (!includeOutOfStock && Number(item.quantity) <= 0) return false;
       return true;
     });
     
@@ -396,7 +399,7 @@ const ProductsPage = () => {
     })
     
     return finalProducts;
-  }, [navigationState, search, searchData, brand, brandData, category, categoryData, subcategory, allData, priceMin, priceMax, brands]);
+  }, [navigationState, search, searchData, brand, brandData, category, categoryData, subcategory, allData, priceMin, priceMax, brands, includeOutOfStock]);
 
   // Determine loading and error states based on active filters
   // When both search and brand are active, we use brandData, so wait for brandLoading
@@ -466,6 +469,18 @@ const ProductsPage = () => {
     navigate({ search: searchParams.toString() })
     // Close sidebar on mobile when brand is selected
     setIsSidebarOpen(false)
+  }
+
+  // Out-of-stock products are hidden by default; `in_stock=0` opts them back in.
+  const handleIncludeOutOfStockChange = (next: boolean) => {
+    const searchParams = new URLSearchParams(location.search)
+    if (next) {
+      searchParams.set("in_stock", "0")
+    } else {
+      searchParams.delete("in_stock")
+    }
+    searchParams.delete("page")
+    navigate({ search: searchParams.toString() })
   }
 
   // Handle price filter change
@@ -589,7 +604,7 @@ const ProductsPage = () => {
       <div
         className={`fixed inset-y-0 left-0 h-full w-64 bg-white z-50 shadow-lg transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:relative lg:translate-x-0 lg:w-64 lg:flex-shrink-0 transition-transform duration-300 ease-in-out overflow-y-auto`}
+        } lg:relative lg:h-auto lg:w-[197px] lg:flex-shrink-0 lg:translate-x-0 lg:overflow-visible lg:bg-transparent lg:shadow-none transition-transform duration-300 ease-in-out overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 lg:p-0">
@@ -600,122 +615,24 @@ const ProductsPage = () => {
             </button>
           </div>
 
-          {/* Category Filter */}
-          <div className="bg-white rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm lg:shadow-none lg:border lg:border-gray-200">
-            <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 flex items-center">Category</h3>
-            <div className="space-y-2 sm:space-y-3 text-sm sm:text-base">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="category"
-                  className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                  checked={!category}
-                  onChange={() => handleCategoryChange("")}
-                />
-                All Products
-              </label>
-              {categories.map((cat: any) => (
-                <label key={cat.id} className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="category"
-                    className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    checked={category === String(cat.id)}
-                    onChange={() => handleCategoryChange(String(cat.id))}
-                  />
-                  {cat.name}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Subcategory Filter */}
-          {subcategories.length > 0 && (
-            <div className="bg-white rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm lg:shadow-none lg:border lg:border-gray-200">
-              <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 flex items-center">Subcategory</h3>
-              <div className="space-y-2 sm:space-y-3 text-sm sm:text-base">
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="subcategory"
-                    className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    checked={!subcategory}
-                    onChange={() => handleSubcategoryChange("")}
-                  />
-                  All Subcategories
-                </label>
-                {subcategories.map((subcat: any) => (
-                  <label key={subcat.id} className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="subcategory"
-                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      checked={subcategory === String(subcat.id)}
-                      onChange={() => handleSubcategoryChange(String(subcat.id))}
-                    />
-                    {subcat.name}
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Brands Filter */}
-          <div className="bg-white rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm lg:shadow-none lg:border lg:border-gray-200">
-            <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 flex items-center">Brands</h3>
-            <div className="space-y-2 sm:space-y-3 text-sm sm:text-base">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="brand"
-                  className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                  checked={!brand}
-                  onChange={() => handleBrandChange("")}
-                />
-                All Brands
-              </label>
-              {brands.map((br: any) => (
-                <label key={br.id} className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="brand"
-                    className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    checked={brand === br.code} // Compare with brand code
-                    onChange={() => handleBrandChange(br.code)} // Pass brand code (e.g., "D-001")
-                  />
-                  {br.name}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Price Filter */}
-          <div className="bg-white rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm lg:shadow-none lg:border lg:border-gray-200">
-            <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4">Price (AED)</h3>
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-3 sm:mb-4">
-              <input
-                type="number"
-                placeholder="Min"
-                className="w-full sm:w-24 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={priceMin}
-                onChange={(e) => setPriceMin(e.target.value)}
-              />
-              <span className="self-center text-gray-600 hidden sm:inline">to</span>
-              <input
-                type="number"
-                placeholder="Max"
-                className="w-full sm:w-24 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={priceMax}
-                onChange={(e) => setPriceMax(e.target.value)}
-              />
-            </div>
-            {/* <button
-              onClick={handlePriceFilterChange}
-              className="w-full px-4 py-2 bg-[#1A74BB] text-white rounded-md hover:bg-[#1A74BB] transition-colors duration-200 text-sm"
-            >
-              Apply Filters
-            </button> */}
-          </div>
+          <ProductFilters
+            categories={categories.map((c: any) => ({ id: String(c.id), name: c.name }))}
+            subcategories={subcategories.map((c: any) => ({ id: String(c.id), name: c.name }))}
+            brands={brands.map((b: any) => ({ id: String(b.id), name: b.name, code: b.code }))}
+            category={category}
+            subcategory={subcategory}
+            brand={brand}
+            priceMin={priceMin}
+            priceMax={priceMax}
+            includeOutOfStock={includeOutOfStock}
+            onCategoryChange={handleCategoryChange}
+            onSubcategoryChange={handleSubcategoryChange}
+            onBrandChange={handleBrandChange}
+            onPriceMinChange={setPriceMin}
+            onPriceMaxChange={setPriceMax}
+            onPriceCommit={handlePriceFilterChange}
+            onIncludeOutOfStockChange={handleIncludeOutOfStockChange}
+          />
         </div>
       </div>
 

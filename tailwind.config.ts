@@ -37,6 +37,8 @@ export default {
 					DEFAULT: '#FDFDFD',
 					line: '#D9D9D9',
 					accent: '#E7F4FD',
+					// Collapse-toggle chip on the filter sidebar.
+					chip: '#B5E1FC',
 					muted: '#E5E5E5',
 					promo: '#EFF5FF',
 					subtle: '#F3F3F3',
@@ -51,6 +53,10 @@ export default {
 					DEFAULT: '#101010',
 					// Nav bar / category dropdown fill, per the Figma nav frame.
 					navy: '#042B43',
+					// Filter sidebar: section headings, option labels, secondary text.
+					deep: '#00131F',
+					body: '#515151',
+					grey: '#777777',
 					slate: '#2A4153',
 					steel: '#7890A5',
 					muted: '#595959',
