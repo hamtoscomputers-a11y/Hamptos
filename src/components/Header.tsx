@@ -32,6 +32,17 @@ const Header = () => {
     setIsMobileMenuOpen(false)
   }, [location.pathname, location.search])
 
+  // Escape closes either menu — the outside-click catcher is mouse-only.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return
+      setIsCategoryMenuOpen(false)
+      setIsMobileMenuOpen(false)
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [])
+
   return (
     <header className="relative bg-white">
       <TopBar />

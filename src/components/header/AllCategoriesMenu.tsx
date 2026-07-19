@@ -28,7 +28,7 @@ const AllCategoriesMenu = ({ categories, isLoading, error, onNavigate }: AllCate
   }
 
   return (
-    <div className="dark-scrollbar h-[264px] overflow-y-auto">
+    <div className="scrollbar-hidden h-[264px] overflow-y-auto">
       {categories.map((category) => {
         const children = category.children ?? []
         const hasChildren = children.length > 0

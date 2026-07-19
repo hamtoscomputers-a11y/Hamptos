@@ -38,7 +38,7 @@ const CategoryNav = ({
           </button>
 
           {isMenuOpen && (
-            <div className="absolute left-0 top-full z-[100] w-[250px] overflow-hidden bg-ink-navy shadow-2xl">
+            <div className="absolute left-0 top-full z-[100] w-[250px] origin-top overflow-hidden bg-ink-navy shadow-2xl animate-in fade-in-0 slide-in-from-top-2 duration-200 ease-out motion-reduce:animate-none">
               <AllCategoriesMenu
                 categories={categories}
                 isLoading={isLoading}

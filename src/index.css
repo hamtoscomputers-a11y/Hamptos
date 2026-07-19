@@ -122,20 +122,12 @@
   background: #0A3A5C;
 }
 
-/* Scrollbar for panels sitting on the dark brand fill, where the light track above disappears. */
-.dark-scrollbar::-webkit-scrollbar {
-  width: 6px;
+/* Scrolls normally (wheel, trackpad, keyboard) but paints no scrollbar. */
+.scrollbar-hidden {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge */
 }
 
-.dark-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.dark-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.35);
-  border-radius: 3px;
-}
-
-.dark-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.55);
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
