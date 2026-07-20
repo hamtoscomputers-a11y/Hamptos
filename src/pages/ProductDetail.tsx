@@ -207,8 +207,11 @@ const ProductDetail = () => {
               active={selectedTab}
               onActiveChange={setSelectedTab}
               keyInformation={product.key_information}
-              details={product.details}
-              specifications={product.product_details}
+              // The ERP's field names invert the tabs: `product_details` holds
+              // the prose the Details tab wants, and `key_information` holds the
+              // grouped spec table. `details` itself comes back empty.
+              details={product.details || product.product_details}
+              specifications={product.key_information}
             />
           </div>
         </div>

@@ -1,4 +1,5 @@
-import { ArrowRight, Star } from "lucide-react"
+import { ArrowRight } from "lucide-react"
+import RatingStars from "./RatingStars"
 
 interface ProductSummaryProps {
   name: string
@@ -13,26 +14,6 @@ interface ProductSummaryProps {
 }
 
 const WARRANTY_TERM = "1 Year"
-
-/** Figma shows a partly-filled star, so fills are clipped by percentage. */
-const RatingStars = ({ rating }: { rating: number }) => (
-  <span className="flex items-center" aria-hidden="true">
-    {[0, 1, 2, 3, 4].map((index) => {
-      const fill = Math.max(0, Math.min(1, rating - index))
-
-      return (
-        <span key={index} className="relative h-3.5 w-3.5">
-          <Star className="absolute h-3.5 w-3.5 text-surface-line" fill="currentColor" />
-          {fill > 0 && (
-            <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
-              <Star className="h-3.5 w-3.5 text-ink" fill="currentColor" />
-            </span>
-          )}
-        </span>
-      )
-    })}
-  </span>
-)
 
 /**
  * Title, rating, spec bullets, warranty line and datasheet button — the middle

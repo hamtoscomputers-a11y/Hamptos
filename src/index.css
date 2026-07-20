@@ -144,3 +144,10 @@
 .product-key-info p + p {
   margin-top: 0.35rem;
 }
+
+/* product_details comes back as a bare label/value table, so long labels butt
+   straight against their values without a gutter of their own. */
+.product-key-info td {
+  padding-right: 1.25rem;
+  vertical-align: top;
+}

@@ -1,3 +1,7 @@
+import { useMemo } from "react"
+import ProductSpecifications, { parseSpecGroups } from "./ProductSpecifications"
+import ProductReviews, { type ProductReview } from "./ProductReviews"
+
 export type TabKey = "key" | "details" | "specs" | "reviews"
 
 interface ProductTabsProps {
@@ -10,6 +14,8 @@ interface ProductTabsProps {
   details?: string
   /** `product_details` from the ERP — HTML. */
   specifications?: string
+  /** The ERP exposes no review source yet, so this is empty in practice. */
+  reviews?: ProductReview[]
 }
 
 const TABS: { key: TabKey; label: string }[] = [
@@ -20,10 +26,18 @@ const TABS: { key: TabKey; label: string }[] = [
 ]
 
 /**
- * Detail tabs below the product summary, per the Figma's 1243 x 216 frame:
- * square chips in a row, the active one inverted to a pale blue fill.
+ * Detail tabs below the product summary, per the Figma's 905 x 670 frame:
+ * a row of chips, the active one inverted to a pale blue fill, over a panel
+ * holding whichever body of HTML the ERP sent for that tab.
  */
-const ProductTabs = ({ active, onActiveChange, keyInformation, details, specifications }: ProductTabsProps) => {
+const ProductTabs = ({
+  active,
+  onActiveChange,
+  keyInformation,
+  details,
+  specifications,
+  reviews = [],
+}: ProductTabsProps) => {
   const content: Record<TabKey, string | undefined> = {
     key: keyInformation,
     details,
@@ -32,6 +46,13 @@ const ProductTabs = ({ active, onActiveChange, keyInformation, details, specific
   }
 
   const html = content[active]
+
+  // Only the specifications tab gets the grouped-table treatment; if the ERP
+  // sent prose there instead, this comes back empty and the HTML path runs.
+  const specGroups = useMemo(
+    () => (active === "specs" && specifications ? parseSpecGroups(specifications) : []),
+    [active, specifications],
+  )
 
   return (
     <div className="mt-10">
@@ -56,16 +77,21 @@ const ProductTabs = ({ active, onActiveChange, keyInformation, details, specific
         })}
       </div>
 
-      <div className="mt-[10px] min-h-[176px] py-4">
+      {/* The Figma caps the panel rather than letting it run the full container
+          width, which keeps the copy at a readable measure. Reviews get a wider
+          frame than the text tabs to fit their two columns. */}
+      <div className={`mt-[31px] min-h-[176px] ${active === "reviews" ? "max-w-[1198px]" : "max-w-[905px]"}`}>
         {active === "reviews" ? (
-          <p className="text-[13px] text-ink-body">No reviews yet. Be the first to review this product!</p>
+          <ProductReviews reviews={reviews} />
+        ) : specGroups.length ? (
+          <ProductSpecifications groups={specGroups} />
         ) : html ? (
           <div
-            className="product-key-info text-[13px] leading-[1.6] text-black"
+            className="product-key-info text-[12px] leading-[1.4] text-ink-title"
             dangerouslySetInnerHTML={{ __html: html }}
           />
         ) : (
-          <p className="text-[13px] text-ink-body">No information available for this product.</p>
+          <p className="text-[12px] leading-[1.4] text-ink-body">No information available for this product.</p>
         )}
       </div>
     </div>

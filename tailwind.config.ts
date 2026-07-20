@@ -35,6 +35,8 @@ export default {
 				},
 				// Active-filter chip on the product listing toolbar.
 				highlight: '#FF9C56',
+				// Filled portion of each bar in the review histogram.
+				star: '#FFBE63',
 				surface: {
 					DEFAULT: '#FDFDFD',
 					line: '#D9D9D9',
@@ -67,6 +69,8 @@ export default {
 					title: '#1F1F1F',
 					// Product detail: label on the active tab.
 					midnight: '#02273F',
+					// Reviews: star-level labels and their counts.
+					coal: '#2B2B2B',
 					// Nav bar / category dropdown fill, per the Figma nav frame.
 					navy: '#042B43',
 					// Filter sidebar: section headings, option labels, secondary text.
