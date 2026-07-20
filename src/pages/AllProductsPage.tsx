@@ -26,8 +26,16 @@ const ProductsPage = () => {
   // Always use high limit when category or brand is selected to ensure we get all products for frontend filtering
   // This is necessary because we filter by brand/subcategory on the frontend
   const effectiveLimit = (category || brand) ? 1000 : limit
-  // Filtering client-side needs the whole set, not one API page.
-  const allProductsLimit = params.get("in_stock") === "1" ? 1000 : limit
+  // Filtering client-side needs the whole set, not one API page. The ERP has no
+  // price parameter, so a price range is filtered here too and needs the same
+  // full fetch — otherwise the range only ever applies to the 20 rows on screen.
+  const hasPriceFilter = !!(params.get("price_min") || params.get("price_max"))
+  // The ERP ignores `order_by` (verified against the live API), so ordering is
+  // done here. Sorting one server page would only order the 20 rows already on
+  // screen — "price, low to high" has to see the catalogue to mean anything.
+  const hasExplicitSort = (params.get("sort") || "popularity") !== "popularity"
+  const allProductsLimit =
+    params.get("in_stock") === "1" || hasPriceFilter || hasExplicitSort ? 1000 : limit
 
   const resultsRef = useRef<HTMLDivElement>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false) // State for mobile sidebar
@@ -131,7 +139,10 @@ const ProductsPage = () => {
     error: allError,
   } = useProducts({
     limit: allProductsLimit,
-    start: allProductsLimit === limit ? (page - 1) * limit : 0,
+    // The ERP's `start` is a 1-based row offset, so page 2 of 20 begins at 21.
+    // Sending 20 here re-served row 20, which put the previous page's last
+    // product at the top of the next one. Matches the search query above.
+    start: allProductsLimit === limit ? (page - 1) * limit + 1 : 1,
     include: "brand,category,photos",
   });
 
@@ -539,7 +550,14 @@ const ProductsPage = () => {
 
   // Determine if we're using frontend filtering (category/brand/subcategory selected)
   // Note: When search + brand is used, we filter search results on frontend
-  const isFrontendFiltering = !!(category || brand || subcategory || (search && brand) || !includeOutOfStock)
+  // A price range narrows the list here rather than at the ERP, so it has to
+  // count as frontend filtering: leaving it out left the toolbar reporting the
+  // server's full total beside a handful of rows, and paging past page 1 fell
+  // back to unfiltered catalogue pages.
+  const isFrontendFiltering = !!(
+    category || brand || subcategory || (search && brand) || !includeOutOfStock || priceMin || priceMax ||
+    hasExplicitSort
+  )
   
   // Calculate pagination
   // When filters are applied, we filter on frontend, so use filtered products length
