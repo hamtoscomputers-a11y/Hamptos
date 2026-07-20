@@ -778,7 +778,11 @@ const ProductsPage = () => {
               title=""
             />
 
-            <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
+            {/* An empty result has no page 1 to offer, so the control stays
+                hidden there rather than showing a lone highlighted "1". */}
+            {totalFilteredProducts > 0 && (
+              <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
+            )}
           </div>
         )}
       </div>

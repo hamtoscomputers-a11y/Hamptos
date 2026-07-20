@@ -11,8 +11,10 @@ interface PaginationProps {
  * Numbers are windowed so a 22-page result doesn't render 22 buttons.
  */
 const Pagination = ({ page, totalPages, onPageChange, windowSize = 6 }: PaginationProps) => {
-  // Nothing to page through.
-  if (totalPages <= 1) return null
+  // A single page still renders, so the control keeps its place on short result
+  // sets instead of appearing only once a result spills past one page. Callers
+  // hide it when there is nothing to show at all.
+  if (totalPages < 1) return null
 
   // Keep the current page inside the window, clamped at both ends.
   const start = Math.max(1, Math.min(page - Math.floor((windowSize - 1) / 2), totalPages - windowSize + 1))
