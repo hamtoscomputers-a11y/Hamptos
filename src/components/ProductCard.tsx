@@ -65,7 +65,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div className="relative flex h-full flex-col border border-surface-muted bg-white">
+    // overflow-hidden so the image well and the quotation bar, both of which run
+    // edge to edge, clip to the rounded corners instead of squaring them off.
+    <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-surface-muted bg-white">
       {isLoading && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/75">
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-brand-700" />

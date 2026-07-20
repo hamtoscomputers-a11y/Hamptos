@@ -49,7 +49,10 @@ const CategoryNav = ({
           )}
         </div>
 
-        <ul className="flex items-center gap-5 lg:gap-7">
+        {/* The full link row plus the CTA needs ~955px, so below lg it would
+            push the page into a horizontal scroll. All Categories covers the
+            same ground until there is room. */}
+        <ul className="hidden items-center gap-5 lg:flex lg:gap-7">
           {NAV_CATEGORIES.map(({ label, href }) => (
             <li key={label}>
               <NavLink
