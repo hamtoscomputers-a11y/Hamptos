@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
+import { ImageOff } from "lucide-react"
 import {
   Carousel,
   CarouselContent,
@@ -8,7 +9,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { useCarouselAutoplay } from "@/hooks/useCarouselAutoplay"
-import { CATEGORY_IMAGE_FALLBACK, isRealImage } from "./categoryImage"
+import { isRealImage } from "./categoryImage"
 
 interface RailCategory {
   id: string
@@ -35,20 +36,29 @@ const ARROW =
  */
 const ITEM_BASIS = "basis-1/3 sm:basis-1/5 md:basis-1/6 lg:basis-[14.2857%] xl:basis-[11.1111%]"
 
-/** Rail artwork: the ERP image when there is one, otherwise the empty placeholder. */
+/**
+ * Rail artwork, always a circle. Most categories carry no usable image, so
+ * rather than a grey square each one falls back to the same "no image" mark.
+ */
 const RailArtwork = ({ category }: { category: RailCategory }) => {
   const [failed, setFailed] = useState(false)
-  const src = isRealImage(category.image) && !failed ? category.image : CATEGORY_IMAGE_FALLBACK
+  const src = isRealImage(category.image) && !failed ? category.image : undefined
 
   return (
-    <img
-      src={src}
-      alt=""
-      aria-hidden
-      loading="lazy"
-      className="h-16 w-16 object-contain"
-      onError={() => setFailed(true)}
-    />
+    <span className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-surface-placeholder">
+      {src ? (
+        <img
+          src={src}
+          alt=""
+          aria-hidden
+          loading="lazy"
+          className="h-full w-full object-contain p-2"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <ImageOff className="h-6 w-6 text-ink-faint" aria-hidden />
+      )}
+    </span>
   )
 }
 

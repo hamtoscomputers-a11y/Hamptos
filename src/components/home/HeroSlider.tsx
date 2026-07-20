@@ -1,4 +1,5 @@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import { useCarouselAutoplay } from "@/hooks/useCarouselAutoplay"
 
 export interface Slide {
   id?: string | number
@@ -21,11 +22,20 @@ interface HeroSliderProps {
 const HERO_ASPECT = "aspect-[2/1] sm:aspect-[3/1] lg:aspect-[4/1]"
 
 /**
+ * Well slower than the thin rails: a hero slide carries a headline and a CTA,
+ * so it has to stay put long enough to read and click.
+ */
+const AUTOPLAY_MS = 6000
+
+/**
  * Full-bleed hero carousel. Slides are live content from
  * `/api/v1/website/slider`, so this renders whatever the ERP returns and
  * degrades to a placeholder rather than assuming any slide exists.
  */
 const HeroSlider = ({ slides, isLoading = false }: HeroSliderProps) => {
+  // Ahead of the early returns below, so the hook order stays stable while the
+  // slides are still loading.
+  const { setApi, pauseProps } = useCarouselAutoplay(AUTOPLAY_MS)
   const visibleSlides = slides.filter((slide) => !!slide.image).slice(0, 3)
 
   if (isLoading) {
@@ -36,7 +46,12 @@ const HeroSlider = ({ slides, isLoading = false }: HeroSliderProps) => {
 
   return (
     <section aria-label="Promotions" className="bg-white">
-      <Carousel className="w-full" opts={{ align: "start", loop: visibleSlides.length > 1 }}>
+      <Carousel
+        setApi={setApi}
+        className="w-full"
+        opts={{ align: "start", loop: visibleSlides.length > 1 }}
+        {...pauseProps}
+      >
         <CarouselContent className="ml-0">
           {visibleSlides.map((slide, index) => (
             <CarouselItem key={slide.id ?? `slide-${index}`} className="pl-0">
