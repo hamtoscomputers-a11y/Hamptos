@@ -34,29 +34,33 @@ const ARROW =
  * embla disables the loop and greys out both arrows. Keeping a couple of
  * categories off-screen is what keeps the arrows live and autoplay moving.
  */
-const ITEM_BASIS = "basis-1/3 sm:basis-1/5 md:basis-1/6 lg:basis-[14.2857%] xl:basis-[11.1111%]"
+const ITEM_BASIS = "basis-1/3 sm:basis-1/5 md:basis-1/6 lg:basis-[14.2857%] xl:basis-[12.5%]"
 
 /**
- * Rail artwork, always a circle. Most categories carry no usable image, so
- * rather than a grey square each one falls back to the same "no image" mark.
+ * Rail artwork, always a circle. The Figma draws a 128px disc that is plain
+ * white behind the product shot, ringed by `#2A4153` at 9% rather than filled —
+ * so the artwork reads as floating, not sitting in a tile. Most categories carry
+ * no usable image, so each one falls back to the same "no image" mark.
  */
 const RailArtwork = ({ category }: { category: RailCategory }) => {
   const [failed, setFailed] = useState(false)
   const src = isRealImage(category.image) && !failed ? category.image : undefined
 
   return (
-    <span className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-surface-placeholder">
+    <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-ink-slate/[0.09] bg-white sm:h-24 sm:w-24 lg:h-32 lg:w-32">
       {src ? (
         <img
           src={src}
           alt=""
           aria-hidden
           loading="lazy"
-          className="h-full w-full object-contain p-2"
+          // The Figma insets the shot to ~69% of the disc, which keeps a wide
+          // product from touching the ring.
+          className="h-full w-full object-contain p-3 lg:p-5"
           onError={() => setFailed(true)}
         />
       ) : (
-        <ImageOff className="h-6 w-6 text-ink-faint" aria-hidden />
+        <ImageOff className="h-6 w-6 text-ink-faint lg:h-9 lg:w-9" aria-hidden />
       )}
     </span>
   )
@@ -82,8 +86,8 @@ const CategoryIconRail = ({ categories, isLoading, error }: CategoryIconRailProp
           <ul className="flex items-start justify-center gap-2 sm:gap-4">
             {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
               <li key={index} className="w-28 flex-shrink-0 animate-pulse text-center">
-                <div className="mx-auto h-10 w-10 rounded-full bg-gray-200" />
-                <div className="mx-auto mt-3 h-3 w-16 rounded bg-gray-200" />
+                <div className="mx-auto h-20 w-20 rounded-full bg-gray-200 sm:h-24 sm:w-24 lg:h-32 lg:w-32" />
+                <div className="mx-auto mt-3 h-3 w-16 rounded bg-gray-200 lg:mt-[18px]" />
               </li>
             ))}
           </ul>
@@ -101,11 +105,14 @@ const CategoryIconRail = ({ categories, isLoading, error }: CategoryIconRailProp
                 <CarouselItem key={category.id} className={`pl-2 ${ITEM_BASIS}`}>
                   <Link
                     to={`/products?category=${category.id}`}
-                    className="group flex flex-col items-center gap-3 rounded-lg px-2 py-3 text-center transition-colors hover:bg-surface-accent"
+                    className="group flex flex-col items-center gap-3 rounded-lg px-2 py-3 text-center transition-colors hover:bg-surface-accent lg:gap-[18px]"
                   >
                     <RailArtwork category={category} />
-                    <span className="text-xs font-medium capitalize text-brand-950 transition-colors group-hover:text-brand-700">
-                      {category.name.toLowerCase()}
+                    {/* Names arrive correctly cased from the ERP — acronyms and
+                        all — so they render as sent rather than being folded to
+                        lower case and re-capitalised, which broke "IP" and "POS". */}
+                    <span className="line-clamp-2 text-xs leading-[18px] text-ink-slate transition-colors group-hover:text-brand-700 lg:text-[14px]">
+                      {category.name}
                     </span>
                   </Link>
                 </CarouselItem>
