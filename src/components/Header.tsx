@@ -47,12 +47,17 @@ const Header = () => {
     <header className="relative bg-white">
       <TopBar />
 
-      {/* The Figma stacks the three bands with a 19px gap and no padding:
-          40px utility strip, 48px logo/search row, 40px category rail, 166
-          overall. The gaps are what give the white block its breathing room,
-          so the rows themselves sit tight around their content. */}
+      {/* The Figma stacks the three bands to 166 overall: a 40px utility
+          strip, 19px, the 50px logo/search row, 17px, then the 40px category
+          rail. The gaps are what give the white block its breathing room, so
+          the rows themselves sit tight around their content. */}
       <div className="container mx-auto px-4 pt-[19px]">
-        <div className="flex items-center gap-4 pb-2 md:h-12 md:pb-0 lg:gap-8">
+        {/* Logo, search and account spread across the full column, so the
+            account cluster's right edge lands on the same line as the quote
+            button below it. The Figma's 101px gutters are what that spacing
+            works out to once the 1300 column holds a 223 logo, a 626 field and
+            a 236 cluster — they are the result, not a fixed value. */}
+        <div className="flex items-center justify-between gap-4 pb-2 md:h-[50px] md:pb-0 lg:gap-8">
           <Link to="/" className="flex-shrink-0" aria-label="Hamtos home">
             <img src={mainLogo} alt="Hamtos" className="h-8 w-auto md:h-[42px]" />
           </Link>
@@ -61,10 +66,14 @@ const Header = () => {
             value={query}
             onChange={setQuery}
             onSubmit={submit}
-            className="hidden flex-1 md:block md:max-w-md lg:max-w-[628px]"
+            // Fixed at its Figma width from `xl`, so the row's free space falls
+            // into the two gutters instead of being swallowed by the field.
+            // Not before: logo + 626 + account needs 1086, and the column is
+            // only 960 at `lg`, which pushes the page into a sideways scroll.
+            className="hidden flex-1 md:block md:max-w-md lg:max-w-xl xl:w-[626px] xl:max-w-[626px] xl:flex-none"
           />
 
-          <div className="ml-auto flex items-center gap-4">
+          <div className="flex items-center gap-4">
             <HeaderActions cartCount={cartCount} />
 
             <button

@@ -25,7 +25,7 @@ const CategoryNav = ({
   /* White, not the navy of the previous design: the Figma runs one unbroken
      white field from under the blue utility strip down to the hero, with the
      links set in black and the quote button carrying the only colour. */
-  <nav aria-label="Categories" className="mt-[19px] hidden bg-white md:block">
+  <nav aria-label="Categories" className="mt-[17px] hidden bg-white md:block">
     <div className="container mx-auto px-4">
       <div className="flex h-10 items-center gap-6">
         {/* Full-height so the dropdown's `top-full` lands on the bar's bottom edge, not the button's. */}

@@ -14,7 +14,11 @@ export default {
 			center: true,
 			padding: '2rem',
 			screens: {
-				'2xl': '1400px'
+				// The Figma lays every section out on a 1300px column — nav
+				// 215..1515, the card rails 218..1515, the mosaic 217..1514.
+				// Sections pair `container` with `px-4`, so the max-width has to
+				// carry that 16px either side: 1300 + 32.
+				'2xl': '1332px'
 			}
 		},
 		extend: {

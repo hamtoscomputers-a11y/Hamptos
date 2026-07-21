@@ -13,8 +13,10 @@ interface HeaderActionsProps {
  * intentionally do not navigate. Wire them up when those features land.
  */
 const HeaderActions = ({ cartCount }: HeaderActionsProps) => (
-  <div className="flex items-center gap-4 sm:gap-6">
-    <div className="hidden text-[13px] leading-tight text-brand-950 lg:block">
+  /* 236x42 in the Figma, with a 36px gutter between the three items. The gap
+     closes below `sm`, where the copy is hidden and only the icons remain. */
+  <div className="flex items-center gap-4 sm:gap-9">
+    <div className="hidden text-[13px] leading-[21px] text-brand-950 lg:block">
       <div>Hello, Sign in</div>
       <div className="font-semibold">Accounts &amp; Orders</div>
     </div>
@@ -28,7 +30,7 @@ const HeaderActions = ({ cartCount }: HeaderActionsProps) => (
     >
       <ShoppingBag size={22} aria-hidden />
       {cartCount > 0 && (
-        <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-700 px-1 text-[10px] font-bold text-white">
+        <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-400 px-1 text-[10px] font-bold text-white">
           {cartCount > 99 ? "99+" : cartCount}
         </span>
       )}
