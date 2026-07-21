@@ -43,6 +43,12 @@ interface ProductCarouselSectionProps {
   onTabChange?: (label: string) => void
   /** `dark` renders the navy full-bleed treatment; cards stay white either way. */
   tone?: "light" | "dark"
+  /**
+   * Wrapper classes for the `<section>`. Defaults to the rail's own white band
+   * with its standard vertical rhythm; a rail nested inside a coloured band
+   * passes its own so it does not paint a white stripe through it.
+   */
+  frameClassName?: string
   /** Centred heading with no Explore All, per the Related Product frame. */
   align?: "split" | "center"
   showExplore?: boolean
@@ -113,6 +119,7 @@ const ProductCarouselSection = ({
   activeTab,
   onTabChange,
   tone = "light",
+  frameClassName,
   align = "split",
   showExplore = true,
 }: ProductCarouselSectionProps) => {
@@ -135,7 +142,7 @@ const ProductCarouselSection = ({
   const styles = TONE[tone]
 
   return (
-    <section aria-label={title} className={`py-12 ${styles.section}`}>
+    <section aria-label={title} className={frameClassName ?? `py-12 ${styles.section}`}>
       <div className="container mx-auto px-4">
         <header
           className={`flex flex-wrap gap-4 ${

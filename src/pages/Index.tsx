@@ -2,9 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react"
 import BestSellingHighlight from "@/components/home/BestSellingHighlight"
-import BrandsCarousel from "@/components/home/BrandsCarousel"
 import BestSellingSection from "@/components/home/BestSellingSection"
-import BestSellingShowcase from "@/components/home/BestSellingShowcase"
+import BrandWall from "@/components/home/BrandWall"
 import CategoryMosaic from "@/components/home/CategoryMosaic"
 import CategoryProductsSection from "@/components/home/CategoryProductsSection"
 import CategoryTileGrid from "@/components/home/CategoryTileGrid"
@@ -12,6 +11,8 @@ import FeaturedProducts from "@/components/home/FeaturedProducts"
 import HeroSlider from "@/components/home/HeroSlider"
 import ItemsYouMayLike from "@/components/home/ItemsYouMayLike"
 import LatestProducts from "@/components/home/LatestProducts"
+import NewServersSection from "@/components/home/NewServersSection"
+import NewSwitchesSection from "@/components/home/NewSwitchesSection"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import PrototypeNote from "@/components/PrototypeNote"
 import PricingPromo from "@/components/home/PricingPromo"
@@ -102,8 +103,13 @@ const Index = () => {
 
       <PricingPromo />
 
-      <div className="my-8">
-        <BestSellingShowcase />
+      <NewSwitchesSection />
+
+      {/* One full-bleed `#F8F8F8` band holding the brand wall and the servers
+          rail: 36 above, 54 between the two, 70 below, per the Figma frame. */}
+      <div className="flex flex-col gap-[54px] bg-surface-band pb-[70px] pt-9">
+        <BrandWall />
+        <NewServersSection />
       </div>
 
       <FeaturedProducts />
@@ -135,8 +141,6 @@ const Index = () => {
       <PrototypeNote />
 
       <NewsletterPanel />
-
-      <BrandsCarousel />
     </div>
   )
 }

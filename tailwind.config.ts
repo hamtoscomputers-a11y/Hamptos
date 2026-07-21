@@ -55,8 +55,9 @@ export default {
 					tab: '#BDE4FD',
 					control: '#B8B8B8',
 					muted: '#E5E5E5',
-					promo: '#EFF5FF',
 					subtle: '#F3F3F3',
+					// Full-bleed band holding the brand wall and the servers rail.
+					band: '#F8F8F8',
 					// "Shop In Best Pricing" panel between the homepage rails.
 					panel: '#03324C',
 					// Product card: "Fulfilled by Hamtos" chip, and the quotation
@@ -152,8 +153,6 @@ export default {
 			},
 			backgroundImage: {
 				'brand-gradient': 'linear-gradient(90deg, #1C8ACF 0%, #1A74BB 100%)',
-				// Mint -> ice-blue wash behind the best-seller showcase tiles.
-				'promo-gradient': 'linear-gradient(135deg, #DFF5EC 0%, #E7F4FD 100%)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
