@@ -15,7 +15,6 @@ import LatestProducts from "@/components/home/LatestProducts"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import PrototypeNote from "@/components/PrototypeNote"
 import PromoBanner from "@/components/home/PromoBanner"
-import ServiceFeatures from "@/components/home/ServiceFeatures"
 
 import { ProductService } from "@/api"
 import { useCategories } from "../api/hooks/useCategories"
@@ -94,8 +93,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <ServiceFeatures />
-
       <HeroSlider slides={slides} isLoading={slidesLoading} />
 
       <CategoryIconRail categories={homeCategories} isLoading={categoriesLoading} error={categoriesError} />

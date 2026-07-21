@@ -47,17 +47,21 @@ const Header = () => {
     <header className="relative bg-white">
       <TopBar />
 
-      <div className="container mx-auto px-4">
-        <div className="flex h-20 items-center gap-4 lg:gap-8">
+      {/* The Figma stacks the three bands with a 19px gap and no padding:
+          40px utility strip, 48px logo/search row, 40px category rail, 166
+          overall. The gaps are what give the white block its breathing room,
+          so the rows themselves sit tight around their content. */}
+      <div className="container mx-auto px-4 pt-[19px]">
+        <div className="flex items-center gap-4 pb-2 md:h-12 md:pb-0 lg:gap-8">
           <Link to="/" className="flex-shrink-0" aria-label="Hamtos home">
-            <img src={mainLogo} alt="Hamtos" className="h-8 w-auto md:h-9" />
+            <img src={mainLogo} alt="Hamtos" className="h-8 w-auto md:h-[42px]" />
           </Link>
 
           <SearchBar
             value={query}
             onChange={setQuery}
             onSubmit={submit}
-            className="hidden flex-1 md:block md:max-w-md lg:max-w-xl"
+            className="hidden flex-1 md:block md:max-w-md lg:max-w-[628px]"
           />
 
           <div className="ml-auto flex items-center gap-4">
