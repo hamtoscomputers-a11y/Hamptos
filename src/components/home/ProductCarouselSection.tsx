@@ -41,8 +41,11 @@ interface ProductCarouselSectionProps {
   tabs?: CarouselTab[]
   activeTab?: string
   onTabChange?: (label: string) => void
-  /** `dark` renders the navy full-bleed treatment; cards stay white either way. */
-  tone?: "light" | "dark"
+  /**
+   * `dark` renders the navy full-bleed treatment, `blue` the brand-blue band.
+   * Cards stay white in every case.
+   */
+  tone?: "light" | "dark" | "blue"
   /**
    * Wrapper classes for the `<section>`. Defaults to the rail's own white band
    * with its standard vertical rhythm; a rail nested inside a coloured band
@@ -65,6 +68,15 @@ const TONE = {
     // 36px ring in `#B4C8D9` over a `#7890A5` chevron, per the Figma.
     arrow:
       "border-surface-arrow bg-white/90 text-ink-steel shadow-sm hover:bg-brand-100 hover:text-brand-700 2xl:bg-white 2xl:shadow-none",
+  },
+  blue: {
+    section: "bg-brand-700",
+    title: "text-white",
+    subtitle: "text-white",
+    // Reversed out on the band: a solid white pill with the brand blue as the
+    // label, rather than the outlined treatment used on white.
+    explore: "border-white bg-white text-brand-700 hover:bg-transparent hover:text-white",
+    arrow: "border-white/70 bg-transparent text-white hover:bg-white hover:text-brand-700",
   },
   dark: {
     section: "bg-ink-slate",

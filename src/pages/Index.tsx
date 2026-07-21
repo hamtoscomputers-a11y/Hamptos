@@ -7,7 +7,6 @@ import BrandWall from "@/components/home/BrandWall"
 import CategoryMosaic from "@/components/home/CategoryMosaic"
 import CategoryProductsSection from "@/components/home/CategoryProductsSection"
 import CategoryTileGrid from "@/components/home/CategoryTileGrid"
-import FeaturedProducts from "@/components/home/FeaturedProducts"
 import HeroSlider from "@/components/home/HeroSlider"
 import ItemsYouMayLike from "@/components/home/ItemsYouMayLike"
 import LatestProducts from "@/components/home/LatestProducts"
@@ -18,6 +17,7 @@ import NewsletterPanel from "@/components/home/NewsletterPanel"
 import PrototypeNote from "@/components/PrototypeNote"
 import PricingPromo from "@/components/home/PricingPromo"
 import PromoBanner from "@/components/home/PromoBanner"
+import PromoTileBand from "@/components/home/PromoTileBand"
 import ShopByCategories from "@/components/home/ShopByCategories"
 
 import { ProductService } from "@/api"
@@ -118,7 +118,7 @@ const Index = () => {
 
       <NewFirewallsSection />
 
-      <FeaturedProducts />
+      <PromoTileBand slides={slides} isLoading={slidesLoading} />
 
       <CategoryProductsSection category={networkingCategory} />
 

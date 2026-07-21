@@ -58,6 +58,8 @@ export default {
 					subtle: '#F3F3F3',
 					// Full-bleed band holding the brand wall and the servers rail.
 					band: '#F8F8F8',
+					// Placeholder fill behind the promo tiles on the blue band.
+					tile: '#D3D3D3',
 					// "Shop In Best Pricing" panel between the homepage rails.
 					panel: '#03324C',
 					// Product card: "Fulfilled by Hamtos" chip, and the quotation
