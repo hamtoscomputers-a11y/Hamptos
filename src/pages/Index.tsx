@@ -104,8 +104,6 @@ const Index = () => {
 
       <PricingPromo />
 
-      <ShopByCategories />
-
       <NewSwitchesSection />
 
       {/* One full-bleed `#F8F8F8` band holding the brand wall and the servers
@@ -114,6 +112,8 @@ const Index = () => {
         <BrandWall />
         <NewServersSection />
       </div>
+
+      <ShopByCategories />
 
       <FeaturedProducts />
 
