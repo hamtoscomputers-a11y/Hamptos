@@ -43,6 +43,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      {/* The page's only h1. The design opens straight on the hero artwork,
+          which carries its headline inside the image, so there is no visible
+          heading for a screen reader or a crawler to read. */}
+      <h1 className="sr-only">Hamtos Computers - IT and networking hardware in Dubai</h1>
+
       <HeroSlider slides={slides} isLoading={slidesLoading} />
 
       <CategoryMosaic />
