@@ -14,6 +14,7 @@ import ItemsYouMayLike from "@/components/home/ItemsYouMayLike"
 import LatestProducts from "@/components/home/LatestProducts"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import PrototypeNote from "@/components/PrototypeNote"
+import PricingPromo from "@/components/home/PricingPromo"
 import PromoBanner from "@/components/home/PromoBanner"
 
 import { ProductService } from "@/api"
@@ -99,7 +100,7 @@ const Index = () => {
 
       <BestSellingSection />
 
-      <PromoBanner slide={slides?.[3]} />
+      <PricingPromo />
 
       <div className="my-8">
         <BestSellingShowcase />

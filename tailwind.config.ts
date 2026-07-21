@@ -57,6 +57,8 @@ export default {
 					muted: '#E5E5E5',
 					promo: '#EFF5FF',
 					subtle: '#F3F3F3',
+					// "Shop In Best Pricing" panel between the homepage rails.
+					panel: '#03324C',
 					// Product card: "Fulfilled by Hamtos" chip, and the quotation
 					// button on an out-of-stock card.
 					badge: '#DAE7FF',
