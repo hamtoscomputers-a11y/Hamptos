@@ -1,69 +1,24 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import BestSellingSection from "@/components/home/BestSellingSection"
 import BrandWall from "@/components/home/BrandWall"
 import CategoryMosaic from "@/components/home/CategoryMosaic"
-import CategoryTileGrid from "@/components/home/CategoryTileGrid"
 import HeroSlider from "@/components/home/HeroSlider"
-import ItemsYouMayLike from "@/components/home/ItemsYouMayLike"
-import LatestProducts from "@/components/home/LatestProducts"
 import NewFirewallsSection from "@/components/home/NewFirewallsSection"
 import NewServersSection from "@/components/home/NewServersSection"
+import NewGatewaysSection from "@/components/home/NewGatewaysSection"
 import NewSwitchesSection from "@/components/home/NewSwitchesSection"
 import NewWirelessSection from "@/components/home/NewWirelessSection"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
-import PrototypeNote from "@/components/PrototypeNote"
 import PricingPromo from "@/components/home/PricingPromo"
 import PromoBanner from "@/components/home/PromoBanner"
 import PromoTileBand from "@/components/home/PromoTileBand"
 import ShopByCategories from "@/components/home/ShopByCategories"
 
 import { ProductService } from "@/api"
-import { useCategories } from "../api/hooks/useCategories"
 
 const Index = () => {
-  const categoryParams = useMemo(
-    () => ({
-      limit: 100,
-      start: 1,
-      include_products: true,
-    }),
-    [],
-  )
-
-  const { data: categoriesData, isLoading: categoriesLoading } = useCategories(categoryParams)
-
-  const categories = useMemo(() => {
-    if (!categoriesData?.data) return []
-    return categoriesData.data.map((category: any) => ({
-      id: category.id,
-      name: category.name,
-      showinhome: category.showinhome,
-      children: category.children || [],
-      image: category.image_url || category.image || "",
-    }))
-  }, [categoriesData])
-
-  const homeCategories = categories.filter((category) => category.showinhome == 1)
-
-  // Subcategories, flattened across the home-flagged parents only — a parent
-  // hidden from the homepage must not leak its children back in.
-  // A child links via its parent's id plus `parent_id`: the ERP's convention,
-  // matching the header menu, where `parent_id` carries the *child* id.
-  const subCategories = useMemo(
-    () =>
-      homeCategories.flatMap((parent: any) =>
-        (parent.children ?? []).map((child: any) => ({
-          id: child.id,
-          name: child.name,
-          image: child.image_url || child.image || "",
-          href: `/products?category=${parent.id}&parent_id=${child.id}`,
-        })),
-      ),
-    [homeCategories],
-  )
-
   const [slides, setSlides] = useState<any[]>([])
   const [slidesLoading, setSlidesLoading] = useState(true)
 
@@ -122,25 +77,7 @@ const Index = () => {
 
       <NewWirelessSection />
 
-      <CategoryTileGrid
-        title="Top Categories"
-        subtitle="Explore top trusted brands in IT products, all in one place."
-        categories={homeCategories}
-        isLoading={categoriesLoading}
-      />
-
-      <LatestProducts />
-
-      <ItemsYouMayLike />
-
-      <CategoryTileGrid
-        title="Explore Other Categories"
-        subtitle="Explore top trusted brands in IT products, all in one place."
-        categories={subCategories}
-        isLoading={categoriesLoading}
-      />
-
-      <PrototypeNote />
+      <NewGatewaysSection />
 
       <NewsletterPanel />
     </div>

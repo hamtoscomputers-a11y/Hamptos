@@ -16,7 +16,7 @@ const NewWirelessSection = () => (
   <NewCollectionRail
     title="New Wireless Collections"
     match={isWireless}
-    searchTerms={["access", "wireless", "wifi"]}
+    searchTerms={["access", "wireless", "wifi", "ap"]}
     exploreHref="/products?search=access%20point"
   />
 )

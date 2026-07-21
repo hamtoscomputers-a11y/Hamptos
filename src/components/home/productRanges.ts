@@ -38,10 +38,24 @@ export const isRouter = (name: string) =>
 /**
  * Access points, controllers and Wi-Fi gear.
  *
+ * A standalone "AP" counts: three MikroTik access points are named only that
+ * way ("hAP lite TC Small Home AP", "AP with Five Ethernet Ports"). Checked
+ * across the whole catalogue — those three are the only names containing the
+ * word, so it pulls in nothing else.
+ *
  * "Switch" is deliberately not excluded here — the Grandstream GWN7604 is a
  * genuine access point that happens to carry an integrated switch in its name.
  * Routers are excluded instead, so the D-Link DIR-3040 ("Wi-Fi Tri-Band
  * Gigabit Router") stays in the routers rail rather than appearing in both.
  */
 export const isWireless = (name: string) =>
-  /wireless|access point|\bwi-?fi\b/i.test(name) && !isRouter(name)
+  /wireless|access point|\bwi-?fi\b|\bap\b/i.test(name) && !isRouter(name)
+
+/**
+ * Security, cloud and multi-service gateways.
+ *
+ * A plain word match is enough here: of the 430 products, 8 carry "Gateway"
+ * and none of them is also a switch, router, firewall or access point.
+ * Verified against the live catalogue rather than assumed.
+ */
+export const isGateway = (name: string) => /gateway/i.test(name)
