@@ -15,7 +15,7 @@ interface PromoBannerProps {
   aspectClassName?: string
   /**
    * Constrain the banner to the page container and round its corners, rather
-   * than bleeding edge to edge (Figma 1199x263, radius 12).
+   * than bleeding edge to edge (Figma 1300x285, radius 12).
    */
   contained?: boolean
   className?: string

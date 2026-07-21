@@ -5,7 +5,6 @@ import BestSellingHighlight from "@/components/home/BestSellingHighlight"
 import BestSellingSection from "@/components/home/BestSellingSection"
 import BrandWall from "@/components/home/BrandWall"
 import CategoryMosaic from "@/components/home/CategoryMosaic"
-import CategoryProductsSection from "@/components/home/CategoryProductsSection"
 import CategoryTileGrid from "@/components/home/CategoryTileGrid"
 import HeroSlider from "@/components/home/HeroSlider"
 import ItemsYouMayLike from "@/components/home/ItemsYouMayLike"
@@ -47,14 +46,6 @@ const Index = () => {
   }, [categoriesData])
 
   const homeCategories = categories.filter((category) => category.showinhome == 1)
-
-  // Resolved by name, not by array index: the ERP owns category ordering and
-  // the showinhome flag, so an index silently points at the wrong category
-  // whenever either changes.
-  const networkingCategory = useMemo(
-    () => homeCategories.find((category) => /networking/i.test(category.name)),
-    [homeCategories],
-  )
 
   // Subcategories, flattened across the home-flagged parents only — a parent
   // hidden from the homepage must not leak its children back in.
@@ -120,9 +111,14 @@ const Index = () => {
 
       <PromoTileBand slides={slides} isLoading={slidesLoading} />
 
-      <CategoryProductsSection category={networkingCategory} />
-
-      <PromoBanner slide={slides?.[4]} aspectClassName="aspect-[1199/263]" contained className="mb-8" />
+      {/* 1300x285 on the page column, 12px corners, 79 clear of the blue band
+          above it. Figma frame at y 6468. */}
+      <PromoBanner
+        slide={slides?.[4]}
+        aspectClassName="aspect-[1300/285]"
+        contained
+        className="mt-[79px] mb-12"
+      />
 
       <BestSellingHighlight />
 

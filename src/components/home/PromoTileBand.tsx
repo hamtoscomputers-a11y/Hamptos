@@ -135,8 +135,10 @@ const PromoTileBand = ({ slides, isLoading }: PromoTileBandProps) => (
       </div>
     </section>
 
-    {/* 130 between the tiles and the rail, 86 of blue below it. */}
-    <div className="pb-[86px] pt-[130px]">
+    {/* 130 between the tiles and the rail, 114 of blue below it — measured
+          off the Figma, where the band ends 114 under the cards and the banner
+          follows 79 later. */}
+    <div className="pb-[114px] pt-[130px]">
       <NewCollectionRail
         title={TITLE}
         match={isRouter}
