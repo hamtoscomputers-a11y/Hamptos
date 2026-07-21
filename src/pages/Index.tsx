@@ -11,6 +11,7 @@ import FeaturedProducts from "@/components/home/FeaturedProducts"
 import HeroSlider from "@/components/home/HeroSlider"
 import ItemsYouMayLike from "@/components/home/ItemsYouMayLike"
 import LatestProducts from "@/components/home/LatestProducts"
+import NewFirewallsSection from "@/components/home/NewFirewallsSection"
 import NewServersSection from "@/components/home/NewServersSection"
 import NewSwitchesSection from "@/components/home/NewSwitchesSection"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
@@ -114,6 +115,8 @@ const Index = () => {
       </div>
 
       <ShopByCategories />
+
+      <NewFirewallsSection />
 
       <FeaturedProducts />
 
