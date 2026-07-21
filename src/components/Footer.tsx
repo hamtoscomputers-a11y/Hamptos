@@ -3,7 +3,6 @@
 import { Menu } from "lucide-react"
 import { Link } from "react-router-dom"
 import mainLogo from "@/assets/mainLogo.png"
-import PrototypeNote from "@/components/PrototypeNote"
 import { CONTACT } from "@/components/header/navigation"
 import {
   ADDRESS_LINES,
@@ -31,40 +30,46 @@ const BulletLink = ({ label, href }: { label: string; href: string }) => (
 const Footer = () => (
   <footer className="bg-white">
     <div className="container mx-auto px-4">
-      {/* Logo */}
-      <div className={`flex justify-center py-6 ${DASHED}`}>
-        <Link to="/" aria-label="Hamtos home">
-          <img src={mainLogo} alt="Hamtos" className="h-10 w-auto md:h-12" />
-        </Link>
-      </div>
+      {/* The logo and the category rail are one vertical auto-layout in the
+          Figma — 147 tall overall with a 19px gap between them, each closing
+          on its own dashed rule. */}
+      <div className="flex flex-col gap-[19px]">
+        <div className={`flex justify-center py-3 ${DASHED}`}>
+          <Link to="/" aria-label="Hamtos home">
+            <img src={mainLogo} alt="Hamtos" className="h-10 w-auto md:h-[63px]" />
+          </Link>
+        </div>
 
-      {/* Category rail */}
-      <nav aria-label="Footer categories" className={`py-4 ${DASHED}`}>
-        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-slate">
-          <li className="flex items-center gap-2 font-semibold">
-            <Menu size={18} aria-hidden />
-            All Categories
-          </li>
-          {FOOTER_NAV.map(({ label, href }) => (
-            <li key={label}>
-              <Link to={href} className="transition-colors hover:text-brand-700">
-                {label}
-              </Link>
+        {/* Category rail */}
+        <nav aria-label="Footer categories" className={`pb-2.5 pt-2 ${DASHED}`}>
+          {/* The rail reads grey, with only "All Categories" carrying colour. */}
+          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-stone">
+            <li className="flex items-center gap-2 font-semibold text-brand-800">
+              {/* The icon is black in the Figma; only the label is blue. */}
+              <Menu size={18} aria-hidden className="text-black" />
+              All Categories
             </li>
-          ))}
-        </ul>
-      </nav>
+            {FOOTER_NAV.map(({ label, href }) => (
+              <li key={label}>
+                <Link to={href} className="transition-colors hover:text-brand-700">
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
 
       {/* Social */}
       <div className={`py-5 ${DASHED}`}>
-        <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+        <ul className="flex flex-wrap items-center justify-center gap-x-[29px] gap-y-3">
           {SOCIAL_LINKS.map(({ name, icon, url }) => (
             <li key={name}>
               <a
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-ink-soft transition-colors hover:text-brand-700"
+                className="flex h-6 items-center gap-2 text-sm leading-6 text-ink-soft transition-colors hover:text-brand-700"
               >
                 <img src={icon} alt="" aria-hidden className="h-4 w-4" />
                 {name}
@@ -127,8 +132,6 @@ const Footer = () => (
         </div>
       </div>
     </div>
-
-    <PrototypeNote />
 
     {/* Legal bar */}
     <div className="bg-[#E1E1E1] py-4">

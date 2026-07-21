@@ -30,10 +30,15 @@ export default {
 					200: '#BFD6FF',
 					300: '#47A9F6',
 					400: '#1C8ACF',
+					// Newsletter panel: the Subscribe button.
+					450: '#2486D3',
 					500: '#1985C9',
 					600: '#147FC2',
 					700: '#1A74BB',
 					800: '#07619A',
+					// Newsletter panel fill. Within four steps of `800` per channel
+					// but specified separately in the Figma, so kept exact.
+					850: '#0A5D9E',
 					900: '#004672',
 					950: '#1A2834',
 				},
@@ -60,6 +65,8 @@ export default {
 					band: '#F8F8F8',
 					// Placeholder fill behind the promo tiles on the blue band.
 					tile: '#D3D3D3',
+					// Off-white. Used as a foreground, on the newsletter panel.
+					paper: '#FAFAFA',
 					// "Shop In Best Pricing" panel between the homepage rails.
 					panel: '#03324C',
 					// Product card: "Fulfilled by Hamtos" chip, and the quotation
@@ -103,6 +110,8 @@ export default {
 					pewter: '#32414E',
 					graphite: '#2D2D2D',
 					grey: '#777777',
+					// Footer category rail links.
+					stone: '#838282',
 					// Product card: the struck-through pre-discount price.
 					silver: '#939393',
 					slate: '#2A4153',
