@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ProductService, BrandService } from '../services';
 import type { ProductQueryParams, SearchQueryParams } from '../types';
 
@@ -69,6 +69,11 @@ export const useProductSearch = (params: SearchQueryParams) => {
     enabled: !!params.q,
     staleTime: 0, // Always consider stale to ensure fresh data when params change (e.g., limit/start)
     refetchOnMount: true,
+    // Hold the previous term's results on screen while the next ones load, so
+    // changing the query swaps one set of products for another instead of
+    // collapsing to a loading state and back. `isFetching` still reports the
+    // refresh for callers that want to dim the stale rows.
+    placeholderData: keepPreviousData,
   });
 };
 

@@ -97,7 +97,7 @@ const Index = () => {
 
       <CategoryMosaic />
 
-      <BestSellingSection categories={homeCategories} />
+      <BestSellingSection />
 
       <PromoBanner slide={slides?.[3]} />
 

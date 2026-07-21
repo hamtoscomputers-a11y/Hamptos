@@ -53,6 +53,12 @@ export default {
 					muted: '#E5E5E5',
 					promo: '#EFF5FF',
 					subtle: '#F3F3F3',
+					// Product card: "Fulfilled by Hamtos" chip, and the quotation
+					// button on an out-of-stock card.
+					badge: '#DAE7FF',
+					quote: '#BFD6FF',
+					// Ring around the carousel's prev/next arrows.
+					arrow: '#B4C8D9',
 					// Pastel washes behind the homepage category mosaic tiles.
 					'tint-blue': '#EFF8FF',
 					'tint-mint': '#EDFFF4',
@@ -86,6 +92,8 @@ export default {
 					pewter: '#32414E',
 					graphite: '#2D2D2D',
 					grey: '#777777',
+					// Product card: the struck-through pre-discount price.
+					silver: '#939393',
 					slate: '#2A4153',
 					steel: '#7890A5',
 					muted: '#595959',
