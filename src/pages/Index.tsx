@@ -17,6 +17,7 @@ import NewsletterPanel from "@/components/home/NewsletterPanel"
 import PrototypeNote from "@/components/PrototypeNote"
 import PricingPromo from "@/components/home/PricingPromo"
 import PromoBanner from "@/components/home/PromoBanner"
+import ShopByCategories from "@/components/home/ShopByCategories"
 
 import { ProductService } from "@/api"
 import { useCategories } from "../api/hooks/useCategories"
@@ -102,6 +103,8 @@ const Index = () => {
       <BestSellingSection />
 
       <PricingPromo />
+
+      <ShopByCategories />
 
       <NewSwitchesSection />
 

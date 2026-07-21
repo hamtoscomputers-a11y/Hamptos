@@ -83,6 +83,8 @@ export default {
 				},
 				ink: {
 					DEFAULT: '#101010',
+					// "Shop By Categories" heading.
+					jet: '#0A0909',
 					// Product detail page: the product title.
 					title: '#1F1F1F',
 					// Product detail: label on the active tab.
