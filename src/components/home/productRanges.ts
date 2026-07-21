@@ -34,3 +34,14 @@ export const isSwitch = (name: string) => /switch/i.test(name) && !isFirewall(na
 
 export const isRouter = (name: string) =>
   /router/i.test(name) && !/switch/i.test(name) && !MIKROTIK_SWITCH_SERIES.test(name)
+
+/**
+ * Access points, controllers and Wi-Fi gear.
+ *
+ * "Switch" is deliberately not excluded here — the Grandstream GWN7604 is a
+ * genuine access point that happens to carry an integrated switch in its name.
+ * Routers are excluded instead, so the D-Link DIR-3040 ("Wi-Fi Tri-Band
+ * Gigabit Router") stays in the routers rail rather than appearing in both.
+ */
+export const isWireless = (name: string) =>
+  /wireless|access point|\bwi-?fi\b/i.test(name) && !isRouter(name)

@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import BestSellingHighlight from "@/components/home/BestSellingHighlight"
 import BestSellingSection from "@/components/home/BestSellingSection"
 import BrandWall from "@/components/home/BrandWall"
 import CategoryMosaic from "@/components/home/CategoryMosaic"
@@ -12,6 +11,7 @@ import LatestProducts from "@/components/home/LatestProducts"
 import NewFirewallsSection from "@/components/home/NewFirewallsSection"
 import NewServersSection from "@/components/home/NewServersSection"
 import NewSwitchesSection from "@/components/home/NewSwitchesSection"
+import NewWirelessSection from "@/components/home/NewWirelessSection"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import PrototypeNote from "@/components/PrototypeNote"
 import PricingPromo from "@/components/home/PricingPromo"
@@ -120,7 +120,7 @@ const Index = () => {
         className="mt-[79px] mb-12"
       />
 
-      <BestSellingHighlight />
+      <NewWirelessSection />
 
       <CategoryTileGrid
         title="Top Categories"

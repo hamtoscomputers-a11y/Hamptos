@@ -144,7 +144,7 @@ const PromoTileBand = ({ slides, isLoading }: PromoTileBandProps) => (
         match={isRouter}
         // Routers are all older stock, so none fall inside the recent window
         // the other rails read from — this one resolves through the search.
-        searchTerm="router"
+        searchTerms={["router"]}
         exploreHref="/products?search=router"
         tone="blue"
         frameClassName=""
