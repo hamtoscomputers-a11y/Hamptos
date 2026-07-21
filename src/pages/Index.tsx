@@ -5,7 +5,7 @@ import BestSellingHighlight from "@/components/home/BestSellingHighlight"
 import BrandsCarousel from "@/components/home/BrandsCarousel"
 import BestSellingSection from "@/components/home/BestSellingSection"
 import BestSellingShowcase from "@/components/home/BestSellingShowcase"
-import CategoryIconRail from "@/components/home/CategoryIconRail"
+import CategoryMosaic from "@/components/home/CategoryMosaic"
 import CategoryProductsSection from "@/components/home/CategoryProductsSection"
 import CategoryTileGrid from "@/components/home/CategoryTileGrid"
 import FeaturedProducts from "@/components/home/FeaturedProducts"
@@ -29,7 +29,7 @@ const Index = () => {
     [],
   )
 
-  const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useCategories(categoryParams)
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories(categoryParams)
 
   const categories = useMemo(() => {
     if (!categoriesData?.data) return []
@@ -95,7 +95,7 @@ const Index = () => {
     <div className="min-h-screen">
       <HeroSlider slides={slides} isLoading={slidesLoading} />
 
-      <CategoryIconRail categories={homeCategories} isLoading={categoriesLoading} error={categoriesError} />
+      <CategoryMosaic />
 
       <BestSellingSection categories={homeCategories} />
 

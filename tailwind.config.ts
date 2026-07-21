@@ -53,6 +53,11 @@ export default {
 					muted: '#E5E5E5',
 					promo: '#EFF5FF',
 					subtle: '#F3F3F3',
+					// Pastel washes behind the homepage category mosaic tiles.
+					'tint-blue': '#EFF8FF',
+					'tint-mint': '#EDFFF4',
+					'tint-cream': '#FFFAF6',
+					'tint-lilac': '#F0F3FF',
 				},
 				// Stock / delivery affirmatives, sampled from the Figma product card.
 				success: {

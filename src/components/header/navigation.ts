@@ -9,7 +9,16 @@ export interface NavCategory {
   href: string
 }
 
-const toSearchHref = (label: string) => `/products?search=${encodeURIComponent(label)}`
+/**
+ * Resolves a curated label against the live catalogue.
+ *
+ * These labels are design-defined groupings rather than ERP categories — the
+ * ERP's own category tree names things differently and holds almost every
+ * product under `Networking` — so they route through the product search
+ * instead of a category id, which would land on an empty listing. Exported so
+ * the homepage mosaic can route the same labels to the same places as the nav.
+ */
+export const toSearchHref = (label: string) => `/products?search=${encodeURIComponent(label)}`
 
 /** Primary category rail, per the Figma header design. */
 export const NAV_CATEGORIES: NavCategory[] = [
