@@ -20,27 +20,31 @@ const AllCategoriesMenu = ({ categories, isLoading, error, onNavigate }: AllCate
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   if (isLoading) {
-    return <div className="p-6 text-center text-sm text-white/70">Loading categories...</div>
+    return <div className="p-6 text-center text-sm text-ink-grey">Loading categories...</div>
   }
 
   if (error) {
-    return <div className="p-6 text-center text-sm text-white">Failed to load categories</div>
+    return <div className="p-6 text-center text-sm text-ink-body">Failed to load categories</div>
   }
 
   return (
-    <div className="scrollbar-hidden h-[264px] overflow-y-auto">
+    /* Grows to the list rather than sitting in a fixed window, and only starts
+       scrolling once it would run past the fold — the original behaviour. */
+    <div className="scrollbar-hidden max-h-[70vh] overflow-y-auto">
       {categories.map((category) => {
         const children = category.children ?? []
         const hasChildren = children.length > 0
         const isExpanded = expandedId === category.id
 
         return (
-          <div key={category.id} className="border-b border-surface-line/[0.13] last:border-b-0">
-            {/* Selection colors in the Figma are FFFFFF/004672 — hover inverts the row. */}
-            <div className="group flex items-center transition-colors hover:bg-white">
+          <div key={category.id} className="border-b border-surface-line/60 last:border-b-0">
+            {/* Roomy rows on a hairline grid. Colours come from the nav bar —
+                black labels going blue on hover, like the links beside
+                "All Categories". */}
+            <div className="group flex items-center transition-colors hover:bg-surface-accent">
               <Link
                 to={`/products?category=${category.id}`}
-                className="flex-1 py-1 pl-4 text-[13px] text-white transition-colors group-hover:text-ink-navy"
+                className="flex-1 py-3 pl-4 text-sm font-medium text-black transition-colors group-hover:text-brand-700"
                 onClick={onNavigate}
               >
                 {category.name}
@@ -52,7 +56,7 @@ const AllCategoriesMenu = ({ categories, isLoading, error, onNavigate }: AllCate
                   aria-label={`${isExpanded ? "Collapse" : "Expand"} ${category.name}`}
                   aria-expanded={isExpanded}
                   onClick={() => setExpandedId(isExpanded ? null : category.id)}
-                  className="px-3 py-1 text-white transition-colors group-hover:text-ink-navy"
+                  className="px-4 py-3 text-ink-grey transition-colors group-hover:text-brand-700"
                 >
                   <ChevronRight
                     size={16}
@@ -66,7 +70,7 @@ const AllCategoriesMenu = ({ categories, isLoading, error, onNavigate }: AllCate
                   to={`/products?category=${category.id}`}
                   tabIndex={-1}
                   aria-hidden
-                  className="px-3 py-1 text-white transition-colors group-hover:text-ink-navy"
+                  className="px-4 py-3 text-ink-grey transition-colors group-hover:text-brand-700"
                   onClick={onNavigate}
                 >
                   <ChevronRight size={16} />
@@ -75,14 +79,19 @@ const AllCategoriesMenu = ({ categories, isLoading, error, onNavigate }: AllCate
             </div>
 
             {hasChildren && isExpanded && (
-              <div className="border-t border-surface-line/[0.13] bg-black/15">
+              <div className="border-t border-surface-line/60 bg-surface-subtle py-2">
                 {children.map((child) => (
                   <Link
                     key={child.id}
                     to={`/products?category=${category.id}&parent_id=${child.id}`}
-                    className="block py-2 pl-8 pr-4 text-[13px] text-white/85 transition-colors hover:bg-white hover:text-ink-navy"
+                    className="group/child flex items-center gap-2 px-4 py-2.5 text-sm text-ink-body transition-colors hover:bg-brand-700 hover:text-white"
                     onClick={onNavigate}
                   >
+                    <ChevronRight
+                      size={12}
+                      className="flex-shrink-0 text-ink-grey group-hover/child:text-white"
+                      aria-hidden
+                    />
                     {child.name}
                   </Link>
                 ))}

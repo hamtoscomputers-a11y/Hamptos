@@ -40,8 +40,12 @@ const CategoryNav = ({
             All Categories
           </button>
 
+          {/* A rounded white card floating clear of the bar, as the menu was
+              first built. White on white leaves no fill to separate it from
+              the bar above or the hero behind, so the hairline, the corner
+              radius and the shadow do that work. */}
           {isMenuOpen && (
-            <div className="absolute left-0 top-full z-[100] w-[250px] origin-top overflow-hidden bg-ink-navy shadow-2xl animate-in fade-in-0 slide-in-from-top-2 duration-200 ease-out motion-reduce:animate-none">
+            <div className="absolute left-0 top-full z-[100] mt-1 w-[280px] origin-top overflow-hidden rounded-lg border border-surface-line bg-white shadow-2xl animate-in fade-in-0 slide-in-from-top-2 duration-200 ease-out motion-reduce:animate-none">
               <AllCategoriesMenu
                 categories={categories}
                 isLoading={isLoading}
