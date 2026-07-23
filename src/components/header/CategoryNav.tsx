@@ -40,10 +40,12 @@ const CategoryNav = ({
             All Categories
           </button>
 
-          {/* Pure positioning only: the card styling now lives inside the menu
-              so its flyout can escape the panel instead of being clipped. */}
+          {/* A rounded white card floating clear of the bar, as the menu was
+              first built. White on white leaves no fill to separate it from
+              the bar above or the hero behind, so the hairline and the corner
+              radius do that work. */}
           {isMenuOpen && (
-            <div className="absolute left-0 top-full z-[100] mt-1 origin-top animate-in fade-in-0 slide-in-from-top-2 duration-200 ease-out motion-reduce:animate-none">
+            <div className="absolute left-0 top-full z-[100] mt-1 w-[280px] origin-top overflow-hidden rounded-lg border border-surface-line bg-white animate-in fade-in-0 slide-in-from-top-2 duration-200 ease-out motion-reduce:animate-none">
               <AllCategoriesMenu
                 categories={categories}
                 isLoading={isLoading}
