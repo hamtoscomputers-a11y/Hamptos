@@ -128,6 +128,8 @@ export default {
 					grey: '#777777',
 					// Product detail: the +/- glyphs in the quantity stepper.
 					pebble: '#8E8E8E',
+					// Product detail: the "Q" marker in Questions & Answers.
+					ash: '#8A8A8A',
 					// Footer category rail links.
 					stone: '#838282',
 					// Product card: the struck-through pre-discount price.
