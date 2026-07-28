@@ -6,6 +6,7 @@ import { useProductById, useProducts } from "@/api/hooks/useProducts"
 import { useProductsByCategory } from "@/api/hooks/useCategories"
 import ProductGallery from "@/components/products/ProductGallery"
 import ProductInfo from "@/components/products/ProductInfo"
+import BundleAccessories from "@/components/products/BundleAccessories"
 import ProductTabs, { type TabKey } from "@/components/products/ProductTabs"
 import RelatedProducts from "@/components/products/RelatedProducts"
 import { addToCart } from "@/store/cartSlice"
@@ -183,7 +184,17 @@ const ProductDetail = () => {
               onAddToCart={handleAddToCart}
             />
           </div>
+        </div>
 
+        {/* Curated bundle rail, filled from live catalogue products. */}
+        <BundleAccessories
+          products={relatedCategoryData?.products || []}
+          fallbackProducts={relatedPoolData?.data || []}
+          currentId={String(product.id)}
+          isLoading={relatedLoading}
+        />
+
+        <div className="container mx-auto px-4 sm:px-6 md:px-8 pb-8">
           <div ref={tabsRef}>
             <ProductTabs
               active={selectedTab}
