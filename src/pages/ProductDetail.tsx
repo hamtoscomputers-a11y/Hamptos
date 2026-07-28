@@ -11,6 +11,8 @@ import ProductTabs, { type TabKey } from "@/components/products/ProductTabs"
 import QuickSpecs from "@/components/products/QuickSpecs"
 import ProductDetailsSection from "@/components/products/ProductDetailsSection"
 import AccessoriesTable from "@/components/products/AccessoriesTable"
+import CompareSimilarItems from "@/components/products/CompareSimilarItems"
+import GetMoreInformation from "@/components/products/GetMoreInformation"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
 import { useDispatch } from "react-redux"
@@ -238,6 +240,21 @@ const ProductDetail = () => {
           code={product.code}
           name={product.name}
         />
+
+        {/* Compare to Similar Items — this product's specs beside four others'. */}
+        <CompareSimilarItems
+          products={relatedCategoryData?.products || []}
+          fallbackProducts={relatedPoolData?.data || []}
+          currentId={String(product.id)}
+          code={product.code}
+          name={product.name}
+          keyInformation={product.key_information}
+        />
+
+        {/* Get More Information — the contact prompt under the comparison. */}
+        <div className="pb-10">
+          <GetMoreInformation code={product.code} name={product.name} />
+        </div>
 
         {/* The Figma closes the product page on the same newsletter panel the
             homepage uses — full-bleed, rounded across the top, against the footer. */}

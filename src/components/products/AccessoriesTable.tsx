@@ -77,7 +77,7 @@ const AccessoriesTable = ({ products, fallbackProducts = [], currentId, code, na
   const caption = code ? `Table 2 shows the accessories of ${code}.` : `Table 2 shows the accessories of ${name}.`
 
   return (
-    <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-[50px] pb-10" aria-labelledby="accessories-heading">
+    <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-[50px]" aria-labelledby="accessories-heading">
       <h2 id="accessories-heading" className="text-[28px] font-medium leading-[28.9px] tracking-[-0.02em] text-black">
         The Accessories
       </h2>
