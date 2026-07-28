@@ -6,9 +6,19 @@ interface RatingStarsProps {
   /** Edge length of one star, in px. */
   size?: number
   className?: string
+  /** Text colour of the filled portion. Customer Reviews runs its own blue. */
+  fillClass?: string
+  /** Text colour of the unfilled portion. */
+  emptyClass?: string
 }
 
-const RatingStars = ({ rating, size = 14, className = "" }: RatingStarsProps) => {
+const RatingStars = ({
+  rating,
+  size = 14,
+  className = "",
+  fillClass = "text-ink",
+  emptyClass = "text-surface-line",
+}: RatingStarsProps) => {
   const box = { width: size, height: size }
 
   return (
@@ -18,10 +28,10 @@ const RatingStars = ({ rating, size = 14, className = "" }: RatingStarsProps) =>
 
         return (
           <span key={index} className="relative flex-shrink-0" style={box}>
-            <Star className="absolute text-surface-line" style={box} fill="currentColor" />
+            <Star className={`absolute ${emptyClass}`} style={box} fill="currentColor" />
             {fill > 0 && (
               <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
-                <Star className="text-ink" style={box} fill="currentColor" />
+                <Star className={fillClass} style={box} fill="currentColor" />
               </span>
             )}
           </span>

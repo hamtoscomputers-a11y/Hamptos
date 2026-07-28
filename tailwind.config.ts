@@ -44,6 +44,13 @@ export default {
 				},
 				// Active-filter chip on the product listing toolbar.
 				highlight: '#FF9C56',
+				// Customer Reviews runs on its own palette in the Figma, distinct
+				// from the brand blue used everywhere else on the page.
+				review: {
+					star: '#0073ED',
+					meta: '#8896A1',
+					verified: '#34CF00',
+				},
 				// Filled portion of each bar in the review histogram.
 				star: '#FFBE63',
 				// Product detail: the "FLASH SALE" badge and header rating stars.
