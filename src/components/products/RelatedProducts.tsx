@@ -13,6 +13,16 @@ interface RelatedProductsProps {
   /** Ids on screen right now — excluded so the rail isn't a repeat of the grid. */
   shownIds: string[]
   isLoading: boolean
+  /**
+   * Presentation. Defaults are the listing page's centred dark rail; the
+   * product detail page passes the Figma's white split treatment instead.
+   */
+  title?: string
+  subtitle?: string
+  tone?: "light" | "dark" | "blue"
+  align?: "split" | "center"
+  showExplore?: boolean
+  exploreHref?: string
 }
 
 const MAX_ITEMS = 10
@@ -22,7 +32,18 @@ const MAX_ITEMS = 10
  * two can only drift deliberately, and draws on products already fetched for
  * the current filters rather than issuing another request.
  */
-const RelatedProducts = ({ products, fallbackProducts = [], shownIds, isLoading }: RelatedProductsProps) => {
+const RelatedProducts = ({
+  products,
+  fallbackProducts = [],
+  shownIds,
+  isLoading,
+  title = "Related Product",
+  subtitle,
+  tone = "dark",
+  align = "center",
+  showExplore = false,
+  exploreHref,
+}: RelatedProductsProps) => {
   const related = useMemo(() => {
     const shown = new Set(shownIds.map(String))
     const pick = (pool: any[]) =>
@@ -34,12 +55,14 @@ const RelatedProducts = ({ products, fallbackProducts = [], shownIds, isLoading 
 
   return (
     <ProductCarouselSection
-      title="Related Product"
+      title={title}
+      subtitle={subtitle}
       products={related}
       isLoading={isLoading}
-      tone="dark"
-      align="center"
-      showExplore={false}
+      tone={tone}
+      align={align}
+      showExplore={showExplore}
+      exploreHref={exploreHref}
     />
   )
 }

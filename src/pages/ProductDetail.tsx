@@ -20,6 +20,7 @@ import CustomerReviews from "@/components/products/CustomerReviews"
 import QuestionsAnswers from "@/components/products/QuestionsAnswers"
 import IndustryNews from "@/components/products/IndustryNews"
 import ResourcesDownloads from "@/components/products/ResourcesDownloads"
+import RelatedProducts from "@/components/products/RelatedProducts"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
 import { useDispatch } from "react-redux"
@@ -284,9 +285,22 @@ const ProductDetail = () => {
 
         <IndustryNews />
 
-        <div className="pb-10">
-          <ResourcesDownloads />
-        </div>
+        <ResourcesDownloads />
+
+        {/* Related Products — the home page's rail, on the Figma's white split
+            treatment, filled from the pools already fetched for this page. */}
+        <RelatedProducts
+          products={relatedCategoryData?.products || []}
+          fallbackProducts={relatedPoolData?.data || []}
+          shownIds={[String(product.id)]}
+          isLoading={relatedLoading}
+          title="Related Products"
+          subtitle="Hamtos is your trusted source for IT devices in Dubai. We know that having the right technology plays a key role in helping businesses grow and succeed."
+          tone="light"
+          align="split"
+          showExplore
+          exploreHref="/products"
+        />
 
         {/* The Figma closes the product page on the same newsletter panel the
             homepage uses — full-bleed, rounded across the top, against the footer. */}
