@@ -19,6 +19,7 @@ import TechnicalSupportBanner from "@/components/products/TechnicalSupportBanner
 import CustomerReviews from "@/components/products/CustomerReviews"
 import QuestionsAnswers from "@/components/products/QuestionsAnswers"
 import IndustryNews from "@/components/products/IndustryNews"
+import ResourcesDownloads from "@/components/products/ResourcesDownloads"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
 import { useDispatch } from "react-redux"
@@ -281,8 +282,10 @@ const ProductDetail = () => {
 
         <QuestionsAnswers name={product.name} code={product.code} />
 
+        <IndustryNews />
+
         <div className="pb-10">
-          <IndustryNews />
+          <ResourcesDownloads />
         </div>
 
         {/* The Figma closes the product page on the same newsletter panel the

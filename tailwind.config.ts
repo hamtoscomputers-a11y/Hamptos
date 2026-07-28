@@ -1,5 +1,11 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * The accent blue the product page's lower sections run on — Customer Reviews'
+ * stars and bars, and the Resources Downloads links. Distinct from `brand-700`.
+ */
+const ACCENT_BLUE = '#0073ED';
+
 export default {
 	darkMode: ["class"],
 	content: [
@@ -44,10 +50,12 @@ export default {
 				},
 				// Active-filter chip on the product listing toolbar.
 				highlight: '#FF9C56',
+				// Resources Downloads: the file links.
+				link: ACCENT_BLUE,
 				// Customer Reviews runs on its own palette in the Figma, distinct
 				// from the brand blue used everywhere else on the page.
 				review: {
-					star: '#0073ED',
+					star: ACCENT_BLUE,
 					meta: '#8896A1',
 					verified: '#34CF00',
 				},
