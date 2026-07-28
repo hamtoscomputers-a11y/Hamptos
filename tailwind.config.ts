@@ -46,6 +46,8 @@ export default {
 				highlight: '#FF9C56',
 				// Filled portion of each bar in the review histogram.
 				star: '#FFBE63',
+				// Product detail: the "FLASH SALE" badge and header rating stars.
+				flash: '#F59E0B',
 				surface: {
 					DEFAULT: '#FDFDFD',
 					line: '#D9D9D9',
@@ -58,6 +60,8 @@ export default {
 					card: '#D4D4D4',
 					// Product detail: the active tab's fill.
 					tab: '#BDE4FD',
+					// Product detail header: the light-blue trust-badge band.
+					trust: '#C0E5F6',
 					control: '#B8B8B8',
 					muted: '#E5E5E5',
 					subtle: '#F3F3F3',
@@ -110,6 +114,8 @@ export default {
 					pewter: '#32414E',
 					graphite: '#2D2D2D',
 					grey: '#777777',
+					// Product detail: the +/- glyphs in the quantity stepper.
+					pebble: '#8E8E8E',
 					// Footer category rail links.
 					stone: '#838282',
 					// Product card: the struck-through pre-discount price.

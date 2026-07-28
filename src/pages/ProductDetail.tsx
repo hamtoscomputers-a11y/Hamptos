@@ -5,8 +5,7 @@ import { useParams, Link, useLocation } from "react-router-dom"
 import { useProductById, useProducts } from "@/api/hooks/useProducts"
 import { useProductsByCategory } from "@/api/hooks/useCategories"
 import ProductGallery from "@/components/products/ProductGallery"
-import ProductSummary from "@/components/products/ProductSummary"
-import PurchasePanel from "@/components/products/PurchasePanel"
+import ProductInfo from "@/components/products/ProductInfo"
 import ProductTabs, { type TabKey } from "@/components/products/ProductTabs"
 import RelatedProducts from "@/components/products/RelatedProducts"
 import { addToCart } from "@/store/cartSlice"
@@ -81,8 +80,10 @@ const ProductDetail = () => {
 
   // Map API product to UI format
   let brandName = "Hamtos"
+  let brandId: string | number | undefined
   if (typeof data.brand === "object" && data.brand && "name" in data.brand) {
     brandName = (data.brand as { name: string }).name
+    brandId = (data.brand as { id?: string | number }).id
   } else if (typeof data.brand === "string") {
     brandName = data.brand
   }
@@ -100,6 +101,7 @@ const ProductDetail = () => {
 
   const product = {
     id: data.id,
+    code: (data as any)?.code || "",
     name: data.name,
     price: currentPrice,
     originalPrice: showOriginalPrice ? originalPrice : undefined,
@@ -159,41 +161,21 @@ const ProductDetail = () => {
       </Helmet>
       <div className="min-h-screen bg-white">
         <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8">
-          <nav aria-label="Breadcrumb" className="mb-6 text-[13px] text-ink-body">
-            <Link to="/" className="transition-colors hover:text-brand-700">
-              Home
-            </Link>
-            {categoryName && (
-              <>
-                <span className="px-1.5">&gt;</span>
-                <Link
-                  to={`/products?category=${(data.category as any).id}`}
-                  className="transition-colors hover:text-brand-700"
-                >
-                  {categoryName}
-                </Link>
-              </>
-            )}
-            <span className="px-1.5">&gt;</span>
-            <span className="text-ink-title">{product.name}</span>
-          </nav>
-
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[520px_minmax(0,1fr)_300px] lg:gap-x-6">
-            <ProductGallery image={product.image} photos={photos} name={product.name} />
-
-            <ProductSummary
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,560px)_minmax(0,1fr)] lg:gap-x-12">
+            <ProductGallery
+              image={product.image}
+              photos={photos}
               name={product.name}
-              rating={product.rating}
-              reviews={product.reviews}
-              keyInformation={product.key_information}
-              onViewDatasheet={handleViewDatasheet}
+              onSale={product.isOnSale}
             />
 
-            <PurchasePanel
+            <ProductInfo
               name={product.name}
+              brand={product.brand}
+              brandId={brandId}
+              model={product.code}
               price={product.price}
               originalPrice={product.originalPrice}
-              brand={product.brand}
               inStock={product.inStock}
               availableQty={availableQty}
               quantity={quantity}
