@@ -53,6 +53,9 @@ export default {
 					line: '#D9D9D9',
 					// Product detail: the Quick Specs table's cell grid.
 					grid: '#B9B9B9',
+					// Product detail: the specification table's alternate stripe,
+					// laid down at 20%.
+					mist: '#DDDDDD',
 					accent: '#E7F4FD',
 					// Collapse-toggle chip on the filter sidebar.
 					chip: '#B5E1FC',

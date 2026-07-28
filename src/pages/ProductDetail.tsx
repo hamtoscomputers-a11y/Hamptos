@@ -13,6 +13,8 @@ import ProductDetailsSection from "@/components/products/ProductDetailsSection"
 import AccessoriesTable from "@/components/products/AccessoriesTable"
 import CompareSimilarItems from "@/components/products/CompareSimilarItems"
 import GetMoreInformation from "@/components/products/GetMoreInformation"
+import QualityCertifications from "@/components/products/QualityCertifications"
+import ProductSpecTable from "@/components/products/ProductSpecTable"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
 import { useDispatch } from "react-redux"
@@ -252,8 +254,22 @@ const ProductDetail = () => {
         />
 
         {/* Get More Information — the contact prompt under the comparison. */}
+        <GetMoreInformation code={product.code} name={product.name} />
+
+        <QualityCertifications />
+
+        {/* The full spec table, two-up and striped. */}
+        <ProductSpecTable
+          brand={product.brand}
+          code={product.code}
+          name={product.name}
+          keyInformation={product.key_information}
+        />
+
+        <GetMoreInformation code={product.code} name={product.name} variant="wide" />
+
         <div className="pb-10">
-          <GetMoreInformation code={product.code} name={product.name} />
+          <QualityCertifications />
         </div>
 
         {/* The Figma closes the product page on the same newsletter panel the
