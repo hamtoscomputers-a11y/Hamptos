@@ -8,6 +8,7 @@ import ProductGallery from "@/components/products/ProductGallery"
 import ProductInfo from "@/components/products/ProductInfo"
 import BundleAccessories from "@/components/products/BundleAccessories"
 import ProductTabs, { type TabKey } from "@/components/products/ProductTabs"
+import QuickSpecs from "@/components/products/QuickSpecs"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
 import { useDispatch } from "react-redux"
@@ -208,6 +209,15 @@ const ProductDetail = () => {
             />
           </div>
         </div>
+
+        {/* Quick Specs — the figure and its spec table, below the detail tabs. */}
+        <QuickSpecs
+          code={product.code}
+          image={product.image}
+          name={product.name}
+          categoryName={categoryName}
+          keyInformation={product.key_information}
+        />
 
         {/* The Figma closes the product page on the same newsletter panel the
             homepage uses — full-bleed, rounded across the top, against the footer. */}
