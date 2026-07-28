@@ -15,6 +15,7 @@ import CompareSimilarItems from "@/components/products/CompareSimilarItems"
 import GetMoreInformation from "@/components/products/GetMoreInformation"
 import QualityCertifications from "@/components/products/QualityCertifications"
 import ProductSpecTable from "@/components/products/ProductSpecTable"
+import TechnicalSupportBanner from "@/components/products/TechnicalSupportBanner"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
 import { useDispatch } from "react-redux"
@@ -268,8 +269,11 @@ const ProductDetail = () => {
 
         <GetMoreInformation code={product.code} name={product.name} variant="wide" />
 
+        <QualityCertifications />
+
+        {/* Support banner — the photo overflows the fill, so it sits last. */}
         <div className="pb-10">
-          <QualityCertifications />
+          <TechnicalSupportBanner />
         </div>
 
         {/* The Figma closes the product page on the same newsletter panel the
