@@ -43,7 +43,7 @@ const QuickSpecs = ({ code, image, name, categoryName, keyInformation }: QuickSp
   const caption = code ? `Figure 1 shows the appearance of ${code}.` : `Figure 1 shows the appearance of ${name}.`
 
   return (
-    <section className="container mx-auto px-4 sm:px-6 md:px-8 py-10" aria-labelledby="quick-specs-heading">
+    <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-10" aria-labelledby="quick-specs-heading">
       <h2
         id="quick-specs-heading"
         className="text-[28px] font-medium leading-[28.9px] tracking-[-0.02em] text-black"

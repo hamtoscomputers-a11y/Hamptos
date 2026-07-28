@@ -9,6 +9,8 @@ import ProductInfo from "@/components/products/ProductInfo"
 import BundleAccessories from "@/components/products/BundleAccessories"
 import ProductTabs, { type TabKey } from "@/components/products/ProductTabs"
 import QuickSpecs from "@/components/products/QuickSpecs"
+import ProductDetailsSection from "@/components/products/ProductDetailsSection"
+import AccessoriesTable from "@/components/products/AccessoriesTable"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
 import { useDispatch } from "react-redux"
@@ -217,6 +219,24 @@ const ProductDetail = () => {
           name={product.name}
           categoryName={categoryName}
           keyInformation={product.key_information}
+        />
+
+        {/* Product Details — the front-panel figure over the ERP's own prose. */}
+        <ProductDetailsSection
+          code={product.code}
+          name={product.name}
+          image={product.image}
+          photos={photos}
+          productDetails={product.product_details || product.details}
+        />
+
+        {/* The Accessories — catalogue products grouped by their ERP category. */}
+        <AccessoriesTable
+          products={relatedCategoryData?.products || []}
+          fallbackProducts={relatedPoolData?.data || []}
+          currentId={String(product.id)}
+          code={product.code}
+          name={product.name}
         />
 
         {/* The Figma closes the product page on the same newsletter panel the
