@@ -168,10 +168,12 @@ const BundleAccessories = ({ products, fallbackProducts = [], currentId, isLoadi
             type="button"
             onClick={() => setTab(t.key)}
             aria-pressed={tab === t.key}
-            className={`rounded-lg px-5 py-[15px] text-[14px] font-semibold leading-none transition-colors ${
+            // The active tab carries a transparent border so it matches the
+            // outlined tab's 46px box — otherwise the two tops sit 1px apart.
+            className={`rounded-lg border px-5 py-[15px] text-[14px] font-semibold leading-none transition-colors ${
               tab === t.key
-                ? "bg-brand-700 text-white"
-                : "border border-brand-700 bg-white text-brand-700 hover:bg-surface-accent"
+                ? "border-transparent bg-brand-700 text-white"
+                : "border-brand-700 bg-white text-brand-700 hover:bg-surface-accent"
             }`}
           >
             {t.label}
@@ -197,15 +199,13 @@ const BundleAccessories = ({ products, fallbackProducts = [], currentId, isLoadi
             })}
           </div>
 
-          {/* Brand-blue vertical divider. The horizontal rule (24px above, the
-              mt-6 gap) runs unbroken; the vertical is split around it — a short
-              stub floating above, then the line resuming below, each ~8px clear
-              of the rule — the Figma's gapped "+" intersection. */}
+          {/* Brand-blue vertical divider. Both rules are unbroken and cross to
+              form the Figma's "+". The extension runs from here up to the top
+              of the tab buttons, clearing the horizontal rule on the way: the
+              row's own mt-6 (24px) + the rule's own 1px + the tab row's pb-5
+              (20px) + the buttons' 46px (py-[15px] on 14px/none text + border). */}
           <div className="relative hidden w-px flex-shrink-0 self-stretch bg-brand-700 lg:block" aria-hidden>
-            {/* line resumes ~8px below the rule (rule sits 24px above this top) */}
-            <span className="absolute bottom-full left-0 h-4 w-px bg-brand-700" />
-            {/* short stub floating ~8px above the rule */}
-            <span className="absolute left-0 top-[-52px] h-5 w-px bg-brand-700" />
+            <span className="absolute bottom-full left-0 h-[calc(24px+1px+20px+46px)] w-px bg-brand-700" />
           </div>
 
           {/* Combo total, preceded by the "=" operator. */}

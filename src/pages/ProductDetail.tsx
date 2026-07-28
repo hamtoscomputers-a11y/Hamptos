@@ -8,7 +8,7 @@ import ProductGallery from "@/components/products/ProductGallery"
 import ProductInfo from "@/components/products/ProductInfo"
 import BundleAccessories from "@/components/products/BundleAccessories"
 import ProductTabs, { type TabKey } from "@/components/products/ProductTabs"
-import RelatedProducts from "@/components/products/RelatedProducts"
+import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
 import { useDispatch } from "react-redux"
 import { toast } from "@/hooks/use-toast"
@@ -209,12 +209,9 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        <RelatedProducts
-          products={relatedCategoryData?.products || []}
-          fallbackProducts={relatedPoolData?.data || []}
-          shownIds={[String(product.id)]}
-          isLoading={relatedLoading}
-        />
+        {/* The Figma closes the product page on the same newsletter panel the
+            homepage uses — full-bleed, rounded across the top, against the footer. */}
+        <NewsletterPanel />
       </div>
     </>
   )
