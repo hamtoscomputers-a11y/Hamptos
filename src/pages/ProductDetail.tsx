@@ -1,13 +1,13 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useParams, Link, useLocation } from "react-router-dom"
 import { useProductById, useProducts } from "@/api/hooks/useProducts"
 import { useProductsByCategory } from "@/api/hooks/useCategories"
 import ProductGallery from "@/components/products/ProductGallery"
 import ProductInfo from "@/components/products/ProductInfo"
 import BundleAccessories from "@/components/products/BundleAccessories"
-import ProductTabs, { type TabKey } from "@/components/products/ProductTabs"
+import PromoMosaic from "@/components/products/PromoMosaic"
 import QuickSpecs from "@/components/products/QuickSpecs"
 import ProductDetailsSection from "@/components/products/ProductDetailsSection"
 import AccessoriesTable from "@/components/products/AccessoriesTable"
@@ -30,17 +30,7 @@ import { Helmet } from 'react-helmet-async';
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>()
   const location = useLocation()
-  const [selectedTab, setSelectedTab] = useState<TabKey>("key")
   const [quantity, setQuantity] = useState(1)
-  const tabsRef = useRef<HTMLDivElement>(null)
-
-  // The ERP carries no datasheet URL, so the button opens the spec tabs, which
-  // hold the same detail content.
-  const handleViewDatasheet = () => {
-    setSelectedTab("specs")
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    tabsRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" })
-  }
 
   // Get product data from location state or fetch by ID
   const stateData = location.state as { productData?: any; productId?: string } | null
@@ -207,22 +197,12 @@ const ProductDetail = () => {
           isLoading={relatedLoading}
         />
 
-        <div className="container mx-auto px-4 sm:px-6 md:px-8 pb-8">
-          <div ref={tabsRef}>
-            <ProductTabs
-              active={selectedTab}
-              onActiveChange={setSelectedTab}
-              keyInformation={product.key_information}
-              // The ERP's field names invert the tabs: `product_details` holds
-              // the prose the Details tab wants, and `key_information` holds the
-              // grouped spec table. `details` itself comes back empty.
-              details={product.details || product.product_details}
-              specifications={product.key_information}
-            />
-          </div>
-        </div>
+        {/* Promo mosaic, in place of the old detail tabs. Nothing is lost: the
+            tabs' `key_information` and `product_details` now render in Quick
+            Specs, Product Details and the specification table below. */}
+        <PromoMosaic />
 
-        {/* Quick Specs — the figure and its spec table, below the detail tabs. */}
+        {/* Quick Specs — the figure and its spec table. */}
         <QuickSpecs
           code={product.code}
           image={product.image}
