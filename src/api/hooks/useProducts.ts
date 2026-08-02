@@ -90,6 +90,21 @@ export const useSearchSuggestions = (
   });
 };
 
+/**
+ * The homepage slider images, which also feed the promo tiles and the banner.
+ *
+ * Through react-query rather than a `useEffect` so the one response serves
+ * every consumer: StrictMode mounts effects twice in development, which fetched
+ * the slider twice on every load, and leaving the page and coming back fetched
+ * it again. Cached, that is one request.
+ */
+export const useWebsiteSlider = () => {
+  return useQuery({
+    queryKey: ['website-slider'],
+    queryFn: ProductService.getWebsiteSlider,
+  });
+};
+
 export const useWebsiteBrands = (options = {}) => {
   return useQuery({
     queryKey: ['website-brands'],

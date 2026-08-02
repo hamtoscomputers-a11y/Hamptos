@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import BestSellingSection from "@/components/home/BestSellingSection"
 import BrandWall from "@/components/home/BrandWall"
 import CategoryMosaic from "@/components/home/CategoryMosaic"
@@ -16,30 +15,11 @@ import PromoBanner from "@/components/home/PromoBanner"
 import PromoTileBand from "@/components/home/PromoTileBand"
 import ShopByCategories from "@/components/home/ShopByCategories"
 
-import { ProductService } from "@/api"
+import { useWebsiteSlider } from "@/api/hooks/useProducts"
 
 const Index = () => {
-  const [slides, setSlides] = useState<any[]>([])
-  const [slidesLoading, setSlidesLoading] = useState(true)
-
-  useEffect(() => {
-    let cancelled = false
-
-    ProductService.getWebsiteSlider()
-      .then((response) => {
-        if (!cancelled) setSlides(response?.data || [])
-      })
-      .catch(() => {
-        if (!cancelled) setSlides([])
-      })
-      .finally(() => {
-        if (!cancelled) setSlidesLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const { data: sliderData, isLoading: slidesLoading } = useWebsiteSlider()
+  const slides = sliderData?.data ?? []
 
   return (
     <div className="min-h-screen">

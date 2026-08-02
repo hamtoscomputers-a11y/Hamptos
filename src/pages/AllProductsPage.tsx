@@ -8,7 +8,7 @@ import Pagination from "@/components/products/Pagination"
 import RelatedProducts from "@/components/products/RelatedProducts"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useProductSearch, useProducts, useProductsByBrand, useBrands } from "@/api/hooks/useProducts"
-import { useProductsByCategory, useCategories } from "@/api/hooks/useCategories"
+import { CATEGORY_TREE_PARAMS, useProductsByCategory, useCategories } from "@/api/hooks/useCategories"
 import ProductGrid from "@/components/ProductGrid" // Assuming ProductGrid is already responsive
 import { Filter, X } from "lucide-react" // Import icons for mobile filter
 
@@ -58,7 +58,10 @@ const ProductsPage = () => {
   }, [])
 
   // Fetch categories for sidebar
-  const { data: categoriesData, isLoading: categoriesLoading } = useCategories({ limit: 100 })
+  // Same shared arguments as the header, which is mounted on every page — so
+  // this listing reads the tree the header already fetched instead of asking
+  // for its own copy of the same payload.
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories(CATEGORY_TREE_PARAMS)
   const categories = categoriesData?.data || []
 
   // Get subcategories based on selected category or all subcategories

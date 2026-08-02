@@ -17,7 +17,24 @@ import TermsAndConditions from './pages/TermsAndConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import ReturnsAndRefundPolicy from './pages/ReturnsAndRefundPolicy';
 import { HelmetProvider } from 'react-helmet-async';
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Retries live in the axios layer (src/api/axios.ts), which also holds
+      // the concurrency gate — so a replay queues behind live traffic instead
+      // of adding to it. React-query's default is three more attempts per
+      // query, which against this API turns one overloaded moment into four
+      // times the requests that caused it.
+      retry: false,
+      // The catalogue does not change between page views. Without this every
+      // remount refetches the lot, so returning to the homepage reopens the
+      // same ~25 requests. Queries that genuinely need freshness — the
+      // category listing behind the product filters — set their own.
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <HelmetProvider>
