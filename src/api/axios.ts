@@ -12,7 +12,11 @@ import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResp
  * failure behind a CORS message that has nothing to do with it. Proxying in
  * dev makes those requests same-origin, so a 500 reads as a 500.
  *
- * Production is served from the same host as the API and is unaffected.
+ * Production still calls portal.hamtos.com across origins — the storefront is
+ * served from hamtos.com — and there is no proxy in front of it. That works:
+ * the ERP answers with `access-control-allow-origin: *`. But it means a
+ * production 500 reports as a CORS error there too, so the gate below is what
+ * keeps it from happening rather than the baseURL.
  */
 const baseURL = import.meta.env.DEV ? '' : import.meta.env.VITE_REACT_APP_API_URL;
 
@@ -30,10 +34,17 @@ const baseURL = import.meta.env.DEV ? '' : import.meta.env.VITE_REACT_APP_API_UR
  *     4, 6, 8, 10, 14 concurrent  ->  all 200
  *     18 concurrent               ->  7 of 18 come back 500
  *
- * The homepage opens ~25 requests on mount (two category trees, brands,
- * slider, several category rails and the search fallbacks), landing on top of
- * that ceiling every load. Everything queues through here instead, at a depth
- * well under the point where the failures start.
+ * The homepage used to open ~25 of them on mount and land on top of that
+ * ceiling every load. Queued through here it opens 15, at a depth well under
+ * where the failures start.
+ *
+ * This gate is not the whole picture, and lowering it further does not close
+ * the gap — tried at 3, measured no better. The page also pulls ~36 product
+ * images from the same host, outside axios and so outside this queue, which
+ * puts the real peak nearer 40 connections. Those are static and cached for a
+ * week, so they cost the server far less than an API call, but under a cold
+ * burst the reads alongside them can still be refused. That is what the retry
+ * below is for.
  */
 const MAX_CONCURRENT_REQUESTS = 5;
 
@@ -100,24 +111,49 @@ const isReplayable = (error: AxiosError) => {
   return error.response.status >= 500;
 };
 
+const API_KEY = import.meta.env.VITE_API_KEY || 's40cs8wg4cwwo8cgsko0o4g88www8g4co8w4k004';
+
+/**
+ * `Content-Type` is deliberately not set here.
+ *
+ * On a GET it describes a body that does not exist, and `application/json` is
+ * not a CORS-safelisted value — setting it globally made every read a
+ * preflighted request. It is applied per-request below, to the methods that
+ * actually carry a body.
+ */
 const api: AxiosInstance = axios.create({
   baseURL,
   timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Request interceptor
 api.interceptors.request.use(
   async (config: QueuedRequestConfig) => {
-    // Get API key from localStorage or environment
-    const apiKey = import.meta.env.VITE_API_KEY;
+    const method = (config.method ?? 'get').toLowerCase();
 
-    if (apiKey) {
-      config.headers.set('api-key', apiKey);
+    /**
+     * Reads authenticate by query string; writes by header.
+     *
+     * An `api-key` *header* is a non-safelisted header, so the browser must
+     * send a preflight `OPTIONS` before every cross-origin read — and the ERP
+     * returns no `access-control-max-age`, so Chrome only caches that
+     * permission for 5 seconds and re-asks almost every time. That doubled the
+     * request count against the very server that is failing under request
+     * count, and it did so invisibly: the preflight is issued by the browser,
+     * not by axios, so it never passed through the queue below.
+     *
+     * Sent as `?api-key=` instead, a read carries no custom header and no
+     * content type, which makes it a simple request the browser issues
+     * directly. The ERP documents this form ("You can pass api-key as query
+     * string") and it was verified against every endpoint this app calls.
+     * Writes keep the header — they are rare, and one preflight on a form
+     * submission costs nothing.
+     */
+    if (method === 'get' || method === 'head') {
+      config.params = { ...(config.params ?? {}), 'api-key': API_KEY };
     } else {
-      config.headers.set('api-key', 's40cs8wg4cwwo8cgsko0o4g88www8g4co8w4k004');
+      config.headers.set('api-key', API_KEY);
+      config.headers.set('Content-Type', 'application/json');
     }
 
     // Log request in development
