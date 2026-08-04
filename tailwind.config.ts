@@ -136,6 +136,9 @@ export default {
 					grey: '#777777',
 					// Product detail: the +/- glyphs in the quantity stepper.
 					pebble: '#8E8E8E',
+					// Product detail: the FLASH SALE ribbon's label, which the Figma
+					// sets dark on the amber fill rather than white.
+					ribbon: '#0F172A',
 					// Product detail: the "Q" marker in Questions & Answers.
 					ash: '#8A8A8A',
 					// Footer category rail links.
