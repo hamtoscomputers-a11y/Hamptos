@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import WishlistService, { type WishlistApiItem } from '@/api/services/wishlistService';
 
 /**
  * Saved products, kept in localStorage.
@@ -41,13 +42,67 @@ function saveWishlistToStorage(items: WishlistItem[]) {
   } catch {}
 }
 
+/** Maps a row from the ERP onto what a card needs. */
+function fromApi(row: WishlistApiItem): WishlistItem {
+  const price = Number(row.price) || 0;
+  const promo = row.promo_price != null ? Number(row.promo_price) : undefined;
+
+  return {
+    id: Number(row.id),
+    name: row.name,
+    brand: row.brand_name || 'Hamtos',
+    // The list endpoint sends the sale price only while the promotion is
+    // running, so a non-null promo_price is the live price.
+    price: promo && promo > 0 ? promo : price,
+    promoPrice: promo && promo > 0 && promo < price ? price : undefined,
+    image: row.image_url,
+    slug: row.slug,
+  };
+}
+
 interface WishlistState {
   items: WishlistItem[];
+  /** True only while the first load from the server is in flight. */
+  loading: boolean;
 }
 
 const initialState: WishlistState = {
+  // localStorage renders instantly on load; the server is then the source of
+  // truth once `fetchWishlist` resolves.
   items: loadWishlistFromStorage(),
+  loading: false,
 };
+
+/** Pulls the server's copy and adopts it. */
+export const fetchWishlist = createAsyncThunk('wishlist/fetch', async () => {
+  const rows = await WishlistService.list();
+  return rows.map(fromApi);
+});
+
+/**
+ * Saves or unsaves, updating locally first so the heart responds immediately.
+ *
+ * A failed write leaves the local copy ahead of the server. That is deliberate:
+ * reverting the heart under someone who just clicked it is worse than a saved
+ * product that has not synced, and the next `fetchWishlist` reconciles it.
+ */
+export const toggleWishlistItem = createAsyncThunk(
+  'wishlist/toggle',
+  async (item: WishlistItem, { getState, dispatch }) => {
+    const state = getState() as { wishlist: WishlistState };
+    const wasSaved = state.wishlist.items.some((saved) => saved.id === item.id);
+
+    dispatch(toggleWishlist(item));
+
+    if (wasSaved) {
+      await WishlistService.remove(item.id);
+    } else {
+      await WishlistService.add(item.id);
+    }
+
+    return { id: item.id, saved: !wasSaved };
+  },
+);
 
 const wishlistSlice = createSlice({
   name: 'wishlist',
@@ -84,6 +139,23 @@ const wishlistSlice = createSlice({
       state.items = [];
       saveWishlistToStorage(state.items);
     },
+  },
+
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchWishlist.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchWishlist.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload;
+        saveWishlistToStorage(state.items);
+      })
+      .addCase(fetchWishlist.rejected, (state) => {
+        // Keep whatever localStorage held: offline or a failed request should
+        // not empty someone's saved products.
+        state.loading = false;
+      });
   },
 });
 

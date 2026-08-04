@@ -23,8 +23,8 @@ import ResourcesDownloads from "@/components/products/ResourcesDownloads"
 import RelatedProducts from "@/components/products/RelatedProducts"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
-import { toggleWishlist } from "@/store/wishlistSlice"
-import type { RootState } from "@/store"
+import { toggleWishlistItem } from "@/store/wishlistSlice"
+import type { AppDispatch, RootState } from "@/store"
 import { useDispatch, useSelector } from "react-redux"
 import { toast } from "@/hooks/use-toast"
 import { Helmet } from 'react-helmet-async';
@@ -46,7 +46,7 @@ const ProductDetail = () => {
     "brand,category,photos",
     { enabled: !passedProductData && !!productId }
   );
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   // Read before the early returns below, so the hook order stays stable.
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items)
 
@@ -133,7 +133,7 @@ const ProductDetail = () => {
 
   const handleToggleWishlist = () => {
     dispatch(
-      toggleWishlist({
+      toggleWishlistItem({
         id: Number(product.id),
         name: product.name,
         brand: product.brand,

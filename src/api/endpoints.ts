@@ -83,6 +83,15 @@ export const API_ENDPOINTS = {
   WEBSITE: {
     SEND_CONTACT: '/api/v1/website/send_contact',
   },
+
+  // Saved products. Keyed on a token the browser keeps, not on a customer —
+  // the storefront has no login for the ERP to identify anyone by.
+  WISHLIST: {
+    BASE: '/api/v1/wishlist',
+    ADD: '/api/v1/wishlist/add',
+    REMOVE: '/api/v1/wishlist/remove',
+    CLEAR: '/api/v1/wishlist/clear',
+  },
 } as const;
 
 // Helper function to build URL with query parameters

@@ -29,6 +29,38 @@ export const hasApiKey = (): boolean => {
   return !!getApiKey();
 };
 
+const DEVICE_TOKEN_KEY = 'device_token';
+
+/**
+ * The id this browser is known by server-side.
+ *
+ * Saved products have to hang off something, and the storefront has no login,
+ * so there is no customer for the ERP to key them to. This identifies a
+ * browser, not a person: clearing site data or moving to another device starts
+ * a new one, and the old rows are stranded. Following someone across devices
+ * needs real accounts.
+ *
+ * Generated once and kept. The API requires 16-64 characters of
+ * `[A-Za-z0-9_-]`, which a UUID satisfies.
+ */
+export const getDeviceToken = (): string => {
+  let token = localStorage.getItem(DEVICE_TOKEN_KEY);
+
+  if (!token) {
+    token =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : // Older browsers, and any non-secure context, where randomUUID is absent.
+          `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}-${Math.random()
+            .toString(36)
+            .slice(2, 12)}`;
+
+    localStorage.setItem(DEVICE_TOKEN_KEY, token);
+  }
+
+  return token;
+};
+
 /**
  * Format API error message
  */
