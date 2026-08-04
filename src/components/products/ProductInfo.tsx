@@ -17,6 +17,9 @@ interface ProductInfoProps {
   quantity: number
   onQuantityChange: (quantity: number) => void
   onAddToCart: () => void
+  /** Whether this product is saved; the page owns the wishlist, as it does the cart. */
+  isWishlisted?: boolean
+  onToggleWishlist?: () => void
 }
 
 /** Prices render as `700.00` in the Figma. */
@@ -87,8 +90,9 @@ const ProductInfo = ({
   quantity,
   onQuantityChange,
   onAddToCart,
+  isWishlisted = false,
+  onToggleWishlist,
 }: ProductInfoProps) => {
-  const [wishlisted, setWishlisted] = useState(false)
 
   const showListPrice = typeof originalPrice === "number" && originalPrice > price
   const discountPct = showListPrice ? Math.round((1 - price / (originalPrice as number)) * 100) : 0
@@ -215,12 +219,12 @@ const ProductInfo = ({
 
         <button
           type="button"
-          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          aria-pressed={wishlisted}
-          onClick={() => setWishlisted((v) => !v)}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          aria-pressed={isWishlisted}
+          onClick={onToggleWishlist}
           className="flex h-[38px] w-[38px] items-center justify-center rounded-md border border-brand-700 bg-brand-700 text-white transition-colors hover:bg-brand-800"
         >
-          <Heart size={18} fill={wishlisted ? "currentColor" : "none"} />
+          <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
         </button>
       </div>
 

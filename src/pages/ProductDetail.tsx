@@ -23,7 +23,9 @@ import ResourcesDownloads from "@/components/products/ResourcesDownloads"
 import RelatedProducts from "@/components/products/RelatedProducts"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
-import { useDispatch } from "react-redux"
+import { toggleWishlist } from "@/store/wishlistSlice"
+import type { RootState } from "@/store"
+import { useDispatch, useSelector } from "react-redux"
 import { toast } from "@/hooks/use-toast"
 import { Helmet } from 'react-helmet-async';
 
@@ -45,6 +47,8 @@ const ProductDetail = () => {
     { enabled: !passedProductData && !!productId }
   );
   const dispatch = useDispatch()
+  // Read before the early returns below, so the hook order stays stable.
+  const wishlistItems = useSelector((state: RootState) => state.wishlist.items)
 
   // Use passed data if available, otherwise use fetched data
   const apiResponse = passedProductData || responseData
@@ -125,6 +129,26 @@ const ProductDetail = () => {
   }
   console.log(product)
 
+  const isWishlisted = wishlistItems.some((item) => item.id === Number(product.id))
+
+  const handleToggleWishlist = () => {
+    dispatch(
+      toggleWishlist({
+        id: Number(product.id),
+        name: product.name,
+        brand: product.brand,
+        price: product.price,
+        promoPrice: product.originalPrice,
+        image: product.image,
+        slug: (data as any)?.slug,
+      }),
+    )
+    toast({
+      title: isWishlisted ? "Removed from wishlist" : "Saved to wishlist",
+      description: product.name,
+    })
+  }
+
   const handleAddToCart = () => {
     dispatch(
       addToCart({
@@ -185,6 +209,8 @@ const ProductDetail = () => {
               quantity={quantity}
               onQuantityChange={setQuantity}
               onAddToCart={handleAddToCart}
+              isWishlisted={isWishlisted}
+              onToggleWishlist={handleToggleWishlist}
             />
           </div>
         </div>
