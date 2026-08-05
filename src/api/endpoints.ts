@@ -7,6 +7,9 @@ export const API_ENDPOINTS = {
     BASE: '/api/v1/products',
     BY_CODE: (code: string) => `/api/v1/products/code/${code}`,
     BY_ID: (id: string) => `/api/v1/products/view/${id}`,
+    // Admin-curated accessory recommendations, already grouped — each group is
+    // a tab in the "Shop Bundles or Accessories" section.
+    ACCESSORIES: (id: string) => `/api/v1/products/accessories/${id}`,
     FEATURED: '/api/v1/products/featured',
     LATEST: '/api/v1/products/latest',
     BEST_SELLERS: '/api/v1/products/best-sellers',

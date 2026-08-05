@@ -30,6 +30,20 @@ export const useProductById = (id: string, include?: string, options?: { enabled
   });
 };
 
+/**
+ * Accessory groups curated for a product. Cached for a while: the groups change
+ * only when someone edits them in the ERP, and the product page already fires
+ * several requests on load.
+ */
+export const useProductAccessories = (id: string) => {
+  return useQuery({
+    queryKey: ['products', 'accessories', id],
+    queryFn: () => ProductService.getProductAccessories(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 export const useFeaturedProducts = (params?: ProductQueryParams) => {
   return useQuery({
     queryKey: ['products', 'featured', params],

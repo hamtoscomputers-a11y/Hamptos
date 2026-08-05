@@ -215,13 +215,9 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Curated bundle rail, filled from live catalogue products. */}
-        <BundleAccessories
-          products={relatedCategoryData?.products || []}
-          fallbackProducts={relatedPoolData?.data || []}
-          currentId={String(product.id)}
-          isLoading={relatedLoading}
-        />
+        {/* Accessories curated in the ERP under Products → Accessories. Hidden
+            entirely when none are set up for this product. */}
+        <BundleAccessories currentId={String(product.id)} />
 
         {/* Promo mosaic, in place of the old detail tabs. Nothing is lost: the
             tabs' `key_information` and `product_details` now render in Quick

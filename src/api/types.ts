@@ -63,6 +63,35 @@ export interface Product {
   category_data?: Category;
 }
 
+/** One product recommended as an accessory, flattened by the API's join. */
+export interface AccessoryProduct {
+  id: string;
+  code: string;
+  name: string;
+  slug: string;
+  price: string;
+  promotion?: string;
+  promo_price?: string;
+  start_date?: string;
+  end_date?: string;
+  quantity: string;
+  image?: string;
+  image_url?: string;
+  brand_id?: string;
+  brand_name?: string;
+  category_id?: string;
+  category_name?: string;
+}
+
+/**
+ * An accessory group. `name` is free text typed by the admin and is what the
+ * storefront shows as a tab label, so there is no fixed set of these.
+ */
+export interface AccessoryGroup {
+  name: string;
+  products: AccessoryProduct[];
+}
+
 export interface ProductPhoto {
   id: string;
   product_id: string;

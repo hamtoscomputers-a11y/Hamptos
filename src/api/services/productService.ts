@@ -1,6 +1,7 @@
 import api from '../axios';
 import { API_ENDPOINTS, buildPaginatedUrl, buildUrl } from '../endpoints';
 import type {
+  AccessoryGroup,
   Product,
   PaginatedResponse,
   ProductQueryParams,
@@ -38,6 +39,16 @@ export class ProductService {
     
     const response = await api.get(url);
     return response.data.data || response.data;
+  }
+
+  /**
+   * Accessory groups curated in the ERP for one product. Its own call rather
+   * than an `include` on the product, because the detail page usually receives
+   * its product through router state and never fetches it.
+   */
+  static async getProductAccessories(id: string): Promise<AccessoryGroup[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.ACCESSORIES(id));
+    return response.data?.data || [];
   }
 
   // Get featured products
