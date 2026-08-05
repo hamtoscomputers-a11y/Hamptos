@@ -166,6 +166,16 @@ export interface ProductReviewsResponse {
   summary: ProductReviewSummary;
 }
 
+/**
+ * One published Q&A pair. Unanswered questions are filtered out by the ERP, so
+ * `answer` is always present here.
+ */
+export interface ProductQuestion {
+  id: number;
+  question: string;
+  answer: string;
+}
+
 /** What the "Write a review" form sends. */
 export interface ProductReviewSubmission {
   product_id: string | number;

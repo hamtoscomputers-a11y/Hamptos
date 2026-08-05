@@ -8,6 +8,7 @@ import type {
   Product,
   PaginatedResponse,
   ProductQueryParams,
+  ProductQuestion,
   ProductReviewApi,
   ProductReviewsResponse,
   ProductReviewSubmission,
@@ -67,6 +68,26 @@ export class ProductService {
   static async getProductComparisons(id: string): Promise<ComparisonProduct[]> {
     const response = await api.get(API_ENDPOINTS.PRODUCTS.COMPARISONS(id));
     return response.data?.data || [];
+  }
+
+  /**
+   * The Q&A pairs written for a product in the ERP.
+   *
+   * Shape-checked for the same reason as the reviews below: until this endpoint
+   * is deployed, the ERP answers it with the product catalogue at HTTP 200, and
+   * a catalogue row has neither a question nor an answer on it.
+   */
+  static async getProductQuestions(id: string): Promise<ProductQuestion[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.QUESTIONS(id));
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+
+    return rows.filter(
+      (row): row is ProductQuestion =>
+        !!row &&
+        typeof row === 'object' &&
+        typeof (row as ProductQuestion).question === 'string' &&
+        typeof (row as ProductQuestion).answer === 'string',
+    );
   }
 
   /**

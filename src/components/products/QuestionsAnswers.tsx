@@ -1,40 +1,19 @@
+import { useProductQuestions } from "@/api/hooks/useProducts"
+
 interface QaItem {
   question: string
   answer: string
 }
 
 interface QuestionsAnswersProps {
-  /** Names the product in each question. */
-  name: string
-  code: string
-  /**
-   * The ERP exposes no Q&A source, so this is empty in practice and the
-   * templates below stand in. Pass real entries and they render instead.
-   */
+  /** Whose Q&A to show. Without it the section renders nothing. */
+  productId?: string
+  /** Kept for the callers that pass them; not used for content any more. */
+  name?: string
+  code?: string
+  /** Overrides the ERP's entries. Used by stories and tests, not by the page. */
   items?: QaItem[]
 }
-
-/**
- * The Figma's three entries, with the product named in each. The answers are
- * kept product-agnostic: the Figma's own copy cites 802.11ax and Aruba Central,
- * which would be false on everything in the catalogue that is not an Aruba
- * access point.
- */
-const buildPlaceholders = (product: string): QaItem[] => [
-  {
-    question: `What accessories are available for the ${product}?`,
-    answer:
-      "Available accessories include mounting kits, power adapters, PoE injectors, and additional antennas for enhanced performance.",
-  },
-  {
-    question: `How does the ${product} compare to similar products?`,
-    answer: `The ${product} offers competitive performance for its class, often at a better price point than comparable products.`,
-  },
-  {
-    question: `How do you configure the ${product}?`,
-    answer: `Configuration of the ${product} can be done through the manufacturer's management platform or a local web interface for initial setup.`,
-  },
-]
 
 /** Q in #8A8A8A, A in #000000, both lettered in white. */
 const Marker = ({ letter }: { letter: "Q" | "A" }) => (
@@ -58,9 +37,16 @@ const Marker = ({ letter }: { letter: "Q" | "A" }) => (
  * Stacked entries would double the Figma's top-and-bottom rules where they
  * meet, so the rule above the first sits on the list and each entry carries the
  * one beneath it — the same drawing, without the 2px seams.
+ *
+ * Content comes from the ERP under Products → Questions & Answers. A product
+ * with none hides the section rather than showing the three templated questions
+ * this used to generate from the product's name: those were the same three on
+ * every product in the catalogue, and their answers asserted things about
+ * accessories and setup that nobody had checked.
  */
-const QuestionsAnswers = ({ name, code, items }: QuestionsAnswersProps) => {
-  const entries = items?.length ? items : buildPlaceholders(name || code)
+const QuestionsAnswers = ({ productId, items }: QuestionsAnswersProps) => {
+  const { data } = useProductQuestions(productId ?? "")
+  const entries = items?.length ? items : (data ?? [])
 
   if (!entries.length) return null
 

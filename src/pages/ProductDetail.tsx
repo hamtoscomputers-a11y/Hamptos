@@ -289,7 +289,7 @@ const ProductDetail = () => {
 
         <CustomerReviews productId={String(product.id)} productName={product.name} />
 
-        <QuestionsAnswers name={product.name} code={product.code} />
+        <QuestionsAnswers productId={String(product.id)} />
 
         <IndustryNews />
 

@@ -66,6 +66,19 @@ export const useProductComparisons = (id: string) => {
 };
 
 /**
+ * The Q&A pairs written for a product in the ERP. Cached like the other curated
+ * sections — they change only when someone edits them.
+ */
+export const useProductQuestions = (id: string) => {
+  return useQuery({
+    queryKey: ['products', 'questions', id],
+    queryFn: () => ProductService.getProductQuestions(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
  * A product's approved reviews and their summary.
  *
  * Short `staleTime` compared with the curated sections above: reviews are
