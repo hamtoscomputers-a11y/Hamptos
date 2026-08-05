@@ -9,6 +9,7 @@ import ProductInfo from "@/components/products/ProductInfo"
 import BundleAccessories from "@/components/products/BundleAccessories"
 import ProductOverview from "@/components/products/ProductOverview"
 import PromoMosaic from "@/components/products/PromoMosaic"
+import PromoStrip from "@/components/products/PromoStrip"
 import QuickSpecs from "@/components/products/QuickSpecs"
 import ProductDetailsSection from "@/components/products/ProductDetailsSection"
 import AccessoriesTable from "@/components/products/AccessoriesTable"
@@ -224,6 +225,10 @@ const ProductDetail = () => {
             tabs' `key_information` and `product_details` now render in Quick
             Specs, Product Details and the specification table below. */}
         <PromoMosaic />
+
+        {/* Promo strip. Copy and artwork are props with the Figma's content as
+            defaults — the ERP has no banner endpoint to read them from. */}
+        <PromoStrip />
 
         {/* Product Overview — the ERP's `overview`, or the first paragraph of
             the product description where that has not been written yet. */}
