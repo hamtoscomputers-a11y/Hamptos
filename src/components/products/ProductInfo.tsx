@@ -1,10 +1,18 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { ArrowRight, Award, BadgePlus, Heart, Minus, Plus, ShieldCheck, Star, UserRound } from "lucide-react"
+import { ArrowRight, Award, BadgePlus, Heart, Minus, Plus, ShieldCheck, UserRound } from "lucide-react"
+import RatingStars from "./RatingStars"
+import { useProductQuestions, useProductReviews } from "@/api/hooks/useProducts"
 
 interface ProductInfoProps {
   name: string
   brand: string
+  /**
+   * Whose reviews and questions to count in the line under the title. Both come
+   * from the same cache entries the sections further down use, so this adds no
+   * requests to the page.
+   */
+  productId?: string
   /** Brand id, for the brand link; omitted when the ERP sends only a name. */
   brandId?: string | number
   /** The ERP product `code` — shown as the Model number. */
@@ -75,12 +83,13 @@ const OptionGroup = ({ label, options }: { label: string; options: string[] }) =
 /**
  * Right column of the product header: title, identity line, price, trust band,
  * configurator, subtotal, cart controls and the expertise card. Everything with
- * an ERP field is live; the rating, configurator and marketing copy are static
- * design placeholders until a data source exists.
+ * an ERP field is live, the rating line included; the configurator and the
+ * marketing copy are still static design placeholders.
  */
 const ProductInfo = ({
   name,
   brand,
+  productId,
   brandId,
   model,
   price,
@@ -93,6 +102,15 @@ const ProductInfo = ({
   isWishlisted = false,
   onToggleWishlist,
 }: ProductInfoProps) => {
+
+  // Both share the cache entries Customer Reviews and Questions & Answers
+  // already fill, so this summary line costs no extra request.
+  const { data: reviewData } = useProductReviews(productId ?? "")
+  const { data: questionData } = useProductQuestions(productId ?? "")
+
+  const reviewCount = reviewData?.summary.total ?? 0
+  const averageRating = reviewData?.summary.average ?? 0
+  const questionCount = questionData?.length ?? 0
 
   const showListPrice = typeof originalPrice === "number" && originalPrice > price
   const discountPct = showListPrice ? Math.round((1 - price / (originalPrice as number)) * 100) : 0
@@ -124,16 +142,32 @@ const ProductInfo = ({
         </span>
       </div>
 
-      {/* Rating — static placeholder; the ERP sends no rating/review/question data. */}
+      {/* Rating — the approved reviews and published Q&A for this product,
+          counted by the ERP. Stars fill to the average, so an unrated product
+          shows five empty ones rather than a flattering five full ones. */}
       <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[13px] text-ink-muted">
-        <span className="flex items-center gap-0.5 text-flash">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <Star key={i} size={15} fill="currentColor" strokeWidth={0} aria-hidden />
-          ))}
+        <RatingStars
+          rating={averageRating}
+          size={15}
+          className="gap-0.5"
+          fillClass="text-flash"
+          emptyClass="text-surface-line"
+        />
+        <span>
+          {reviewCount > 0
+            ? `(${averageRating.toFixed(1)}/5.0) ${reviewCount} ${reviewCount === 1 ? "Review" : "Reviews"}`
+            : "No reviews yet"}
         </span>
-        <span>(4.8/5.0) 44 Reviews</span>
-        <span className="text-surface-line">|</span>
-        <span>30 Questions</span>
+        {/* Dropped entirely when there are none — a lone separator followed by
+            "0 Questions" is noise on a product nobody has asked about. */}
+        {questionCount > 0 && (
+          <>
+            <span className="text-surface-line">|</span>
+            <span>
+              {questionCount} {questionCount === 1 ? "Question" : "Questions"}
+            </span>
+          </>
+        )}
       </div>
 
       {/* Price */}

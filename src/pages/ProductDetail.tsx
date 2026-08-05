@@ -124,10 +124,8 @@ const ProductDetail = () => {
     details: (data as any)?.details || "",
     inStock: Number(data.quantity || 0) > 0,
     isOnSale: !!showOriginalPrice,
-    // The ERP exposes no rating or review fields — left undefined rather than
-    // invented, so the summary renders its empty state until a source exists.
-    rating: undefined as number | undefined,
-    reviews: undefined as number | undefined,
+    // No rating fields here: the product endpoint carries none, and the rating
+    // line reads the review summary straight from its own endpoint instead.
     meta: (data as any)?.metadata || "",
     BXGY: (data as any)?.BXGY || null,
     key_information: (data as any)?.key_information || "",
@@ -205,6 +203,7 @@ const ProductDetail = () => {
             <ProductInfo
               name={product.name}
               brand={product.brand}
+              productId={String(product.id)}
               brandId={brandId}
               model={product.code}
               price={product.price}
