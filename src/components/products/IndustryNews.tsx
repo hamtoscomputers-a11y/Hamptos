@@ -1,4 +1,11 @@
 import { useState } from "react"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 import { useIndustryNews } from "@/api/hooks/useProducts"
 
 export interface NewsItem {
@@ -14,9 +21,10 @@ export interface NewsItem {
 interface IndustryNewsProps {
   /** Overrides the ERP's cards. Used by stories and tests, not by the page. */
   items?: NewsItem[]
-  /** How many to show. Three fills the Figma's row. */
-  limit?: number
 }
+
+/** Cards visible at once on a wide screen — the Figma's row of three. */
+const PER_VIEW = 3
 
 /** 419 x 343 card: a 417 x 247 image inside a 1px #1A74BB border, then the copy. */
 const NewsCard = ({ item }: { item: NewsItem }) => {
@@ -73,8 +81,12 @@ const NewsCard = ({ item }: { item: NewsItem }) => {
  * Cards come from the ERP under Front End → Industry News, and are the same on
  * every product page. The section keeps its heading when there are none rather
  * than disappearing, so the page does not silently lose a block.
+ *
+ * Past three cards the row becomes a carousel with gutter arrows, the same one
+ * the Related Products rail uses — so a fourth article is reachable rather than
+ * silently dropped.
  */
-const IndustryNews = ({ items, limit = 3 }: IndustryNewsProps) => {
+const IndustryNews = ({ items }: IndustryNewsProps) => {
   const { data, isLoading } = useIndustryNews()
 
   const fromApi: NewsItem[] = (data ?? []).map((article) => ({
@@ -85,7 +97,8 @@ const IndustryNews = ({ items, limit = 3 }: IndustryNewsProps) => {
     href: article.link ?? undefined,
   }))
 
-  const list = (items?.length ? items : fromApi).slice(0, limit)
+  const list = items?.length ? items : fromApi
+  const scrollable = list.length > PER_VIEW
 
   return (
     <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-[50px]" aria-labelledby="industry-news-heading">
@@ -97,13 +110,40 @@ const IndustryNews = ({ items, limit = 3 }: IndustryNewsProps) => {
         Industry News &amp; Insights
       </h2>
 
-      {list.length > 0 ? (
+      {list.length === 0 ? null : scrollable ? (
+        // 23px gutter, as the grid below — split across the two sides of each
+        // slide so the outer edges stay flush with the column.
+        <Carousel className="mt-[23px]" opts={{ align: "start", loop: false }}>
+          <CarouselContent className="-ml-[23px]">
+            {list.map((item) => (
+              <CarouselItem key={item.id} className="basis-full pl-[23px] sm:basis-1/2 lg:basis-1/3">
+                <NewsCard item={item} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {/* Parked in the page margin at the widths where one exists, and
+              tucked just inside the track below that — the same placement as
+              the product rails. */}
+          <CarouselPrevious
+            className="left-1 hidden h-9 w-9 border-surface-arrow bg-white/90 text-ink-steel shadow-sm hover:bg-brand-100 hover:text-brand-700 sm:flex 2xl:-left-[57px] 2xl:bg-white 2xl:shadow-none"
+            aria-label="Previous articles"
+          />
+          <CarouselNext
+            className="right-1 hidden h-9 w-9 border-surface-arrow bg-white/90 text-ink-steel shadow-sm hover:bg-brand-100 hover:text-brand-700 sm:flex 2xl:-right-[57px] 2xl:bg-white 2xl:shadow-none"
+            aria-label="More articles"
+          />
+        </Carousel>
+      ) : (
+        // Three or fewer fit the row, so no arrows and no drag — a static grid
+        // reads as finished rather than as a rail that will not move.
         <div className="mt-[23px] grid grid-cols-1 gap-[23px] sm:grid-cols-2 lg:grid-cols-3">
           {list.map((item) => (
             <NewsCard key={item.id} item={item} />
           ))}
         </div>
-      ) : (
+      )}
+
+      {list.length === 0 && (
         <p className="mt-[23px] text-center text-[12px] text-ink-body">
           {isLoading ? "Loading…" : "No data available."}
         </p>
