@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ProductService, BrandService } from '../services';
 import { getPromoBanners } from '../services/websiteService';
-import type { ProductQueryParams, SearchQueryParams } from '../types';
+import type { ProductQueryParams, ProductReviewSubmission, SearchQueryParams } from '../types';
 
 export const useProducts = (params?: ProductQueryParams) => {
   return useQuery({
@@ -62,6 +62,35 @@ export const useProductComparisons = (id: string) => {
     queryFn: () => ProductService.getProductComparisons(id),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * A product's approved reviews and their summary.
+ *
+ * Short `staleTime` compared with the curated sections above: reviews are
+ * written by visitors rather than edited in the ERP, so a newly approved one
+ * should appear without a hard refresh.
+ */
+export const useProductReviews = (id: string) => {
+  return useQuery({
+    queryKey: ['products', 'reviews', id],
+    queryFn: () => ProductService.getProductReviews(id),
+    enabled: !!id,
+    staleTime: 60 * 1000,
+  });
+};
+
+/**
+ * Submits a review.
+ *
+ * The list is *not* invalidated on success. The ERP holds every submission for
+ * approval, so refetching would return exactly what it returned before and make
+ * it look as though the review had been dropped.
+ */
+export const useSubmitProductReview = () => {
+  return useMutation({
+    mutationFn: (review: ProductReviewSubmission) => ProductService.submitProductReview(review),
   });
 };
 

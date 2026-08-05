@@ -134,6 +134,48 @@ export interface PromoBannersByPlacement {
   product_strip?: PromoBanner[];
 }
 
+/**
+ * One approved review. The reviewer's email is deliberately not part of this —
+ * the ERP holds it for moderation and never puts it in the response.
+ */
+export interface ProductReviewApi {
+  id: number;
+  author: string;
+  rating: number;
+  title: string | null;
+  body: string | null;
+  /** True when the email given matched a customer invoiced for this product. */
+  verified_buyer: boolean;
+  /** `YYYY-MM-DD HH:MM:SS`, the ERP's own format. */
+  created_at: string;
+}
+
+/**
+ * Counts across *every* approved review, not just the page returned alongside
+ * it — the summary says "44 Reviews" while the list shows five.
+ */
+export interface ProductReviewSummary {
+  /** Null when there are no reviews, so "unrated" is distinguishable from 0. */
+  average: number | null;
+  total: number;
+  counts: Record<'1' | '2' | '3' | '4' | '5', number>;
+}
+
+export interface ProductReviewsResponse {
+  data: ProductReviewApi[];
+  summary: ProductReviewSummary;
+}
+
+/** What the "Write a review" form sends. */
+export interface ProductReviewSubmission {
+  product_id: string | number;
+  rating: number;
+  author: string;
+  email?: string;
+  title?: string;
+  body?: string;
+}
+
 export interface ProductPhoto {
   id: string;
   product_id: string;

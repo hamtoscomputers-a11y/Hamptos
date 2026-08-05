@@ -118,6 +118,9 @@ const ProductDetail = () => {
     image: imageUrl,
     brand: brandName,
     product_details: (data as any)?.product_details || "",
+    // The ERP's Product Overview field. Null until it has been written, which
+    // is why the section falls back to the description's first paragraph.
+    overview: (data as any)?.overview || "",
     details: (data as any)?.details || "",
     inStock: Number(data.quantity || 0) > 0,
     isOnSale: !!showOriginalPrice,
@@ -284,7 +287,7 @@ const ProductDetail = () => {
         {/* Support banner — the photo overflows the fill upward. */}
         <TechnicalSupportBanner />
 
-        <CustomerReviews />
+        <CustomerReviews productId={String(product.id)} productName={product.name} />
 
         <QuestionsAnswers name={product.name} code={product.code} />
 

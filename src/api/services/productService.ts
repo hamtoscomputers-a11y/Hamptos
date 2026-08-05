@@ -1,5 +1,6 @@
 import api from '../axios';
 import { API_ENDPOINTS, buildPaginatedUrl, buildUrl } from '../endpoints';
+import { getDeviceToken } from '../utils';
 import type {
   AccessoryGroup,
   Certification,
@@ -7,6 +8,8 @@ import type {
   Product,
   PaginatedResponse,
   ProductQueryParams,
+  ProductReviewsResponse,
+  ProductReviewSubmission,
   SearchQueryParams,
   SearchResult,
   SearchSuggestionsResponse,
@@ -63,6 +66,36 @@ export class ProductService {
   static async getProductComparisons(id: string): Promise<ComparisonProduct[]> {
     const response = await api.get(API_ENDPOINTS.PRODUCTS.COMPARISONS(id));
     return response.data?.data || [];
+  }
+
+  /**
+   * A product's approved reviews and their summary.
+   *
+   * The summary comes back with the list rather than being derived from it: the
+   * page returns the newest handful, and counting the bars from those would
+   * show a histogram of the last five reviews instead of all of them.
+   */
+  static async getProductReviews(id: string, limit = 20): Promise<ProductReviewsResponse> {
+    const response = await api.get(buildUrl(API_ENDPOINTS.PRODUCTS.REVIEWS(id), { limit }));
+    return {
+      data: response.data?.data || [],
+      summary: response.data?.summary || { average: null, total: 0, counts: { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 } },
+    };
+  }
+
+  /**
+   * Submits a review. It is queued for approval in the ERP, so the caller must
+   * not expect it to turn up in `getProductReviews` afterwards.
+   *
+   * The device token goes along so the ERP can refuse a second review of the
+   * same product from the same browser.
+   */
+  static async submitProductReview(review: ProductReviewSubmission): Promise<{ status: boolean; message: string }> {
+    const response = await api.post(API_ENDPOINTS.PRODUCTS.SUBMIT_REVIEW, {
+      ...review,
+      device_token: getDeviceToken(),
+    });
+    return response.data;
   }
 
   // Get featured products

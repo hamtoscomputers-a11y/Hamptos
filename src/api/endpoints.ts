@@ -14,6 +14,11 @@ export const API_ENDPOINTS = {
     CERTIFICATIONS: (id: string) => `/api/v1/products/certifications/${id}`,
     // Products curated as columns of "Compare to Similar Items".
     COMPARISONS: (id: string) => `/api/v1/products/comparisons/${id}`,
+    // Approved customer reviews, with the summary the histogram is drawn from.
+    REVIEWS: (id: string) => `/api/v1/products/reviews/${id}`,
+    // Submitting one. It is held for approval in the ERP, so nothing posted
+    // here appears in the list above until someone lets it through.
+    SUBMIT_REVIEW: '/api/v1/products/reviews',
     FEATURED: '/api/v1/products/featured',
     LATEST: '/api/v1/products/latest',
     BEST_SELLERS: '/api/v1/products/best-sellers',
