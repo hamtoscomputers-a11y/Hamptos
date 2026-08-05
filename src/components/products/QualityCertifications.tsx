@@ -33,16 +33,25 @@ const QualityCertifications = ({ currentId }: QualityCertificationsProps) => {
         <div className="mt-2.5 flex flex-wrap items-center gap-[8.6px]">
           {badges.map((badge) =>
             badge.image_url ? (
-              // 60px disc in the Figma. Contained, so a wide mark such as
-              // "ISO 9001" is not cropped to fit a circle.
-              <img
+              // The 60px box is a frame, not a disc: certification artwork
+              // carries its own shape on a transparent background, so a fill
+              // behind it would read as a second, larger badge. The rounding
+              // stays as a guard — artwork that turns out to be an opaque
+              // rectangle is clipped to the circle rather than left square.
+              <span
                 key={badge.id}
-                src={badge.image_url}
-                alt={badge.name}
                 title={badge.name}
-                loading="lazy"
-                className="h-[60px] w-[60px] flex-shrink-0 rounded-full object-contain"
-              />
+                className="flex h-[60px] w-[60px] flex-shrink-0 items-center justify-center overflow-hidden rounded-full"
+              >
+                {/* Contained rather than cropped, so a wide mark such as
+                    "ISO 9001" keeps both ends. */}
+                <img
+                  src={badge.image_url}
+                  alt={badge.name}
+                  loading="lazy"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </span>
             ) : (
               // Named but no logo uploaded yet — the name still tells the
               // shopper what the product carries.
