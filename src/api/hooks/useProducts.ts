@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ProductService, BrandService } from '../services';
-import { getPromoBanners } from '../services/websiteService';
+import { getIndustryNews, getPromoBanners } from '../services/websiteService';
 import type { ProductQueryParams, ProductReviewSubmission, SearchQueryParams } from '../types';
 
 export const useProducts = (params?: ProductQueryParams) => {
@@ -195,6 +195,19 @@ export const usePromoBanners = () => {
     queryKey: ['website-promo-banners'],
     queryFn: getPromoBanners,
     staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+};
+
+/**
+ * The "Industry News & Insights" cards. One cache entry for the whole site —
+ * they are the same on every product, so moving between products does not
+ * refetch them.
+ */
+export const useIndustryNews = () => {
+  return useQuery({
+    queryKey: ['website-industry-news'],
+    queryFn: getIndustryNews,
+    staleTime: 10 * 60 * 1000,
   });
 };
 

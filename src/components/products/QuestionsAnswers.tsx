@@ -45,10 +45,8 @@ const Marker = ({ letter }: { letter: "Q" | "A" }) => (
  * accessories and setup that nobody had checked.
  */
 const QuestionsAnswers = ({ productId, items }: QuestionsAnswersProps) => {
-  const { data } = useProductQuestions(productId ?? "")
+  const { data, isLoading } = useProductQuestions(productId ?? "")
   const entries = items?.length ? items : (data ?? [])
-
-  if (!entries.length) return null
 
   return (
     <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-[50px]" aria-labelledby="questions-answers-heading">
@@ -60,26 +58,41 @@ const QuestionsAnswers = ({ productId, items }: QuestionsAnswersProps) => {
       </h2>
 
       {/* 7345 - 7322 = 23 between the heading and the first rule. */}
-      <ul className="mt-[23px] border-t border-black/50">
-        {entries.map((entry) => (
-          // The pair sits at y28 in a 100-tall block and is 44.04 high, so it is
-          // centred with 28 clear above and below. `min-h` rather than a fixed
-          // height, since a question longer than the Figma's wraps.
-          <li key={entry.question} className="flex min-h-[100px] items-center border-b border-black/50 py-7">
-            {/* 764 in the Figma — not the full 1303. */}
-            <div className="flex w-full max-w-[764px] flex-col gap-2">
-              <p className="flex items-start gap-1.5 text-[12px] leading-[18px] text-black">
-                <Marker letter="Q" />
-                {entry.question}
-              </p>
-              <p className="flex items-start gap-1.5 text-[12px] leading-[18px] text-black">
-                <Marker letter="A" />
-                {entry.answer}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {entries.length > 0 ? (
+        <ul className="mt-[23px] border-t border-black/50">
+          {entries.map((entry) => (
+            // The pair sits at y28 in a 100-tall block and is 44.04 high, so it
+            // is centred with 28 clear above and below. `min-h` rather than a
+            // fixed height, since a question longer than the Figma's wraps.
+            <li key={entry.question} className="flex min-h-[100px] items-center border-b border-black/50 py-7">
+              {/* 764 in the Figma — not the full 1303. */}
+              <div className="flex w-full max-w-[764px] flex-col gap-2">
+                <p className="flex items-start gap-1.5 text-[12px] leading-[18px] text-black">
+                  <Marker letter="Q" />
+                  {entry.question}
+                </p>
+                <div className="flex items-start gap-1.5 text-[12px] leading-[18px] text-black">
+                  <Marker letter="A" />
+                  {/* Written in the ERP's rich-text editor, so it arrives as
+                      markup. Filtered to an allowlist server-side before it is
+                      sent. `[&>p:last-child]:mb-0` kills the trailing margin a
+                      lone paragraph would otherwise add under the row. */}
+                  <div
+                    className="min-w-0 [&_a]:text-brand-700 [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-1.5 [&>p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-5"
+                    dangerouslySetInnerHTML={{ __html: entry.answer }}
+                  />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="mt-[23px] border-y border-black/50 py-8">
+          <p className="text-[12px] text-ink-body">
+            {isLoading && productId ? "Loading…" : "No data available."}
+          </p>
+        </div>
+      )}
     </section>
   )
 }

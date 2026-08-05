@@ -186,6 +186,18 @@ export interface ProductReviewSubmission {
   body?: string;
 }
 
+/** One "Industry News & Insights" card. */
+export interface IndustryNewsItem {
+  id: number;
+  image: string | null;
+  alt: string | null;
+  title: string;
+  excerpt: string | null;
+  link: string | null;
+  /** `YYYY-MM-DD`, or null when it was left blank. */
+  published_at: string | null;
+}
+
 export interface ProductPhoto {
   id: string;
   product_id: string;

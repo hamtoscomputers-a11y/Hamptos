@@ -100,6 +100,9 @@ export const API_ENDPOINTS = {
     // Without `?placement=` the response is keyed by placement, so the product
     // page takes the mosaic and the strip in one request.
     PROMO_BANNERS: '/api/v1/website/promo_banners',
+    // "Industry News & Insights" cards. Site-wide, not per product — the same
+    // cards run under every product page.
+    INDUSTRY_NEWS: '/api/v1/website/industry_news',
   },
 
   // Saved products. Keyed on a token the browser keeps, not on a customer —
