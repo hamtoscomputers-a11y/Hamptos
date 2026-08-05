@@ -1,16 +1,11 @@
 import { useMemo } from "react"
 import { Link } from "react-router-dom"
-import { useQueries } from "@tanstack/react-query"
-import { ProductService } from "@/api/services/productService"
 import { createSlug } from "@/lib/utils"
+import { useProductComparisons } from "@/api/hooks/useProducts"
 import { parseSpecGroups } from "./ProductSpecifications"
 
 interface CompareSimilarItemsProps {
-  /** Same-category products — the first choice for comparison columns. */
-  products: any[]
-  /** Catalogue-wide pool, used to top up when the category holds too few others. */
-  fallbackProducts?: any[]
-  /** Current product id, excluded so it is never its own comparator. */
+  /** Current product id — the comparators are looked up against it. */
   currentId: string
   /** The ERP product `code` — the current product's column header. */
   code: string
@@ -19,8 +14,6 @@ interface CompareSimilarItemsProps {
   keyInformation?: string
 }
 
-/** The Figma compares the product against four others. */
-const MAX_COMPARATORS = 4
 /** The Figma lists four spec rows; past this the table stops being scannable. */
 const MAX_SPEC_ROWS = 8
 
@@ -39,47 +32,15 @@ const toSpecMap = (html?: string): Map<string, string> => {
  * over a table whose first column names the spec and whose remaining columns are
  * one product each — this product in black, its comparators as brand-blue links.
  *
- * The comparators are live catalogue products, and every row is a spec label the
- * current product and at least one comparator both carry, so no cell is invented.
- * List endpoints omit `key_information`, so each comparator's full record is
- * fetched under the same query key `useProductById` uses — a shared cache, not a
- * second round of requests.
+ * The comparators are chosen in the ERP under Products → Accessories, so the
+ * table compares what someone decided was worth comparing. Every row is a spec
+ * label the current product and at least one comparator both carry, so no cell
+ * is invented. The API sends each comparator's `key_information` with the list,
+ * so the columns cost one request rather than one per product.
  */
-const CompareSimilarItems = ({
-  products,
-  fallbackProducts = [],
-  currentId,
-  code,
-  name,
-  keyInformation,
-}: CompareSimilarItemsProps) => {
-  // Same-category products first, topped up from the catalogue pool.
-  const comparators = useMemo(() => {
-    const seen = new Set([currentId])
-    const picked: any[] = []
-    for (const pool of [products || [], fallbackProducts]) {
-      for (const p of pool) {
-        const id = String(p?.id ?? "")
-        if (!id || seen.has(id)) continue
-        seen.add(id)
-        picked.push(p)
-        if (picked.length >= MAX_COMPARATORS) break
-      }
-      if (picked.length >= MAX_COMPARATORS) break
-    }
-    return picked
-  }, [products, fallbackProducts, currentId])
-
-  const results = useQueries({
-    queries: comparators.map((p) => ({
-      // Same key shape as `useProductById`, so a visited product is already cached.
-      queryKey: ["products", "id", String(p.id), "brand,category,photos"],
-      queryFn: () => ProductService.getProductById(String(p.id), "brand,category,photos"),
-      staleTime: 5 * 60 * 1000,
-    })),
-  })
-
-  const isLoading = results.some((r) => r.isLoading)
+const CompareSimilarItems = ({ currentId, code, name, keyInformation }: CompareSimilarItemsProps) => {
+  const { data, isLoading } = useProductComparisons(currentId)
+  const comparators = data ?? []
 
   const columns = useMemo(() => {
     const own = {
@@ -91,26 +52,17 @@ const CompareSimilarItems = ({
       isCurrent: true,
     }
 
-    const others = results
-      .map((result, index) => {
-        const data = (result.data as any)?.data || result.data
-        if (!data) return null
-        const source = comparators[index]
-        const label = data.code || source?.code || ""
-        const productName = data.name || source?.name || ""
-        return {
-          id: String(data.id ?? source?.id ?? ""),
-          code: label,
-          name: productName,
-          slug: createSlug(productName || String(data.id)),
-          specs: toSpecMap(data.key_information),
-          isCurrent: false,
-        }
-      })
-      .filter(Boolean) as typeof own[]
+    const others = comparators.map((product) => ({
+      id: String(product.id),
+      code: product.code || "",
+      name: product.name || "",
+      slug: product.slug || createSlug(product.name || String(product.id)),
+      specs: toSpecMap(product.key_information),
+      isCurrent: false,
+    }))
 
     return [own, ...others]
-  }, [currentId, code, name, keyInformation, results, comparators])
+  }, [currentId, code, name, keyInformation, comparators])
 
   // Only labels this product and at least one comparator both carry are
   // comparable; anything else would print a row of blanks.

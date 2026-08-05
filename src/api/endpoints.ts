@@ -10,6 +10,10 @@ export const API_ENDPOINTS = {
     // Admin-curated accessory recommendations, already grouped — each group is
     // a tab in the "Shop Bundles or Accessories" section.
     ACCESSORIES: (id: string) => `/api/v1/products/accessories/${id}`,
+    // Quality certification badges assigned to the product.
+    CERTIFICATIONS: (id: string) => `/api/v1/products/certifications/${id}`,
+    // Products curated as columns of "Compare to Similar Items".
+    COMPARISONS: (id: string) => `/api/v1/products/comparisons/${id}`,
     FEATURED: '/api/v1/products/featured',
     LATEST: '/api/v1/products/latest',
     BEST_SELLERS: '/api/v1/products/best-sellers',

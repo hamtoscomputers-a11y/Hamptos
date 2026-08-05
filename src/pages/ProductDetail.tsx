@@ -7,6 +7,7 @@ import { useProductsByCategory } from "@/api/hooks/useCategories"
 import ProductGallery from "@/components/products/ProductGallery"
 import ProductInfo from "@/components/products/ProductInfo"
 import BundleAccessories from "@/components/products/BundleAccessories"
+import ProductOverview from "@/components/products/ProductOverview"
 import PromoMosaic from "@/components/products/PromoMosaic"
 import QuickSpecs from "@/components/products/QuickSpecs"
 import ProductDetailsSection from "@/components/products/ProductDetailsSection"
@@ -224,6 +225,10 @@ const ProductDetail = () => {
             Specs, Product Details and the specification table below. */}
         <PromoMosaic />
 
+        {/* Product Overview — the ERP's `overview`, or the first paragraph of
+            the product description where that has not been written yet. */}
+        <ProductOverview overview={product.overview} productDetails={product.product_details} />
+
         {/* Quick Specs — the figure and its spec table. */}
         <QuickSpecs
           code={product.code}
@@ -242,19 +247,12 @@ const ProductDetail = () => {
           productDetails={product.product_details || product.details}
         />
 
-        {/* The Accessories — catalogue products grouped by their ERP category. */}
-        <AccessoriesTable
-          products={relatedCategoryData?.products || []}
-          fallbackProducts={relatedPoolData?.data || []}
-          currentId={String(product.id)}
-          code={product.code}
-          name={product.name}
-        />
+        {/* The Accessories — the curated groups again, as a reference table. */}
+        <AccessoriesTable currentId={String(product.id)} code={product.code} name={product.name} />
 
-        {/* Compare to Similar Items — this product's specs beside four others'. */}
+        {/* Compare to Similar Items — this product's specs beside the ones
+            chosen for it in the ERP. */}
         <CompareSimilarItems
-          products={relatedCategoryData?.products || []}
-          fallbackProducts={relatedPoolData?.data || []}
           currentId={String(product.id)}
           code={product.code}
           name={product.name}
@@ -264,7 +262,7 @@ const ProductDetail = () => {
         {/* Get More Information — the contact prompt under the comparison. */}
         <GetMoreInformation code={product.code} name={product.name} />
 
-        <QualityCertifications />
+        <QualityCertifications currentId={String(product.id)} />
 
         {/* The full spec table, two-up and striped. */}
         <ProductSpecTable
@@ -276,7 +274,7 @@ const ProductDetail = () => {
 
         <GetMoreInformation code={product.code} name={product.name} variant="wide" />
 
-        <QualityCertifications />
+        <QualityCertifications currentId={String(product.id)} />
 
         {/* Support banner — the photo overflows the fill upward. */}
         <TechnicalSupportBanner />

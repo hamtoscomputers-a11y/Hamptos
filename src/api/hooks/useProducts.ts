@@ -44,6 +44,26 @@ export const useProductAccessories = (id: string) => {
   });
 };
 
+/** Certification badges for a product. Changes only when the ERP is edited. */
+export const useProductCertifications = (id: string) => {
+  return useQuery({
+    queryKey: ['products', 'certifications', id],
+    queryFn: () => ProductService.getProductCertifications(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/** Curated comparison products for the "Compare to Similar Items" table. */
+export const useProductComparisons = (id: string) => {
+  return useQuery({
+    queryKey: ['products', 'comparisons', id],
+    queryFn: () => ProductService.getProductComparisons(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 export const useFeaturedProducts = (params?: ProductQueryParams) => {
   return useQuery({
     queryKey: ['products', 'featured', params],

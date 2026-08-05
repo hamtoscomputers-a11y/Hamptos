@@ -2,6 +2,8 @@ import api from '../axios';
 import { API_ENDPOINTS, buildPaginatedUrl, buildUrl } from '../endpoints';
 import type {
   AccessoryGroup,
+  Certification,
+  ComparisonProduct,
   Product,
   PaginatedResponse,
   ProductQueryParams,
@@ -48,6 +50,18 @@ export class ProductService {
    */
   static async getProductAccessories(id: string): Promise<AccessoryGroup[]> {
     const response = await api.get(API_ENDPOINTS.PRODUCTS.ACCESSORIES(id));
+    return response.data?.data || [];
+  }
+
+  /** Quality certification badges assigned to a product in the ERP. */
+  static async getProductCertifications(id: string): Promise<Certification[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.CERTIFICATIONS(id));
+    return response.data?.data || [];
+  }
+
+  /** Products curated as the comparison table's columns. */
+  static async getProductComparisons(id: string): Promise<ComparisonProduct[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.COMPARISONS(id));
     return response.data?.data || [];
   }
 

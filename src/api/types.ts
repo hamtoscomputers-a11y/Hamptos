@@ -41,6 +41,8 @@ export interface Product {
   name: string;
   slug: string;
   details?: string;
+  /** Short summary for the storefront's "Product Overview" heading. */
+  overview?: string;
   cost: string;
   price: string;
   promo_price?: string;
@@ -90,6 +92,22 @@ export interface AccessoryProduct {
 export interface AccessoryGroup {
   name: string;
   products: AccessoryProduct[];
+}
+
+/** A quality certification badge. `image_url` is null when no logo was uploaded. */
+export interface Certification {
+  id: string;
+  name: string;
+  image?: string | null;
+  image_url?: string | null;
+}
+
+/**
+ * A curated comparison product. Same join as an accessory, plus the specs the
+ * comparison table reads — accessories omit `key_information` to stay light.
+ */
+export interface ComparisonProduct extends AccessoryProduct {
+  key_information?: string;
 }
 
 export interface ProductPhoto {
