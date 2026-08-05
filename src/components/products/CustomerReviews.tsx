@@ -51,6 +51,17 @@ const formatReviewDate = (value: string) => {
   return `${month}/${day}/${String(year).slice(-2)}`
 }
 
+/** A usable average, or null for "no rating" — never 0.0 by accident. */
+const toAverage = (value: unknown): number | null => {
+  if (value === null || value === undefined || value === "") {
+    return null
+  }
+
+  const parsed = Number(value)
+
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 /** Solid green disc with a white tick — the design's #34CF00 verified mark. */
 const VerifiedMark = () => (
   <span className="flex h-[13px] w-[13px] flex-shrink-0 items-center justify-center rounded-full bg-review-verified">
@@ -83,7 +94,9 @@ const CustomerReviews = ({ productId, productName, reviews }: CustomerReviewsPro
       id: review.id,
       author: review.author,
       date: formatReviewDate(review.created_at),
-      rating: review.rating,
+      // Coerced rather than trusted: PHP hands back numbers as strings often
+      // enough, and one bad row should not take the section down.
+      rating: Number(review.rating) || 0,
       // The headline stands in when someone rated without writing anything, so
       // the row is never a bare pair of dates and stars.
       body: review.body ?? review.title ?? "",
@@ -92,6 +105,7 @@ const CustomerReviews = ({ productId, productName, reviews }: CustomerReviewsPro
 
   // The counts span every approved review, while the list above is the newest
   // page of them — so a product with 44 reviews shows five and still says 44.
+  const summaryFromApi = data?.summary ?? EMPTY_SUMMARY
   const summary = reviews
     ? {
         average: list.length ? list.reduce((sum, review) => sum + review.rating, 0) / list.length : null,
@@ -100,7 +114,15 @@ const CustomerReviews = ({ productId, productName, reviews }: CustomerReviewsPro
           STAR_LEVELS.map((level) => [String(level), list.filter((review) => Math.round(review.rating) === level).length]),
         ) as ProductReviewSummary["counts"],
       }
-    : (data?.summary ?? EMPTY_SUMMARY)
+    : {
+        ...summaryFromApi,
+        // Guarded the same way as the ratings above: anything that is not a
+        // number reads as unrated rather than throwing on `toFixed`. Checked
+        // before coercion, since `Number(null)` is 0 and would print an
+        // average of 0.0 for a product nobody has rated.
+        average: toAverage(summaryFromApi.average),
+        total: Number(summaryFromApi.total) || 0,
+      }
 
   return (
     <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-[50px]" aria-labelledby="customer-reviews-heading">

@@ -8,6 +8,7 @@ import type {
   Product,
   PaginatedResponse,
   ProductQueryParams,
+  ProductReviewApi,
   ProductReviewsResponse,
   ProductReviewSubmission,
   SearchQueryParams,
@@ -74,12 +75,36 @@ export class ProductService {
    * The summary comes back with the list rather than being derived from it: the
    * page returns the newest handful, and counting the bars from those would
    * show a histogram of the last five reviews instead of all of them.
+   *
+   * Every row is checked for the fields a review actually has, rather than
+   * trusted because the request returned 200. The ERP's REST layer falls back
+   * to `index_get` when a method it does not have is asked for, so a backend
+   * without this endpoint deployed answers `/products/reviews/65` with the
+   * *product catalogue* — 200, `{data: [...]}`, and not one rating in it.
+   * Mapping that blindly took the whole product page down.
    */
   static async getProductReviews(id: string, limit = 20): Promise<ProductReviewsResponse> {
     const response = await api.get(buildUrl(API_ENDPOINTS.PRODUCTS.REVIEWS(id), { limit }));
+
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+    const data = rows.filter(
+      (row): row is ProductReviewApi =>
+        !!row &&
+        typeof row === 'object' &&
+        typeof (row as ProductReviewApi).author === 'string' &&
+        Number.isFinite(Number((row as ProductReviewApi).rating)),
+    );
+
+    // Only trusted alongside rows that survived the check — a summary from a
+    // response that was not this endpoint's would put a count on an empty list.
+    const summary = response.data?.summary;
+    const usable = data.length === rows.length && summary && typeof summary === 'object';
+
     return {
-      data: response.data?.data || [],
-      summary: response.data?.summary || { average: null, total: 0, counts: { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 } },
+      data,
+      summary: usable
+        ? summary
+        : { average: null, total: data.length, counts: { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 } },
     };
   }
 
