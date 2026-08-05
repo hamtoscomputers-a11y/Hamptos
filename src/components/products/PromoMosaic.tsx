@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { usePromoBanners } from "@/api/hooks/useProducts"
 
 export interface PromoTile {
   id: string
@@ -12,17 +13,16 @@ export interface PromoTile {
 
 interface PromoMosaicProps {
   /**
-   * Five tiles, in the Figma's order: top-left, bottom-left, centre, top-right,
-   * bottom-right. The ERP has no banner or promo-tile endpoint, so the defaults
-   * below stand in until artwork is supplied.
+   * Overrides the ERP's tiles, in the Figma's order: top-left, bottom-left,
+   * centre, top-right, bottom-right.
    */
   tiles?: PromoTile[]
 }
 
 /**
- * Artwork is served from `public/` — dropping the five files at these paths is
- * all it takes. The Figma paints each tile's copy into its own image, which is
- * how `PromoTileBand` on the home page already treats slider artwork.
+ * Stand-ins for before any tile has been set up in the ERP, served from
+ * `public/`. The Figma paints each tile's copy into its own image, which is how
+ * `PromoTileBand` on the home page already treats slider artwork.
  */
 const PLACEHOLDER_TILES: PromoTile[] = [
   { id: "delivery", image: "/promo-1.png", alt: "Faster Delivery, UAE Ready — 48H worldwide shipping" },
@@ -69,7 +69,21 @@ const Tile = ({ tile, className, ratio }: { tile?: PromoTile; className: string;
  *   276.67 x 2 + 20.88 = 574.22              (the block's height)
  */
 const PromoMosaic = ({ tiles }: PromoMosaicProps) => {
-  const list = tiles?.length ? tiles : PLACEHOLDER_TILES
+  const { data } = usePromoBanners()
+
+  // Slot order is the ERP's sort order, which the API already applies. A tile
+  // with no artwork uploaded is dropped rather than rendered as an empty box,
+  // so the remaining tiles close up instead of leaving a hole.
+  const fromApi: PromoTile[] = (data?.product_mosaic ?? [])
+    .filter((banner) => banner.image)
+    .map((banner) => ({
+      id: String(banner.id),
+      image: banner.image as string,
+      alt: banner.alt ?? "",
+      href: banner.link ?? undefined,
+    }))
+
+  const list = tiles?.length ? tiles : fromApi.length ? fromApi : PLACEHOLDER_TILES
   const [topLeft, bottomLeft, centre, topRight, bottomRight] = list
 
   return (

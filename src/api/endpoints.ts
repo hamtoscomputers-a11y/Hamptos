@@ -89,6 +89,10 @@ export const API_ENDPOINTS = {
 
   WEBSITE: {
     SEND_CONTACT: '/api/v1/website/send_contact',
+    // Artwork blocks managed in the ERP under Front End → Promo Banners.
+    // Without `?placement=` the response is keyed by placement, so the product
+    // page takes the mosaic and the strip in one request.
+    PROMO_BANNERS: '/api/v1/website/promo_banners',
   },
 
   // Saved products. Keyed on a token the browser keeps, not on a customer —

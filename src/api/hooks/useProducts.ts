@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ProductService, BrandService } from '../services';
+import { getPromoBanners } from '../services/websiteService';
 import type { ProductQueryParams, SearchQueryParams } from '../types';
 
 export const useProducts = (params?: ProductQueryParams) => {
@@ -136,6 +137,22 @@ export const useWebsiteSlider = () => {
   return useQuery({
     queryKey: ['website-slider'],
     queryFn: ProductService.getWebsiteSlider,
+  });
+};
+
+/**
+ * The product page's artwork blocks, keyed by placement.
+ *
+ * One query for every block on the page: the mosaic and the strip are separate
+ * components but share this cache entry, so they cost one request between them
+ * rather than one each. Marketing artwork changes rarely, hence the long
+ * `staleTime` — moving between products does not refetch it.
+ */
+export const usePromoBanners = () => {
+  return useQuery({
+    queryKey: ['website-promo-banners'],
+    queryFn: getPromoBanners,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 };
 

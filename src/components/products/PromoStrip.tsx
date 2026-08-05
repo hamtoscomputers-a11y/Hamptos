@@ -1,11 +1,12 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
+import { usePromoBanners } from "@/api/hooks/useProducts"
 
 interface PromoStripProps {
   /**
-   * Artwork for the 237 x 150 left panel. Bundled asset, absolute URL, or a
-   * path under `public/`. The panel keeps its width when the file is missing,
-   * so the strip does not reflow once the artwork is dropped in.
+   * Overrides the ERP's artwork for the 237 x 150 left panel. Bundled asset,
+   * absolute URL, or a path under `public/`. The panel keeps its width when the
+   * file is missing, so the strip does not reflow once artwork is dropped in.
    */
   image?: string
   /** Describes the artwork. Empty by default — the copy lives in the DOM, not in the image. */
@@ -33,18 +34,32 @@ const DEFAULT_TAGS = ["WiFi 6 AP", "802.11ac Wave 2 AP", "Outdoor AP", "WLAN Con
  *   copy     772 x 60  at x267  — 30 clear of the photo, vertically centred
  *   button   177 x 38  at x1097 — radius 6, #1A74BB, 30 clear of the right edge
  *
- * The ERP has no banner or promo endpoint, so the copy and artwork are props
- * with the Figma's content as defaults — the same treatment `PromoMosaic` and
- * `TechnicalSupportBanner` already get.
+ * Content comes from the ERP under Front End → Promo Banners. Props override
+ * it, and the Figma's copy stands in until a banner has been set up — so the
+ * section never renders as an empty grey band.
  */
-const PromoStrip = ({
-  image = "/promo-strip.png",
-  imageAlt = "",
-  lines = DEFAULT_LINES,
-  tags = DEFAULT_TAGS,
-  cta = { label: "Check Now", href: "/products?category=wireless" },
-}: PromoStripProps) => {
-  const [hasImage, setHasImage] = useState(true)
+const PromoStrip = ({ image, imageAlt, lines, tags, cta }: PromoStripProps) => {
+  // The src that failed, not a boolean: the artwork swaps from the placeholder
+  // to the ERP's once the query resolves, and a boolean would keep the panel
+  // blank because the placeholder had 404'd a moment earlier.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null)
+  const { data } = usePromoBanners()
+
+  // Only the first active banner is shown. The block is one strip in the
+  // design, so a second row is a scheduled replacement, not a carousel.
+  const banner = data?.product_strip?.[0]
+
+  // Once a banner exists its content is authoritative, empty fields included —
+  // the Figma's copy only stands in while nothing has been set up in the ERP.
+  const resolvedImage = image ?? banner?.image ?? "/promo-strip.png"
+  const resolvedAlt = imageAlt ?? banner?.alt ?? ""
+  const resolvedLines =
+    lines ?? (banner ? ([banner.heading, banner.subheading].filter(Boolean) as string[]) : DEFAULT_LINES)
+  const resolvedTags = tags ?? (banner ? banner.tags : DEFAULT_TAGS)
+  const resolvedCta = cta ?? {
+    label: banner?.button_label || "Check Now",
+    href: banner?.link || "/products",
+  }
 
   return (
     <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-[50px]" aria-label="Wireless products">
@@ -52,12 +67,12 @@ const PromoStrip = ({
         {/* 237 of the Figma's 1304. Reserved even without artwork, so the fill
             reads as one band rather than the copy jumping to the edge. */}
         <div className="h-[150px] w-full flex-shrink-0 md:w-[237px]">
-          {hasImage && (
+          {resolvedImage !== failedSrc && (
             <img
-              src={image}
-              alt={imageAlt}
+              src={resolvedImage}
+              alt={resolvedAlt}
               loading="lazy"
-              onError={() => setHasImage(false)}
+              onError={() => setFailedSrc(resolvedImage)}
               className="h-full w-full object-cover"
             />
           )}
@@ -66,15 +81,15 @@ const PromoStrip = ({
         <div className="flex flex-1 flex-col gap-5 px-[30px] py-6 md:flex-row md:items-center md:justify-between md:gap-8 md:py-0">
           {/* 772 at the Figma's width; 3px between rows, 26px between tags. */}
           <div className="min-w-0 md:max-w-[772px]">
-            {lines.map((line) => (
+            {resolvedLines.map((line) => (
               <p key={line} className="text-[14px] leading-[18px] text-black">
                 {line}
               </p>
             ))}
 
-            {tags.length > 0 && (
+            {resolvedTags.length > 0 && (
               <ul className="mt-[3px] flex flex-wrap gap-x-[26px] gap-y-[3px]">
-                {tags.map((tag) => (
+                {resolvedTags.map((tag) => (
                   <li key={tag} className="text-[14px] leading-[18px] text-brand-700">
                     {/* The bullet is part of the blue keyword in the Figma, not a
                         list marker, so it stays inside the text and out of the
@@ -87,10 +102,10 @@ const PromoStrip = ({
           </div>
 
           <Link
-            to={cta.href}
+            to={resolvedCta.href}
             className="flex h-[38px] w-full flex-shrink-0 items-center justify-center rounded-md bg-brand-700 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-brand-800 md:w-[177px]"
           >
-            {cta.label}
+            {resolvedCta.label}
           </Link>
         </div>
       </div>

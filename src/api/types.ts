@@ -110,6 +110,30 @@ export interface ComparisonProduct extends AccessoryProduct {
   key_information?: string;
 }
 
+/**
+ * One artwork block on the product page, from the ERP's Promo Banners.
+ *
+ * The mosaic's tiles carry their copy inside the artwork, so `heading`,
+ * `subheading` and `button_label` come back null for them and `tags` empty.
+ * The strip uses all of it.
+ */
+export interface PromoBanner {
+  id: number;
+  image: string | null;
+  alt: string | null;
+  link: string | null;
+  heading: string | null;
+  subheading: string | null;
+  button_label: string | null;
+  tags: string[];
+}
+
+/** Banners keyed by the block they belong to. A block with none is absent. */
+export interface PromoBannersByPlacement {
+  product_mosaic?: PromoBanner[];
+  product_strip?: PromoBanner[];
+}
+
 export interface ProductPhoto {
   id: string;
   product_id: string;
