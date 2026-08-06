@@ -13,10 +13,12 @@ import {
   ShieldCheck,
   ThumbsUp,
   Truck,
-  UserRound,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import RatingStars from "./RatingStars"
+import expert1 from "@/assets/expert-1.png"
+import expert2 from "@/assets/expert-2.png"
+import expert3 from "@/assets/expert-3.png"
 import { useProductOptions, useProductQuestions, useProductReviews, useTrustBadges } from "@/api/hooks/useProducts"
 import type { ProductOptionGroup } from "@/api/types"
 
@@ -81,6 +83,9 @@ const FALLBACK_BADGES = [
   { id: -2, icon: "badge-plus", title: "3 Years Warranty", subtitle: "Extended, Enterprise Grade" },
   { id: -3, icon: "award", title: "10 Years Expertise", subtitle: "Proven, Deployment-Focused" },
 ]
+
+/** The three faces on the expertise card, in the Figma's order. */
+const EXPERT_AVATARS = [expert1, expert2, expert3]
 
 /**
  * One selectable configurator row, e.g. "Wall Mounting Bracket".
@@ -353,16 +358,20 @@ const ProductInfo = ({
 
       {/* Expertise card — static chrome. */}
       <div className="mt-4 flex items-center gap-2 rounded-lg border border-brand-700 px-5 py-2.5">
+        {/* The Figma's three headshots, overlapping left to right. Decorative,
+            so they carry no alt text — the heading beside them already says who
+            they are, and "photo of an engineer" three times is noise to a
+            screen reader. */}
         <div className="flex flex-shrink-0 -space-x-3">
-          {["#1A74BB", "#07619A", "#47A9F6"].map((color, i) => (
-            <span
+          {EXPERT_AVATARS.map((src, i) => (
+            <img
               key={i}
-              className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border-2 border-white text-white"
-              style={{ backgroundColor: color }}
+              src={src}
+              alt=""
               aria-hidden
-            >
-              <UserRound size={18} fill="currentColor" strokeWidth={0} />
-            </span>
+              loading="lazy"
+              className="h-9 w-9 rounded-full border-2 border-white object-cover"
+            />
           ))}
         </div>
         <div className="min-w-0">
