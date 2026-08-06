@@ -21,9 +21,10 @@ const deliveryDay = () =>
 /**
  * Product card used by the home carousels.
  *
- * Figma geometry, taken from the 246x439 instance: a 1px `#E5E5E5` outside
- * stroke on white, ~8px corners, and a 227:154 image well filled `#E7E7E7`
- * with the shot inset rather than bled to its edges.
+ * Figma geometry, taken from the 246.32 x 439.46 instance: a 1.09 `#E5E5E5`
+ * outside stroke on `#FFFFFF`, 8.68 corners, and a 227 x 155 image well whose
+ * fill is the image itself, inset 32.55 across and 27.13 down rather than bled
+ * to its edges.
  *
  * The sale badge, discount chip and struck-through price are all conditional
  * on the ERP returning `promo_price`. No product currently carries one, so
@@ -38,7 +39,11 @@ const ProductCarouselCard = ({ product }: ProductCarouselCardProps) => {
       <Link
         to={to}
         state={{ productId: product.id }}
-        className="relative block aspect-[227/154] shrink-0 bg-surface-placeholder"
+        /* White behind the shot, per the Figma — its image well is filled with
+           the image itself, and #E7E7E7 appears nowhere in the frame's colours.
+           The grey is kept only for a card with no photo, where a plain white
+           gap would read as a broken card rather than a missing image. */
+        className={`relative block aspect-[227/155] shrink-0 ${image ? "bg-white" : "bg-surface-placeholder"}`}
       >
         {originalPrice && (
           <span className="absolute right-3 top-3 z-10 rounded bg-brand-700 px-2.5 py-1 text-[11px] font-semibold text-white">
@@ -54,7 +59,13 @@ const ProductCarouselCard = ({ product }: ProductCarouselCardProps) => {
             src={image}
             alt={name}
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-contain p-7"
+            /* The Figma insets the shot 32.55 across and 27.13 down inside a
+               227 x 155 well. Our well runs the full card width (246 rather
+               than 227), because a white well on a white card has no visible
+               edge to inset from — so the padding is scaled by the same ratio,
+               leaving the shot the size it occupies in the design instead of
+               ~12% larger. */
+            className="absolute inset-0 h-full w-full object-contain px-[35px] py-[29px]"
             onError={(event) => {
               event.currentTarget.style.visibility = "hidden"
             }}
