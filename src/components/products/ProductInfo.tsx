@@ -1,8 +1,23 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { ArrowRight, Award, BadgePlus, Heart, Minus, Plus, ShieldCheck, UserRound } from "lucide-react"
+import {
+  ArrowRight,
+  Award,
+  BadgePlus,
+  Clock,
+  Headphones,
+  Heart,
+  Minus,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  ThumbsUp,
+  Truck,
+  UserRound,
+} from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import RatingStars from "./RatingStars"
-import { useProductOptions, useProductQuestions, useProductReviews } from "@/api/hooks/useProducts"
+import { useProductOptions, useProductQuestions, useProductReviews, useTrustBadges } from "@/api/hooks/useProducts"
 import type { ProductOptionGroup } from "@/api/types"
 
 interface ProductInfoProps {
@@ -36,13 +51,35 @@ const formatPrice = (value: number) =>
   value.toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 /**
- * The three trust points on the pale-blue band. Site-wide chrome, identical for
- * every product, so they carry no product data.
+ * The icons the ERP can choose from, keyed by the string it stores.
+ *
+ * A fixed map rather than a dynamic import: these are compiled into the bundle,
+ * so the ERP can only pick one the storefront already ships. An unknown key
+ * falls back to the shield below rather than rendering a hole.
  */
-const TRUST_BADGES = [
-  { icon: ShieldCheck, title: "100% Genuine", subtitle: "Original, Factory-Verified" },
-  { icon: BadgePlus, title: "3 Years Warranty", subtitle: "Extended, Enterprise Grade" },
-  { icon: Award, title: "10 Years Expertise", subtitle: "Proven, Deployment-Focused" },
+const BADGE_ICONS: Record<string, LucideIcon> = {
+  "shield-check": ShieldCheck,
+  "badge-plus": BadgePlus,
+  award: Award,
+  truck: Truck,
+  headphones: Headphones,
+  refresh: RefreshCw,
+  clock: Clock,
+  "thumbs-up": ThumbsUp,
+}
+
+/**
+ * Shown until the ERP answers, and if it ever answers with nothing.
+ *
+ * Unlike the configurator, this band is site-wide chrome rather than product
+ * data — a product page with a blank strip of blue looks broken, so it always
+ * has something to draw. The ERP seeds these same three on install, so in
+ * practice this is only ever the first paint.
+ */
+const FALLBACK_BADGES = [
+  { id: -1, icon: "shield-check", title: "100% Genuine", subtitle: "Original, Factory-Verified" },
+  { id: -2, icon: "badge-plus", title: "3 Years Warranty", subtitle: "Extended, Enterprise Grade" },
+  { id: -3, icon: "award", title: "10 Years Expertise", subtitle: "Proven, Deployment-Focused" },
 ]
 
 /**
@@ -85,9 +122,9 @@ const OptionGroup = ({
 /**
  * Right column of the product header: title, identity line, price, trust band,
  * configurator, subtotal, cart controls and the expertise card. Everything with
- * an ERP field is live — the rating line and the configurator included, and the
- * subtotal follows whichever options are picked. Only the trust band and the
- * marketing copy are still static.
+ * an ERP field is live — rating line, configurator and trust band included, and
+ * the subtotal follows whichever options are picked. Only the marketing copy in
+ * the expertise card is still static.
  */
 const ProductInfo = ({
   name,
@@ -115,6 +152,11 @@ const ProductInfo = ({
   // with none set up shows no configurator at all, rather than the invented
   // part numbers and prices this section used to carry for every product.
   const { data: optionGroups } = useProductOptions(productId ?? "")
+
+  // Site-wide wording unless this product overrides it; the ERP decides which,
+  // so there is only ever one request here.
+  const { data: trustBadges } = useTrustBadges(productId ?? "")
+  const badges = trustBadges?.length ? trustBadges : FALLBACK_BADGES
 
   // Keyed by heading rather than index, so a group arriving late or being
   // reordered in the ERP cannot silently move somebody's choice to another row.
@@ -206,17 +248,26 @@ const ProductInfo = ({
         </p>
       </div>
 
-      {/* Trust band — site-wide chrome. */}
-      <div className="mt-4 grid grid-cols-1 gap-2.5 rounded-md bg-surface-trust px-5 py-3 sm:grid-cols-3 sm:gap-0">
-        {TRUST_BADGES.map(({ icon: Icon, title, subtitle }) => (
-          <div key={title} className="flex items-center gap-2.5">
-            <Icon className="h-5 w-5 flex-shrink-0 text-black" strokeWidth={1.75} aria-hidden />
-            <span className="leading-tight">
-              <span className="block text-[12px] font-semibold text-black">{title}</span>
-              <span className="block text-[11px] text-ink-steel">{subtitle}</span>
-            </span>
-          </div>
-        ))}
+      {/* Trust band — wording from the ERP, site-wide unless this product
+          overrides it. Columns follow the count, so four badges do not squeeze
+          into a three-column grid. */}
+      <div
+        className={`mt-4 grid grid-cols-1 gap-2.5 rounded-md bg-surface-trust px-5 py-3 sm:gap-0 ${
+          badges.length === 1 ? "sm:grid-cols-1" : badges.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3"
+        }`}
+      >
+        {badges.map((badge) => {
+          const Icon = BADGE_ICONS[badge.icon] ?? ShieldCheck
+          return (
+            <div key={badge.id} className="flex items-center gap-2.5">
+              <Icon className="h-5 w-5 flex-shrink-0 text-black" strokeWidth={1.75} aria-hidden />
+              <span className="leading-tight">
+                <span className="block text-[12px] font-semibold text-black">{badge.title}</span>
+                {badge.subtitle && <span className="block text-[11px] text-ink-steel">{badge.subtitle}</span>}
+              </span>
+            </div>
+          )
+        })}
       </div>
 
       {/* Configurator — live from the ERP. Nothing renders for a product with

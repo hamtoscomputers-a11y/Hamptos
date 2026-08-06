@@ -23,6 +23,9 @@ export const API_ENDPOINTS = {
     // The configurator rows — Condition, Wall Mounting Bracket, Power Adaptor —
     // grouped by heading, from Products → Product Options.
     OPTIONS: (id: string) => `/api/v1/products/options/${id}`,
+    // The pale-blue band under the price. Answers with the product's own badges
+    // when it has any, otherwise the site-wide set — so one request either way.
+    TRUST_BADGES: (id: string) => `/api/v1/products/trust_badges/${id}`,
     // Submitting one. It is held for approval in the ERP, so nothing posted
     // here appears in the list above until someone lets it through.
     SUBMIT_REVIEW: '/api/v1/products/reviews',

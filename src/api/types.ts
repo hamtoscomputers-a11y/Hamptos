@@ -208,6 +208,17 @@ export interface ProductOptionGroup {
   options: ProductOption[];
 }
 
+/** One badge on the pale-blue trust band under the price. */
+export interface TrustBadge {
+  id: number;
+  /** Icon key the storefront maps to a Lucide component; unknown draws a shield. */
+  icon: string;
+  /** The bold line, e.g. "3 Years Warranty". */
+  title: string;
+  /** The grey line under it. May be empty. */
+  subtitle: string;
+}
+
 /** What the "Write a review" form sends. */
 export interface ProductReviewSubmission {
   product_id: string | number;

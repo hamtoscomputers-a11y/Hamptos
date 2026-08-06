@@ -107,6 +107,19 @@ export const useProductOptions = (id: string) => {
 };
 
 /**
+ * The trust band under the price. Mostly site-wide wording that changes maybe
+ * twice a year, so it is cached longer than the per-product sections above.
+ */
+export const useTrustBadges = (id: string) => {
+  return useQuery({
+    queryKey: ['products', 'trust-badges', id],
+    queryFn: () => ProductService.getTrustBadges(id),
+    enabled: !!id,
+    staleTime: 30 * 60 * 1000,
+  });
+};
+
+/**
  * A product's approved reviews and their summary.
  *
  * Short `staleTime` compared with the curated sections above: reviews are

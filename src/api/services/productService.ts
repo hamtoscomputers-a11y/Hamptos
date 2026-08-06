@@ -17,6 +17,7 @@ import type {
   ProductReviewSubmission,
   SearchQueryParams,
   SearchResult,
+  TrustBadge,
   SearchSuggestionsResponse,
 } from '../types';
 
@@ -148,6 +149,31 @@ export class ProductService {
         ),
       }))
       .filter((group) => group.options.length > 0);
+  }
+
+  /**
+   * The trust band under the price. The ERP resolves the override-or-default
+   * choice, so this is one request whichever set comes back.
+   *
+   * Guarded like the calls above: an ERP without this endpoint deployed answers
+   * with the product catalogue at 200, and a catalogue row has no `title`.
+   * Returning an empty array there is what lets the component fall back to its
+   * built-in badges rather than drawing a band full of product names.
+   */
+  static async getTrustBadges(id: string): Promise<TrustBadge[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.TRUST_BADGES(id));
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+
+    return rows
+      .filter(
+        (row): row is TrustBadge =>
+          !!row &&
+          typeof row === 'object' &&
+          typeof (row as TrustBadge).title === 'string' &&
+          (row as TrustBadge).title.length > 0 &&
+          typeof (row as TrustBadge).icon === 'string',
+      )
+      .map((row) => ({ ...row, subtitle: typeof row.subtitle === 'string' ? row.subtitle : '' }));
   }
 
   /**
