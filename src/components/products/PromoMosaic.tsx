@@ -5,10 +5,14 @@ export interface PromoTile {
   id: string
   /** Artwork URL. Bundled asset, absolute URL, or a path under `public/`. */
   image: string
-  /** Describes the artwork; the copy in the Figma is painted into it. */
+  /** Describes the artwork, for screen readers. Never drawn on the tile. */
   alt: string
   /** Optional destination. The tile is inert without one. */
   href?: string
+  /** Written over the artwork. Omitted leaves the tile as artwork alone. */
+  heading?: string
+  /** The smaller line under the heading. */
+  body?: string
 }
 
 interface PromoMosaicProps {
@@ -21,8 +25,9 @@ interface PromoMosaicProps {
 
 /**
  * Stand-ins for before any tile has been set up in the ERP, served from
- * `public/`. The Figma paints each tile's copy into its own image, which is how
- * `PromoTileBand` on the home page already treats slider artwork.
+ * `public/`. These carry their copy inside the artwork, as the Figma's own
+ * tiles do; a tile set up in the ERP can instead have its heading and body
+ * typed in and drawn over the picture.
  */
 const PLACEHOLDER_TILES: PromoTile[] = [
   { id: "delivery", image: "/promo-1.png", alt: "Faster Delivery, UAE Ready — 48H worldwide shipping" },
@@ -38,6 +43,8 @@ const TILE = "block overflow-hidden rounded-[20.88px] bg-surface-tile"
 const Tile = ({ tile, className, ratio }: { tile?: PromoTile; className: string; ratio: string }) => {
   const [hasImage, setHasImage] = useState(true)
 
+  const hasCopy = Boolean(tile?.heading || tile?.body)
+
   const artwork =
     tile && hasImage ? (
       <img
@@ -45,18 +52,46 @@ const Tile = ({ tile, className, ratio }: { tile?: PromoTile; className: string;
         alt={tile.alt}
         loading="lazy"
         onError={() => setHasImage(false)}
-        className="h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover"
       />
     ) : null
 
-  const box = `${TILE} ${ratio} ${className}`
+  // Copy is optional per tile: the Figma leaves its photo tile bare, and a
+  // heading painted across a skyline would fight the picture.
+  const copy = hasCopy ? (
+    <>
+      {/* Dark at the top where the text sits, clear at the bottom. Artwork is
+          uploaded by the shop and could be anything, so white type needs
+          something behind it or it lands on a pale sky and disappears. */}
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/25 to-transparent"
+        aria-hidden
+      />
+      <div className="absolute inset-x-0 top-0 p-[26px] text-white">
+        {tile?.heading && (
+          <p className="text-[20px] font-semibold leading-[1.2] tracking-[-0.01em] drop-shadow-sm">
+            {tile.heading}
+          </p>
+        )}
+        {tile?.body && (
+          <p className="mt-1.5 text-[13px] leading-[1.42] text-white/90 drop-shadow-sm">{tile.body}</p>
+        )}
+      </div>
+    </>
+  ) : null
+
+  const box = `relative ${TILE} ${ratio} ${className}`
 
   return tile?.href ? (
     <a href={tile.href} className={box}>
       {artwork}
+      {copy}
     </a>
   ) : (
-    <div className={box}>{artwork}</div>
+    <div className={box}>
+      {artwork}
+      {copy}
+    </div>
   )
 }
 
@@ -81,6 +116,8 @@ const PromoMosaic = ({ tiles }: PromoMosaicProps) => {
       image: banner.image as string,
       alt: banner.alt ?? "",
       href: banner.link ?? undefined,
+      heading: banner.heading ?? undefined,
+      body: banner.subheading ?? undefined,
     }))
 
   const list = tiles?.length ? tiles : fromApi.length ? fromApi : PLACEHOLDER_TILES
