@@ -292,7 +292,7 @@ const ProductDetail = () => {
 
         <IndustryNews />
 
-        <ResourcesDownloads />
+        <ResourcesDownloads productId={String(product.id)} />
 
         {/* Related Products — the home page's rail, on the Figma's white split
             treatment, filled from the pools already fetched for this page. */}

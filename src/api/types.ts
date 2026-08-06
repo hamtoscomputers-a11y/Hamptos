@@ -176,6 +176,23 @@ export interface ProductQuestion {
   answer: string;
 }
 
+/**
+ * One downloadable file under "Resources Downloads". The ERP resolves the
+ * upload-or-link choice, so `url` is always ready to use.
+ */
+export interface ProductResource {
+  id: number;
+  /** The grey heading above the row, e.g. "Support and Resources". */
+  label: string;
+  /** The link text, e.g. "Datasheet.pdf". */
+  title: string;
+  url: string;
+  /** True for a file the ERP holds; false for a link to another site. */
+  hosted: boolean;
+  /** Bytes. Null for external links, whose size the ERP cannot know. */
+  size: number | null;
+}
+
 /** What the "Write a review" form sends. */
 export interface ProductReviewSubmission {
   product_id: string | number;

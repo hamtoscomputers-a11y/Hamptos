@@ -79,6 +79,19 @@ export const useProductQuestions = (id: string) => {
 };
 
 /**
+ * The datasheets and manuals attached to a product in the ERP. Curated, so
+ * cached like the sections above.
+ */
+export const useProductResources = (id: string) => {
+  return useQuery({
+    queryKey: ['products', 'resources', id],
+    queryFn: () => ProductService.getProductResources(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
  * A product's approved reviews and their summary.
  *
  * Short `staleTime` compared with the curated sections above: reviews are

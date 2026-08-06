@@ -10,6 +10,7 @@ import type {
   ProductQueryParams,
   ProductQuestion,
   ProductReviewApi,
+  ProductResource,
   ProductReviewsResponse,
   ProductReviewSubmission,
   SearchQueryParams,
@@ -87,6 +88,28 @@ export class ProductService {
         typeof row === 'object' &&
         typeof (row as ProductQuestion).question === 'string' &&
         typeof (row as ProductQuestion).answer === 'string',
+    );
+  }
+
+  /**
+   * A product's datasheets and manuals.
+   *
+   * Checked row by row rather than trusted for the same reason the reviews call
+   * is: an ERP without this endpoint deployed answers with the product
+   * catalogue at 200, and a catalogue row has no `url` — so it drops out here
+   * instead of rendering as a download that leads nowhere.
+   */
+  static async getProductResources(id: string): Promise<ProductResource[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.RESOURCES(id));
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+
+    return rows.filter(
+      (row): row is ProductResource =>
+        !!row &&
+        typeof row === 'object' &&
+        typeof (row as ProductResource).title === 'string' &&
+        typeof (row as ProductResource).url === 'string' &&
+        (row as ProductResource).url.length > 0,
     );
   }
 
