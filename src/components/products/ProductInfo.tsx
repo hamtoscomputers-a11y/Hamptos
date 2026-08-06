@@ -2,7 +2,8 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { ArrowRight, Award, BadgePlus, Heart, Minus, Plus, ShieldCheck, UserRound } from "lucide-react"
 import RatingStars from "./RatingStars"
-import { useProductQuestions, useProductReviews } from "@/api/hooks/useProducts"
+import { useProductOptions, useProductQuestions, useProductReviews } from "@/api/hooks/useProducts"
+import type { ProductOptionGroup } from "@/api/types"
 
 interface ProductInfoProps {
   name: string
@@ -45,46 +46,48 @@ const TRUST_BADGES = [
 ]
 
 /**
- * Configurator rows. The ERP exposes no product-options schema, so these are
- * presentational placeholders — selecting one does not change the subtotal.
+ * One selectable configurator row, e.g. "Wall Mounting Bracket".
+ *
+ * The surcharge is appended to the label rather than stored in it, so the ERP
+ * holds a clean name and a number it can also add to the subtotal — the Figma
+ * shows "R3K00A + AED 70.00", which is those two fields printed together.
  */
-const OPTION_GROUPS: { label: string; options: string[] }[] = [
-  { label: "Condition", options: ["Original New"] },
-  { label: "Wall Mounting Bracket", options: ["None", "R3j18A (Solid Surface) + AED70.00"] },
-  { label: "Power Adaptor", options: ["None", "R3K00A + AED 70.00"] },
-]
-
-/** One selectable configurator row; local-only, drives no pricing. */
-const OptionGroup = ({ label, options }: { label: string; options: string[] }) => {
-  const [selected, setSelected] = useState(0)
-
-  return (
-    <div className="mt-4">
-      <p className="text-[16px] font-semibold leading-[1.275] text-black">{label}</p>
-      <div className="mt-2 flex flex-wrap gap-3.5">
-        {options.map((option, index) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => setSelected(index)}
-            aria-pressed={selected === index}
-            className={`rounded-lg border border-brand-700 bg-white px-5 py-[15px] text-[15px] leading-none transition-colors ${
-              selected === index ? "font-medium text-brand-700" : "text-ink-muted hover:text-brand-700"
-            }`}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
+const OptionGroup = ({
+  group,
+  selected,
+  onSelect,
+}: {
+  group: ProductOptionGroup
+  selected: number
+  onSelect: (index: number) => void
+}) => (
+  <div className="mt-4">
+    <p className="text-[16px] font-semibold leading-[1.275] text-black">{group.name}</p>
+    <div className="mt-2 flex flex-wrap gap-3.5">
+      {group.options.map((option, index) => (
+        <button
+          key={option.id}
+          type="button"
+          onClick={() => onSelect(index)}
+          aria-pressed={selected === index}
+          className={`rounded-lg border border-brand-700 bg-white px-5 py-[15px] text-[15px] leading-none transition-colors ${
+            selected === index ? "font-medium text-brand-700" : "text-ink-muted hover:text-brand-700"
+          }`}
+        >
+          {option.name}
+          {option.price > 0 && ` + AED ${formatPrice(option.price)}`}
+        </button>
+      ))}
     </div>
-  )
-}
+  </div>
+)
 
 /**
  * Right column of the product header: title, identity line, price, trust band,
  * configurator, subtotal, cart controls and the expertise card. Everything with
- * an ERP field is live, the rating line included; the configurator and the
- * marketing copy are still static design placeholders.
+ * an ERP field is live — the rating line and the configurator included, and the
+ * subtotal follows whichever options are picked. Only the trust band and the
+ * marketing copy are still static.
  */
 const ProductInfo = ({
   name,
@@ -108,13 +111,31 @@ const ProductInfo = ({
   const { data: reviewData } = useProductReviews(productId ?? "")
   const { data: questionData } = useProductQuestions(productId ?? "")
 
+  // Set up per product in the ERP under Products → Product Options. A product
+  // with none set up shows no configurator at all, rather than the invented
+  // part numbers and prices this section used to carry for every product.
+  const { data: optionGroups } = useProductOptions(productId ?? "")
+
+  // Keyed by heading rather than index, so a group arriving late or being
+  // reordered in the ERP cannot silently move somebody's choice to another row.
+  // Absent means the first button, which is what renders as selected.
+  const [chosen, setChosen] = useState<Record<string, number>>({})
+
   const reviewCount = reviewData?.summary.total ?? 0
   const averageRating = reviewData?.summary.average ?? 0
   const questionCount = questionData?.length ?? 0
 
   const showListPrice = typeof originalPrice === "number" && originalPrice > price
   const discountPct = showListPrice ? Math.round((1 - price / (originalPrice as number)) * 100) : 0
-  const subtotal = price * quantity
+
+  // What the picked options add. Guarded with `?? 0` because a stored index can
+  // outlive the option it pointed at if the ERP row is deleted mid-visit.
+  const optionsTotal = (optionGroups ?? []).reduce(
+    (sum, group) => sum + (group.options[chosen[group.name] ?? 0]?.price ?? 0),
+    0,
+  )
+
+  const subtotal = (price + optionsTotal) * quantity
   const maxQty = Math.max(1, availableQty || 1)
 
   return (
@@ -198,9 +219,15 @@ const ProductInfo = ({
         ))}
       </div>
 
-      {/* Configurator — presentational placeholders. */}
-      {OPTION_GROUPS.map((group) => (
-        <OptionGroup key={group.label} label={group.label} options={group.options} />
+      {/* Configurator — live from the ERP. Nothing renders for a product with
+          no options set up, which is why there is no empty state here. */}
+      {(optionGroups ?? []).map((group) => (
+        <OptionGroup
+          key={group.name}
+          group={group}
+          selected={chosen[group.name] ?? 0}
+          onSelect={(index) => setChosen((prev) => ({ ...prev, [group.name]: index }))}
+        />
       ))}
 
       {/* Subtotal — live: current price x quantity. */}

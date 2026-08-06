@@ -92,6 +92,21 @@ export const useProductResources = (id: string) => {
 };
 
 /**
+ * The configurator rows for a product. Its own call rather than an `include` on
+ * the product, because the detail page is usually handed its product through
+ * router state and never fetches it — an include would arrive only on a direct
+ * URL open, so the buttons would come and go depending on how you got there.
+ */
+export const useProductOptions = (id: string) => {
+  return useQuery({
+    queryKey: ['products', 'options', id],
+    queryFn: () => ProductService.getProductOptions(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
  * A product's approved reviews and their summary.
  *
  * Short `staleTime` compared with the curated sections above: reviews are

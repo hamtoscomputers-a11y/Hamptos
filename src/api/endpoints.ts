@@ -20,6 +20,9 @@ export const API_ENDPOINTS = {
     QUESTIONS: (id: string) => `/api/v1/products/questions/${id}`,
     // Datasheets and manuals, from Products → Resources & Downloads.
     RESOURCES: (id: string) => `/api/v1/products/resources/${id}`,
+    // The configurator rows — Condition, Wall Mounting Bracket, Power Adaptor —
+    // grouped by heading, from Products → Product Options.
+    OPTIONS: (id: string) => `/api/v1/products/options/${id}`,
     // Submitting one. It is held for approval in the ERP, so nothing posted
     // here appears in the list above until someone lets it through.
     SUBMIT_REVIEW: '/api/v1/products/reviews',

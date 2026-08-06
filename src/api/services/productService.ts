@@ -8,6 +8,8 @@ import type {
   Product,
   PaginatedResponse,
   ProductQueryParams,
+  ProductOption,
+  ProductOptionGroup,
   ProductQuestion,
   ProductReviewApi,
   ProductResource,
@@ -111,6 +113,41 @@ export class ProductService {
         typeof (row as ProductResource).url === 'string' &&
         (row as ProductResource).url.length > 0,
     );
+  }
+
+  /**
+   * A product's configurator rows — the Condition / Wall Mounting Bracket /
+   * Power Adaptor buttons — already grouped by heading.
+   *
+   * Guarded the same way the resources call is: an ERP without this endpoint
+   * deployed answers with the product catalogue at 200, and a catalogue row has
+   * no `options` array — so it drops out here rather than rendering a row of
+   * buttons named after other products.
+   *
+   * A group whose options all fail the check is dropped too: a heading with no
+   * buttons under it is worse than no heading.
+   */
+  static async getProductOptions(id: string): Promise<ProductOptionGroup[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.OPTIONS(id));
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+
+    return rows
+      .filter(
+        (row): row is ProductOptionGroup =>
+          !!row &&
+          typeof row === 'object' &&
+          typeof (row as ProductOptionGroup).name === 'string' &&
+          (row as ProductOptionGroup).name.length > 0 &&
+          Array.isArray((row as ProductOptionGroup).options),
+      )
+      .map((group) => ({
+        name: group.name,
+        options: group.options.filter(
+          (option): option is ProductOption =>
+            !!option && typeof option === 'object' && typeof option.name === 'string' && option.name.length > 0,
+        ),
+      }))
+      .filter((group) => group.options.length > 0);
   }
 
   /**

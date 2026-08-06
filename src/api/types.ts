@@ -193,6 +193,21 @@ export interface ProductResource {
   size: number | null;
 }
 
+/** One button in a configurator row. */
+export interface ProductOption {
+  id: number;
+  /** The button label, e.g. "Original New", "None", "R3K00A". */
+  name: string;
+  /** Added to the product price when picked. 0 for a free choice. */
+  price: number;
+}
+
+/** One labelled row of buttons, e.g. "Wall Mounting Bracket". */
+export interface ProductOptionGroup {
+  name: string;
+  options: ProductOption[];
+}
+
 /** What the "Write a review" form sends. */
 export interface ProductReviewSubmission {
   product_id: string | number;
