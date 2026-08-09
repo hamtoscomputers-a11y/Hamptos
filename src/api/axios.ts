@@ -94,6 +94,41 @@ const releaseSlot = (config?: QueuedRequestConfig) => {
   else activeRequests -= 1;
 };
 
+/**
+ * Whether a response is really the ERP's installer wearing a 200.
+ *
+ * Stock Manager Advance redirects to `install/index.php` whenever it cannot
+ * reach the database (`app/hooks/Sma_hooks.php`), and on shared hosting that
+ * fires whenever the account's MySQL connection allowance is momentarily used
+ * up — not only on a fresh copy. Two things make it poisonous to a caller:
+ *
+ *   - It is a 302, so the browser follows it and the request settles on 200.
+ *     Nothing in the status says the read failed.
+ *   - The redirect is relative, so it resolves against the path already in
+ *     hand: `/api/v1/products/` + `install/index.php`, which redirects again to
+ *     `install/install/index.php`, and again. Measured on the live homepage:
+ *     one page load climbed to `install/install/install/install/install/` and
+ *     spent twenty-odd requests getting there.
+ *
+ * What finally arrives is a PHP `var_export` dump beginning `array (`, not
+ * JSON. Callers that read `data.results.products` off it see `undefined`, take
+ * it for an empty result, and render nothing — which is exactly how two of the
+ * homepage's product rails came to be blank while the products existed.
+ *
+ * Detected here rather than in any one caller so every endpoint is covered, and
+ * so it can be turned back into the failure it always was and replayed by the
+ * retry below. Backing off is the right answer: the connection was busy, not
+ * empty.
+ */
+const isInstallerResponse = (response: AxiosResponse) => {
+  const url = (response.request?.responseURL ?? '') as string;
+  if (url.includes('/install/')) return true;
+
+  // Fallback for anything that does not expose the final URL. The dump is a
+  // string where JSON would have been parsed into an object.
+  return typeof response.data === 'string' && /^\s*array\s*\(/.test(response.data);
+};
+
 const isReplayable = (error: AxiosError) => {
   // An aborted request was not a failure — a component unmounted, or a newer
   // search superseded it. Checked by code rather than `axios.isCancel`, whose
@@ -191,6 +226,23 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// A database-refused read arrives as a 200 (see isInstallerResponse). Turned
+// back into a rejection here, before the retry interceptor below, so it is
+// replayed like the 500 it should have been. No `response` on the error, which
+// is what marks it replayable — the request was never answered on its merits.
+api.interceptors.response.use((response: AxiosResponse) => {
+  if (!isInstallerResponse(response)) return response;
+
+  return Promise.reject(
+    new AxiosError(
+      'The ERP redirected to its installer — database unavailable.',
+      AxiosError.ERR_BAD_RESPONSE,
+      response.config,
+      response.request,
+    ),
+  );
+});
 
 // Retry. This is the only retry layer in the app — react-query is configured
 // with `retry: false` in App.tsx, because retrying there as well would
