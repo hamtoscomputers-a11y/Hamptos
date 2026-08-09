@@ -23,8 +23,12 @@ const deliveryDay = () =>
  *
  * Figma geometry, taken from the 246.32 x 439.46 instance: a 1.09 `#E5E5E5`
  * outside stroke on `#FFFFFF`, 8.68 corners, and a 227 x 155 image well whose
- * fill is the image itself, inset 32.55 across and 27.13 down rather than bled
- * to its edges.
+ * fill is the image itself, bled to the well's edges.
+ *
+ * That well carries `padding 32.55 / 27.13` in the file, which is autolayout
+ * padding for anything nested inside it — not an inset on the fill. A frame
+ * whose Fill is an image covers the frame regardless. Reading it as an inset
+ * is what left the product floating in a field of white.
  *
  * The sale badge, discount chip and struck-through price are all conditional
  * on the ERP returning `promo_price`. No product currently carries one, so
@@ -51,21 +55,20 @@ const ProductCarouselCard = ({ product }: ProductCarouselCardProps) => {
           </span>
         )}
         {image && (
-          /* Inset by the well's own padding, per the Figma, and absolute so the
-             shot cannot drive the well's height — an img is a replaced element
-             and its intrinsic size otherwise wins over the `aspect-ratio` box,
-             leaving every card a different depth. */
+          /* Absolute so the shot cannot drive the well's height — an img is a
+             replaced element and its intrinsic size otherwise wins over the
+             `aspect-ratio` box, leaving every card a different depth. */
           <img
             src={image}
             alt={name}
             loading="lazy"
-            /* The Figma insets the shot 32.55 across and 27.13 down inside a
-               227 x 155 well. Our well runs the full card width (246 rather
-               than 227), because a white well on a white card has no visible
-               edge to inset from — so the padding is scaled by the same ratio,
-               leaving the shot the size it occupies in the design instead of
-               ~12% larger. */
-            className="absolute inset-0 h-full w-full object-contain px-[35px] py-[29px]"
+            /* `cover`, to fill the well as the Figma's image fill does. It
+               crops, which suits this catalogue: the ERP's shots are products
+               centred on white, so what a wide well trims off a squarer photo
+               is the empty margin above and below rather than the product.
+               A tall product would lose its ends — worth revisiting if the
+               range ever grows past rack gear. */
+            className="absolute inset-0 h-full w-full object-cover"
             onError={(event) => {
               event.currentTarget.style.visibility = "hidden"
             }}
