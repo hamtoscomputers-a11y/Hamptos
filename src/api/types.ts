@@ -132,6 +132,8 @@ export interface PromoBanner {
 export interface PromoBannersByPlacement {
   product_mosaic?: PromoBanner[];
   product_strip?: PromoBanner[];
+  /** The six category tiles under the home page banner, in slot order. */
+  home_category_mosaic?: PromoBanner[];
 }
 
 /**
