@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { useQueries } from "@tanstack/react-query"
 import { ProductService } from "@/api"
 import { useLatestProducts } from "@/api/hooks/useProducts"
+import { useInViewOnce } from "@/hooks/useInViewOnce"
 import ProductCarouselSection from "./ProductCarouselSection"
 import { toCardProduct } from "./productCard"
 
@@ -77,7 +78,18 @@ const NewCollectionRail = ({
   tone = "light",
   frameClassName,
 }: NewCollectionRailProps) => {
-  const { data, isLoading, error } = useLatestProducts(FETCH_LIMIT, RECENT_DAYS)
+  /**
+   * Nothing is fetched until the rail is scrolled near.
+   *
+   * Five of these sit below the fold. Loading them all on mount is what put the
+   * account past its hosting process limit, at which point the ERP could not
+   * open a database connection and answered with a 503 — see useInViewOnce.
+   */
+  const { ref, inView } = useInViewOnce<HTMLElement>()
+
+  const { data, isLoading, error } = useLatestProducts(FETCH_LIMIT, RECENT_DAYS, undefined, {
+    enabled: inView,
+  })
 
   const recent = useMemo(
     () =>
@@ -91,7 +103,7 @@ const NewCollectionRail = ({
 
   // Only queried once the recent window is known to hold nothing — the queries
   // stay disabled otherwise, so no request goes out.
-  const needsSearch = !isLoading && recent.length === 0 && !!searchTerms?.length
+  const needsSearch = inView && !isLoading && recent.length === 0 && !!searchTerms?.length
 
   const searches = useQueries({
     queries: (searchTerms ?? []).map((term) => ({
@@ -128,11 +140,16 @@ const NewCollectionRail = ({
       title={title}
       subtitle={COLLECTION_SUBTITLE}
       products={products}
-      isLoading={isLoading || (needsSearch && searching)}
+      // Loading covers "not yet asked for" as well as "asked and waiting". The
+      // skeleton is what keeps the section in the document so it can be
+      // observed into view at all, and it reserves the rail's height so
+      // scrolling past does not shift the page under the reader.
+      isLoading={!inView || isLoading || (needsSearch && searching)}
       error={error}
       exploreHref={exploreHref}
       tone={tone}
       frameClassName={frameClassName}
+      containerRef={ref}
     />
   )
 }

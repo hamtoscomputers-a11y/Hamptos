@@ -156,10 +156,22 @@ export const useFeaturedProducts = (params?: ProductQueryParams) => {
   });
 };
 
-export const useLatestProducts = (limit: number = 10, days: number = 30, include?: string) => {
+/**
+ * `options.enabled` lets a caller hold the request back until its section is
+ * scrolled near — see useInViewOnce. Every "New X Collections" rail shares this
+ * one cache entry, so the first rail to come into view fetches it for all of
+ * them.
+ */
+export const useLatestProducts = (
+  limit: number = 10,
+  days: number = 30,
+  include?: string,
+  options?: { enabled?: boolean }
+) => {
   return useQuery({
     queryKey: ['products', 'latest', limit, days, include],
     queryFn: () => ProductService.getLatestProducts(limit, days, include),
+    enabled: options?.enabled ?? true,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

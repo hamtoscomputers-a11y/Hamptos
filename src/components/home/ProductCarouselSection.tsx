@@ -55,6 +55,14 @@ interface ProductCarouselSectionProps {
   /** Centred heading with no Explore All, per the Related Product frame. */
   align?: "split" | "center"
   showExplore?: boolean
+  /**
+   * Attached to the `<section>`, for a caller that defers its own fetching
+   * until the rail is scrolled near. It has to land on an element this
+   * component always renders — which is why such a caller passes `isLoading`
+   * while it waits: an empty rail returns `null` below, and a rail that is not
+   * in the document can never be observed into view.
+   */
+  containerRef?: React.Ref<HTMLElement>
 }
 
 const SKELETON_COUNT = 5
@@ -134,6 +142,7 @@ const ProductCarouselSection = ({
   frameClassName,
   align = "split",
   showExplore = true,
+  containerRef,
 }: ProductCarouselSectionProps) => {
   const [api, setApi] = useState<CarouselApi>()
 
@@ -154,7 +163,7 @@ const ProductCarouselSection = ({
   const styles = TONE[tone]
 
   return (
-    <section aria-label={title} className={frameClassName ?? `py-12 ${styles.section}`}>
+    <section ref={containerRef} aria-label={title} className={frameClassName ?? `py-12 ${styles.section}`}>
       <div className="container mx-auto px-4">
         <header
           className={`flex flex-wrap gap-4 ${

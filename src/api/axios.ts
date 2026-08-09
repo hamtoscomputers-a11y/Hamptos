@@ -38,15 +38,26 @@ const baseURL = import.meta.env.DEV ? '' : import.meta.env.VITE_REACT_APP_API_UR
  * ceiling every load. Queued through here it opens 15, at a depth well under
  * where the failures start.
  *
- * This gate is not the whole picture, and lowering it further does not close
- * the gap — tried at 3, measured no better. The page also pulls ~36 product
- * images from the same host, outside axios and so outside this queue, which
- * puts the real peak nearer 40 connections. Those are static and cached for a
- * week, so they cost the server far less than an API call, but under a cold
- * burst the reads alongside them can still be refused. That is what the retry
- * below is for.
+ * This gate is not the whole picture. The page also pulls ~36 product images
+ * from the same host, outside axios and so outside this queue, which puts the
+ * real peak nearer 40 connections. Those are static and cached for a week, so
+ * they cost the server far less than an API call, but under a cold burst the
+ * reads alongside them can still be refused. That is what the retry below is
+ * for.
+ *
+ * Lowered from 5 to 3 after reading the ERP's own log, which named the failure
+ * the 500s were hiding:
+ *
+ *     mysqli::real_connect(): (HY000/2002): Operation not permitted
+ *
+ * `EPERM` on connect is the *host* refusing the socket, not MySQL refusing the
+ * login — a shared-hosting process limit rather than `max_connections`, which
+ * would say so. Six concurrent reads on their own all return 200; it is the
+ * homepage's whole opening burst together that crosses the line. So the fix is
+ * mostly to stop opening that burst at all (the rails now wait until they are
+ * scrolled to — see useInViewOnce), and this is the backstop.
  */
-const MAX_CONCURRENT_REQUESTS = 5;
+const MAX_CONCURRENT_REQUESTS = 3;
 
 /** Extra attempts after the first. Two covers a transient worker death. */
 const MAX_RETRIES = 2;
