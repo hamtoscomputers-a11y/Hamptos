@@ -134,6 +134,10 @@ export interface PromoBannersByPlacement {
   product_strip?: PromoBanner[];
   /** The six category tiles under the home page banner, in slot order. */
   home_category_mosaic?: PromoBanner[];
+  /** The five tiles on the blue band, in slot order. */
+  home_promo_tiles?: PromoBanner[];
+  /** The wide banner under the blue band. Only the first row is used. */
+  home_clearance_banner?: PromoBanner[];
 }
 
 /**
