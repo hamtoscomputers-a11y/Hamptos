@@ -234,9 +234,17 @@ const ProductCarouselSection = ({
                 ))}
               </CarouselContent>
               {/* 36px, and parked 21px clear of the track — the Figma places
-                  them at 157 and 1536 against a 215..1515 content column. */}
-              <CarouselPrevious className={`left-1 hidden h-9 w-9 sm:flex 2xl:-left-[57px] ${styles.arrow}`} />
-              <CarouselNext className={`right-1 hidden h-9 w-9 sm:flex 2xl:-right-[57px] ${styles.arrow}`} />
+                  them at 157 and 1536 against a 215..1515 content column.
+                  Below that the arrows have no margin to sit in, so they
+                  overlap the track instead — pinned to the image well's
+                  vertical middle (~30% down the card) rather than the card's
+                  own middle, which falls on the product title. */}
+              <CarouselPrevious
+                className={`left-1 top-[30%] hidden h-9 w-9 -translate-y-1/2 sm:flex 2xl:top-1/2 2xl:-left-[57px] ${styles.arrow}`}
+              />
+              <CarouselNext
+                className={`right-1 top-[30%] hidden h-9 w-9 -translate-y-1/2 sm:flex 2xl:top-1/2 2xl:-right-[57px] ${styles.arrow}`}
+              />
             </Carousel>
           )}
         </div>

@@ -41,7 +41,10 @@ const PromoTile = ({
       src={slide.image}
       alt={slide.caption || ""}
       loading="lazy"
-      className="h-full w-full object-cover"
+      // Same left-anchored headline convention as the hero art (see
+      // HeroSlider) — these tiles crop the source banner hard to fit a much
+      // squarer box, and a centered crop cuts the copy off mid-word.
+      className="h-full w-full object-cover object-left"
       onError={(event) => {
         event.currentTarget.style.visibility = "hidden";
       }}

@@ -74,8 +74,15 @@ const NewsletterPanel = () => {
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="Enter your email"
                 /* The Figma's two white alphas: the pill is white at 32%, the
-                   placeholder inside it white at 40%. */
-                className="h-[59px] w-full flex-1 rounded-full border-0 bg-white/[0.32] px-6 text-sm text-surface-paper placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/60"
+                   placeholder inside it white at 40%.
+
+                   `flex-1` is a row-layout concern — it makes the field fill
+                   the space beside the button once `sm:flex-row` kicks in.
+                   Applied unconditionally, its `flex-basis: 0%` collapses the
+                   field to its content's min height inside the stacked
+                   `flex-col` form on mobile, shrinking a 59px pill down to
+                   ~19px regardless of the explicit `h-[59px]`. */
+                className="h-[59px] w-full rounded-full border-0 bg-white/[0.32] px-6 text-sm text-surface-paper placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/60 sm:flex-1"
               />
               <button
                 type="submit"
