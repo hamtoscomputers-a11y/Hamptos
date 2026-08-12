@@ -307,6 +307,7 @@ const ProductDetail = () => {
           align="split"
           showExplore
           exploreHref="/products"
+          insetClassName="px-4 sm:px-6 md:px-8"
         />
 
         {/* The Figma closes the product page on the same newsletter panel the

@@ -52,6 +52,14 @@ interface ProductCarouselSectionProps {
    * passes its own so it does not paint a white stripe through it.
    */
   frameClassName?: string
+  /**
+   * Horizontal padding on the content column. Defaults to the home page's
+   * `px-4`, which every rail there shares. A page whose other sections step
+   * their padding up at wider breakpoints passes its own, so the rail's
+   * heading and first card line up with the section above rather than sitting
+   * a gutter to the left of it.
+   */
+  insetClassName?: string
   /** Centred heading with no Explore All, per the Related Product frame. */
   align?: "split" | "center"
   showExplore?: boolean
@@ -140,6 +148,7 @@ const ProductCarouselSection = ({
   onTabChange,
   tone = "light",
   frameClassName,
+  insetClassName = "px-4",
   align = "split",
   showExplore = true,
   containerRef,
@@ -164,7 +173,7 @@ const ProductCarouselSection = ({
 
   return (
     <section ref={containerRef} aria-label={title} className={frameClassName ?? `py-12 ${styles.section}`}>
-      <div className="container mx-auto px-4">
+      <div className={`container mx-auto ${insetClassName}`}>
         <header
           className={`flex flex-wrap gap-4 ${
             align === "center" ? "justify-center text-center" : "items-start justify-between"
