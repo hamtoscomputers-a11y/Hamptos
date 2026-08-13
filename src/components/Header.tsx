@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { Menu, X } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { useSelector } from "react-redux"
 import type { RootState } from "../store"
-import { useCategories } from "../api/hooks/useCategories"
+import { CATEGORY_TREE_PARAMS, useCategories } from "../api/hooks/useCategories"
 import mainLogo from "../assets/mainLogo.png"
 import CategoryNav from "./header/CategoryNav"
 import HeaderActions from "./header/HeaderActions"
@@ -22,8 +22,9 @@ const Header = () => {
   const cartItems = useSelector((state: RootState) => state.cart.items)
   const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0)
 
-  const categoryParams = useMemo(() => ({ include_products: true, limit: 20 }), [])
-  const { data, isLoading, error } = useCategories(categoryParams)
+  // Shared with the Shop-by-Categories rail so the two mount off one request
+  // rather than two — see CATEGORY_TREE_PARAMS.
+  const { data, isLoading, error } = useCategories(CATEGORY_TREE_PARAMS)
   const categories = data?.data ?? []
 
   // Any navigation should leave both menus closed.

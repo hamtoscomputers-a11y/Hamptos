@@ -1,3 +1,5 @@
+import { useProductResources } from "@/api/hooks/useProducts"
+
 export interface ResourceGroup {
   /** The grey label above the rule, e.g. "Support and Resources". */
   label: string
@@ -5,14 +7,16 @@ export interface ResourceGroup {
   fileName: string
   /** Destination. Omitted while there is nothing to point at. */
   url?: string
+  /** Bytes, when the ERP holds the file itself. */
+  size?: number | null
+  /** False for a link to another site, which is opened rather than saved. */
+  hosted?: boolean
 }
 
 interface ResourcesDownloadsProps {
-  /**
-   * The ERP has no attachment, download or datasheet field — `products/view/{id}`
-   * returns 18 fields and none of them is a file — so this is empty in practice
-   * and the Figma's own entries stand in.
-   */
+  /** Whose downloads to list. */
+  productId?: string
+  /** Overrides the ERP's rows. Used by stories and tests, not by the page. */
   groups?: ResourceGroup[]
 }
 
@@ -45,10 +49,14 @@ const PdfIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 )
 
-const PLACEHOLDER_GROUPS: ResourceGroup[] = [
-  { label: "Support and Resources", fileName: "resource.pdf" },
-  { label: "Support and Resources", fileName: "Datasheet.pdf" },
-]
+/**
+ * `184320` reads as `180 KB` beside the link. Anything under half a kilobyte
+ * still reads as `1 KB` — rounding it to `0 KB` would suggest an empty file.
+ */
+const formatSize = (bytes: number) =>
+  bytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+    : `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 
 /**
  * "Resources Downloads", per the Figma's blocks at x212:
@@ -57,11 +65,25 @@ const PLACEHOLDER_GROUPS: ResourceGroup[] = [
  *   label    356 x 20   Inter Light 14 / 142.1%  #2A4153
  *   row     1303 x 58   1px #000000 at 50% top and bottom
  *   file     762 x 16 at (7, 21) — centred in the 58, gap 2, link #0073ED
+ *
+ * Files come from the ERP under Products → Resources & Downloads, one heading
+ * per row exactly as the design repeats it. The section keeps its heading when
+ * a product has none rather than disappearing, so the page does not silently
+ * lose a block.
  */
-const ResourcesDownloads = ({ groups }: ResourcesDownloadsProps) => {
-  const list = groups?.length ? groups : PLACEHOLDER_GROUPS
+const ResourcesDownloads = ({ productId, groups }: ResourcesDownloadsProps) => {
+  const { data, isLoading } = useProductResources(productId ?? "")
 
-  if (!list.length) return null
+  const fromApi: ResourceGroup[] = (data ?? []).map((resource) => ({
+    label: resource.label,
+    fileName: resource.title,
+    url: resource.url,
+    // Only the ERP's own files have a known size; a link elsewhere does not.
+    size: resource.hosted ? resource.size : null,
+    hosted: resource.hosted,
+  }))
+
+  const list = groups?.length ? groups : fromApi
 
   return (
     <section
@@ -75,36 +97,53 @@ const ResourcesDownloads = ({ groups }: ResourcesDownloadsProps) => {
         Resources Downloads
       </h2>
 
-      {list.map((group, index) => (
-        <div key={`${group.label}-${group.fileName}`} className={index === 0 ? "mt-[5px]" : "mt-[15px]"}>
-          <p className="text-[14px] font-light leading-[1.421] text-ink-slate">{group.label}</p>
+      {list.length === 0 ? (
+        <p className="mt-[5px] text-[12px] text-ink-body">{isLoading && productId ? "Loading…" : "No data available."}</p>
+      ) : (
+        list.map((group, index) => (
+          <div key={`${group.label}-${group.fileName}-${index}`} className={index === 0 ? "mt-[5px]" : "mt-[15px]"}>
+            <p className="text-[14px] font-light leading-[1.421] text-ink-slate">{group.label}</p>
 
-          {/* 8198 - 8193 = 5 under the label. The file row sits at y21 in a
-              58-tall block and is 16 high, so it centres with 21 either side. */}
-          <div className="mt-[5px] flex h-[58px] items-center border-y border-black/50 px-[7px]">
-            {group.url ? (
-              <a
-                href={group.url}
-                download
-                className="flex items-center gap-0.5 text-[12px] leading-4 text-link underline hover:no-underline"
-              >
-                <span className="flex-shrink-0 text-black">
-                  <PdfIcon />
+            {/* 8198 - 8193 = 5 under the label. The file row sits at y21 in a
+                58-tall block and is 16 high, so it centres with 21 either side. */}
+            <div className="mt-[5px] flex h-[58px] items-center gap-2 border-y border-black/50 px-[7px]">
+              {group.url ? (
+                // `download` only where the ERP holds the file. On a link to
+                // another site it is both ignored (cross-origin) and wrong —
+                // that destination is a page to open, not a file to save.
+                //
+                // It does not rename the ERP's files either, since the portal
+                // is a different origin, so the saved name is whatever the URL
+                // ends in. That is why uploads keep their original name.
+                <a
+                  href={group.url}
+                  download={group.hosted !== false}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-0.5 text-[12px] leading-4 text-link underline hover:no-underline"
+                >
+                  <span className="flex-shrink-0 text-black">
+                    <PdfIcon />
+                  </span>
+                  {group.fileName}
+                </a>
+              ) : (
+                // No destination — shown, but not offered as a working link.
+                <span className="flex items-center gap-0.5 text-[12px] leading-4 text-link underline">
+                  <span className="flex-shrink-0 text-black">
+                    <PdfIcon />
+                  </span>
+                  {group.fileName}
                 </span>
-                {group.fileName}
-              </a>
-            ) : (
-              // No destination yet — shown, but not offered as a working link.
-              <span className="flex items-center gap-0.5 text-[12px] leading-4 text-link underline">
-                <span className="flex-shrink-0 text-black">
-                  <PdfIcon />
-                </span>
-                {group.fileName}
-              </span>
-            )}
+              )}
+
+              {typeof group.size === "number" && group.size > 0 && (
+                <span className="text-[11px] text-ink-body">({formatSize(group.size)})</span>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </section>
   )
 }

@@ -1,3 +1,4 @@
+import { usePromoBanners } from "@/api/hooks/useProducts";
 import NewCollectionRail from "./NewCollectionRail";
 import { isRouter } from "./productRanges";
 
@@ -41,7 +42,10 @@ const PromoTile = ({
       src={slide.image}
       alt={slide.caption || ""}
       loading="lazy"
-      className="h-full w-full object-cover"
+      // Same left-anchored headline convention as the hero art (see
+      // HeroSlider) — these tiles crop the source banner hard to fit a much
+      // squarer box, and a centered crop cuts the copy off mid-word.
+      className="h-full w-full object-cover object-left"
       onError={(event) => {
         event.currentTarget.style.visibility = "hidden";
       }}
@@ -78,16 +82,43 @@ interface PromoTileBandProps {
 /**
  * Blue band carrying the five promo tiles and a product rail.
  *
- * Slides are handed down rather than fetched here: the homepage already loads
- * `/website/slider` for the hero, and fetching it again would be a second
- * request for the same five rows.
+ * Artwork comes from the Promo Banners block `home_promo_tiles`, and falls back
+ * to `/website/slider` until that block has been filled in.
+ *
+ * The fallback is not the intended source. Those five slider rows also draw the
+ * hero, so before this block existed a tile could not be changed without
+ * changing the hero with it — and the fifth row was drawn twice over, once here
+ * and once as the clearance banner below. The slider now belongs to the hero.
+ *
+ * `slides` is still handed down rather than fetched: the homepage already loads
+ * it for the hero, so taking it as a prop costs no second request.
  *
  * The tile block straddles the band's top edge: 180 of the upper row's 250 sits
  * on the white section above, the rest on the blue. That overlap only applies
  * from `lg` — once the tiles stack there is no second column to read it
  * against, so the band simply starts above them.
  */
-const PromoTileBand = ({ slides, isLoading }: PromoTileBandProps) => (
+const PromoTileBand = ({ slides, isLoading }: PromoTileBandProps) => {
+  const { data, isLoading: bannersLoading } = usePromoBanners();
+
+  // Mapped onto the slide shape the tiles already render, so one component
+  // serves both sources. All or nothing: mixing a half-filled block with
+  // leftover slider rows would put hero artwork beside the real tiles.
+  const tiles = (data?.home_promo_tiles ?? [])
+    .filter((banner) => banner.image)
+    .map((banner) => ({
+      image: banner.image as string,
+      link: banner.link ?? "",
+      caption: banner.alt ?? "",
+    }));
+
+  const source = tiles.length ? tiles : slides;
+  const loading = tiles.length ? false : isLoading || bannersLoading;
+
+  return <Band slides={source} isLoading={loading} />;
+};
+
+const Band = ({ slides, isLoading }: PromoTileBandProps) => (
   /* Not a landmark itself — the tile grid and the rail inside it are each
        labelled, and nesting a third region with the rail's own name makes the
        page announce it twice. */

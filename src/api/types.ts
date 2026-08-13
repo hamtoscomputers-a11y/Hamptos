@@ -41,6 +41,8 @@ export interface Product {
   name: string;
   slug: string;
   details?: string;
+  /** Short summary for the storefront's "Product Overview" heading. */
+  overview?: string;
   cost: string;
   price: string;
   promo_price?: string;
@@ -61,6 +63,188 @@ export interface Product {
   photos?: ProductPhoto[];
   brand_data?: Brand;
   category_data?: Category;
+}
+
+/** One product recommended as an accessory, flattened by the API's join. */
+export interface AccessoryProduct {
+  id: string;
+  code: string;
+  name: string;
+  slug: string;
+  price: string;
+  promotion?: string;
+  promo_price?: string;
+  start_date?: string;
+  end_date?: string;
+  quantity: string;
+  image?: string;
+  image_url?: string;
+  brand_id?: string;
+  brand_name?: string;
+  category_id?: string;
+  category_name?: string;
+}
+
+/**
+ * An accessory group. `name` is free text typed by the admin and is what the
+ * storefront shows as a tab label, so there is no fixed set of these.
+ */
+export interface AccessoryGroup {
+  name: string;
+  products: AccessoryProduct[];
+}
+
+/** A quality certification badge. `image_url` is null when no logo was uploaded. */
+export interface Certification {
+  id: string;
+  name: string;
+  image?: string | null;
+  image_url?: string | null;
+}
+
+/**
+ * A curated comparison product. Same join as an accessory, plus the specs the
+ * comparison table reads — accessories omit `key_information` to stay light.
+ */
+export interface ComparisonProduct extends AccessoryProduct {
+  key_information?: string;
+}
+
+/**
+ * One artwork block on the product page, from the ERP's Promo Banners.
+ *
+ * The mosaic's tiles carry their copy inside the artwork, so `heading`,
+ * `subheading` and `button_label` come back null for them and `tags` empty.
+ * The strip uses all of it.
+ */
+export interface PromoBanner {
+  id: number;
+  image: string | null;
+  alt: string | null;
+  link: string | null;
+  heading: string | null;
+  subheading: string | null;
+  button_label: string | null;
+  tags: string[];
+}
+
+/** Banners keyed by the block they belong to. A block with none is absent. */
+export interface PromoBannersByPlacement {
+  product_mosaic?: PromoBanner[];
+  product_strip?: PromoBanner[];
+  /** The six category tiles under the home page banner, in slot order. */
+  home_category_mosaic?: PromoBanner[];
+  /** The five tiles on the blue band, in slot order. */
+  home_promo_tiles?: PromoBanner[];
+  /** The wide banner under the blue band. Only the first row is used. */
+  home_clearance_banner?: PromoBanner[];
+}
+
+/**
+ * One approved review. The reviewer's email is deliberately not part of this —
+ * the ERP holds it for moderation and never puts it in the response.
+ */
+export interface ProductReviewApi {
+  id: number;
+  author: string;
+  rating: number;
+  title: string | null;
+  body: string | null;
+  /** True when the email given matched a customer invoiced for this product. */
+  verified_buyer: boolean;
+  /** `YYYY-MM-DD HH:MM:SS`, the ERP's own format. */
+  created_at: string;
+}
+
+/**
+ * Counts across *every* approved review, not just the page returned alongside
+ * it — the summary says "44 Reviews" while the list shows five.
+ */
+export interface ProductReviewSummary {
+  /** Null when there are no reviews, so "unrated" is distinguishable from 0. */
+  average: number | null;
+  total: number;
+  counts: Record<'1' | '2' | '3' | '4' | '5', number>;
+}
+
+export interface ProductReviewsResponse {
+  data: ProductReviewApi[];
+  summary: ProductReviewSummary;
+}
+
+/**
+ * One published Q&A pair. Unanswered questions are filtered out by the ERP, so
+ * `answer` is always present here.
+ */
+export interface ProductQuestion {
+  id: number;
+  question: string;
+  answer: string;
+}
+
+/**
+ * One downloadable file under "Resources Downloads". The ERP resolves the
+ * upload-or-link choice, so `url` is always ready to use.
+ */
+export interface ProductResource {
+  id: number;
+  /** The grey heading above the row, e.g. "Support and Resources". */
+  label: string;
+  /** The link text, e.g. "Datasheet.pdf". */
+  title: string;
+  url: string;
+  /** True for a file the ERP holds; false for a link to another site. */
+  hosted: boolean;
+  /** Bytes. Null for external links, whose size the ERP cannot know. */
+  size: number | null;
+}
+
+/** One button in a configurator row. */
+export interface ProductOption {
+  id: number;
+  /** The button label, e.g. "Original New", "None", "R3K00A". */
+  name: string;
+  /** Added to the product price when picked. 0 for a free choice. */
+  price: number;
+}
+
+/** One labelled row of buttons, e.g. "Wall Mounting Bracket". */
+export interface ProductOptionGroup {
+  name: string;
+  options: ProductOption[];
+}
+
+/** One badge on the pale-blue trust band under the price. */
+export interface TrustBadge {
+  id: number;
+  /** Icon key the storefront maps to a Lucide component; unknown draws a shield. */
+  icon: string;
+  /** The bold line, e.g. "3 Years Warranty". */
+  title: string;
+  /** The grey line under it. May be empty. */
+  subtitle: string;
+}
+
+/** What the "Write a review" form sends. */
+export interface ProductReviewSubmission {
+  product_id: string | number;
+  rating: number;
+  author: string;
+  email?: string;
+  title?: string;
+  body?: string;
+}
+
+/** One "Industry News & Insights" card. */
+export interface IndustryNewsItem {
+  id: number;
+  image: string | null;
+  alt: string | null;
+  title: string;
+  excerpt: string | null;
+  link: string | null;
+  /** `YYYY-MM-DD`, or null when it was left blank. */
+  published_at: string | null;
 }
 
 export interface ProductPhoto {

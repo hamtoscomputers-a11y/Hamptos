@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import { useQueries } from "@tanstack/react-query"
 import { CategoryService } from "@/api"
+import { useInViewOnce } from "@/hooks/useInViewOnce"
 import ProductCarouselSection from "./ProductCarouselSection"
 import { toCardProduct } from "./productCard"
 
@@ -35,11 +36,16 @@ const ORDER_BY = "id,desc"
  * brand wall, so it carries the band's background rather than its own white one.
  */
 const NewServersSection = () => {
+  // Four requests of its own, all below the fold — held until scrolled near,
+  // like the name-matched rails. See useInViewOnce.
+  const { ref, inView } = useInViewOnce<HTMLElement>()
+
   const results = useQueries({
     queries: SERVER_CATEGORY_IDS.map((id) => ({
       queryKey: ["categories", "products", id, { limit: RAIL_LIMIT, order_by: ORDER_BY }],
       queryFn: () =>
         CategoryService.getProductsByCategory(id, { limit: RAIL_LIMIT, start: 1, order_by: ORDER_BY }),
+      enabled: inView,
       staleTime: 5 * 60 * 1000,
     })),
   })
@@ -71,12 +77,15 @@ const NewServersSection = () => {
       title={TITLE}
       subtitle={SUBTITLE}
       products={products}
-      isLoading={isLoading}
+      // Also true before the rail is asked for, so the section stays in the
+      // document long enough to be observed into view. See NewCollectionRail.
+      isLoading={!inView || isLoading}
       error={error}
       exploreHref={`/products?category=${SERVER_CATEGORY_IDS[0]}`}
       // Inside the grey band: no background of its own, and no vertical padding
       // — the band's 54px gap under the brand wall is the only spacing wanted.
       frameClassName=""
+      containerRef={ref}
     />
   )
 }

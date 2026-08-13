@@ -52,9 +52,25 @@ interface ProductCarouselSectionProps {
    * passes its own so it does not paint a white stripe through it.
    */
   frameClassName?: string
+  /**
+   * Horizontal padding on the content column. Defaults to the home page's
+   * `px-4`, which every rail there shares. A page whose other sections step
+   * their padding up at wider breakpoints passes its own, so the rail's
+   * heading and first card line up with the section above rather than sitting
+   * a gutter to the left of it.
+   */
+  insetClassName?: string
   /** Centred heading with no Explore All, per the Related Product frame. */
   align?: "split" | "center"
   showExplore?: boolean
+  /**
+   * Attached to the `<section>`, for a caller that defers its own fetching
+   * until the rail is scrolled near. It has to land on an element this
+   * component always renders — which is why such a caller passes `isLoading`
+   * while it waits: an empty rail returns `null` below, and a rail that is not
+   * in the document can never be observed into view.
+   */
+  containerRef?: React.Ref<HTMLElement>
 }
 
 const SKELETON_COUNT = 5
@@ -132,8 +148,10 @@ const ProductCarouselSection = ({
   onTabChange,
   tone = "light",
   frameClassName,
+  insetClassName = "px-4",
   align = "split",
   showExplore = true,
+  containerRef,
 }: ProductCarouselSectionProps) => {
   const [api, setApi] = useState<CarouselApi>()
 
@@ -154,8 +172,8 @@ const ProductCarouselSection = ({
   const styles = TONE[tone]
 
   return (
-    <section aria-label={title} className={frameClassName ?? `py-12 ${styles.section}`}>
-      <div className="container mx-auto px-4">
+    <section ref={containerRef} aria-label={title} className={frameClassName ?? `py-12 ${styles.section}`}>
+      <div className={`container mx-auto ${insetClassName}`}>
         <header
           className={`flex flex-wrap gap-4 ${
             align === "center" ? "justify-center text-center" : "items-start justify-between"
@@ -234,9 +252,17 @@ const ProductCarouselSection = ({
                 ))}
               </CarouselContent>
               {/* 36px, and parked 21px clear of the track — the Figma places
-                  them at 157 and 1536 against a 215..1515 content column. */}
-              <CarouselPrevious className={`left-1 hidden h-9 w-9 sm:flex 2xl:-left-[57px] ${styles.arrow}`} />
-              <CarouselNext className={`right-1 hidden h-9 w-9 sm:flex 2xl:-right-[57px] ${styles.arrow}`} />
+                  them at 157 and 1536 against a 215..1515 content column.
+                  Below that the arrows have no margin to sit in, so they
+                  overlap the track instead — pinned to the image well's
+                  vertical middle (~30% down the card) rather than the card's
+                  own middle, which falls on the product title. */}
+              <CarouselPrevious
+                className={`left-1 top-[30%] hidden h-9 w-9 -translate-y-1/2 sm:flex 2xl:top-1/2 2xl:-left-[57px] ${styles.arrow}`}
+              />
+              <CarouselNext
+                className={`right-1 top-[30%] hidden h-9 w-9 -translate-y-1/2 sm:flex 2xl:top-1/2 2xl:-right-[57px] ${styles.arrow}`}
+              />
             </Carousel>
           )}
         </div>

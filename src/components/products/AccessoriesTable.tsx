@@ -1,78 +1,31 @@
-import { useMemo } from "react"
 import { Link } from "react-router-dom"
 import { createSlug } from "@/lib/utils"
+import { useProductAccessories } from "@/api/hooks/useProducts"
 
 interface AccessoriesTableProps {
-  /** Same-category products — the first choice to fill the table. */
-  products: any[]
-  /** Catalogue-wide pool, used to top up when the category holds too few others. */
-  fallbackProducts?: any[]
-  /** Current product id, excluded so the table never lists the page's own item. */
+  /** Current product id — the accessory groups are looked up against it. */
   currentId: string
   /** The ERP product `code` — used in the table caption. */
   code: string
   name: string
 }
 
-interface AccessoryRow {
-  id: string
-  code: string
-  name: string
-  slug: string
-}
-
-interface AccessoryGroup {
-  title: string
-  rows: AccessoryRow[]
-}
-
-/** The Figma lists five rows; more than this stops reading as a quick reference. */
-const MAX_ROWS = 6
-
 /**
  * "The Accessories", per the Figma's 1304-wide block at x212: a caption over a
  * table whose single-cell rows are group headings and whose two-cell rows pair
  * a brand-blue part code with its description.
  *
- * Both columns are live: the codes are ERP product `code`s linking to their own
- * pages, and the group headings are the ERP category each product sits in — the
- * only grouping the catalogue actually carries.
+ * The same curated data as the bundle rail higher up the page, laid out as a
+ * reference table instead of cards — the group headings are the admin's own
+ * names ("Mount Kit", "Power Adaptor") and the codes are ERP product `code`s
+ * linking to their own pages.
  */
-const AccessoriesTable = ({ products, fallbackProducts = [], currentId, code, name }: AccessoriesTableProps) => {
-  const groups = useMemo<AccessoryGroup[]>(() => {
-    // Same-category products first, topped up from the catalogue pool.
-    const seen = new Set([currentId])
-    const picked: any[] = []
-    for (const pool of [products || [], fallbackProducts]) {
-      for (const p of pool) {
-        const id = String(p?.id ?? "")
-        if (!id || seen.has(id)) continue
-        seen.add(id)
-        picked.push(p)
-        if (picked.length >= MAX_ROWS) break
-      }
-      if (picked.length >= MAX_ROWS) break
-    }
+const AccessoriesTable = ({ currentId, code, name }: AccessoriesTableProps) => {
+  const { data, isLoading } = useProductAccessories(currentId)
+  const groups = data ?? []
 
-    // Group by ERP category, preserving the order the products came back in.
-    const byCategory = new Map<string, AccessoryRow[]>()
-    for (const p of picked) {
-      const category = (typeof p?.category === "object" ? p?.category?.name : p?.category) || "Other"
-      const row: AccessoryRow = {
-        id: String(p.id),
-        code: p?.code || "",
-        name: p?.name || "",
-        slug: p?.name ? createSlug(p.name) : String(p.id),
-      }
-      const existing = byCategory.get(category)
-      if (existing) existing.push(row)
-      else byCategory.set(category, [row])
-    }
+  if (isLoading || !groups.length) return null
 
-    return [...byCategory.entries()].map(([title, rows]) => ({ title, rows }))
-  }, [products, fallbackProducts, currentId])
-
-  if (!groups.length) return null
 
   const caption = code ? `Table 2 shows the accessories of ${code}.` : `Table 2 shows the accessories of ${name}.`
 
@@ -96,27 +49,27 @@ const AccessoriesTable = ({ products, fallbackProducts = [], currentId, code, na
             </colgroup>
             <tbody>
               {groups.flatMap((group) => [
-                <tr key={`group-${group.title}`}>
+                <tr key={`group-${group.name}`}>
                   <th
                     scope="colgroup"
                     colSpan={2}
                     className="border border-surface-grid px-3 py-[11px] text-left align-top font-medium"
                   >
-                    {group.title}
+                    {group.name}
                   </th>
                 </tr>,
-                ...group.rows.map((row) => (
-                  <tr key={row.id}>
+                ...group.products.map((product) => (
+                  <tr key={product.id}>
                     <td className="border border-surface-grid px-3 py-[11px] align-top">
                       <Link
-                        to={`/product/${row.slug}`}
-                        state={{ productId: row.id }}
+                        to={`/product/${product.slug || createSlug(product.name)}`}
+                        state={{ productId: product.id }}
                         className="text-brand-700 hover:underline"
                       >
-                        {row.code}
+                        {product.code}
                       </Link>
                     </td>
-                    <td className="border border-surface-grid px-2.5 py-[11px] align-top">{row.name}</td>
+                    <td className="border border-surface-grid px-2.5 py-[11px] align-top">{product.name}</td>
                   </tr>
                 )),
               ])}

@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { ArrowRight } from "lucide-react"
 import { Link } from "react-router-dom"
-import { useCategories } from "@/api/hooks/useCategories"
+import { CATEGORY_TREE_PARAMS, useCategories } from "@/api/hooks/useCategories"
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
 import { useCarouselAutoplay } from "@/hooks/useCarouselAutoplay"
 
@@ -47,8 +47,9 @@ const isRealImage = (url?: string) => !!url && !/no_image/i.test(url)
  */
 const ShopByCategories = () => {
   const { setApi, pauseProps } = useCarouselAutoplay(AUTOPLAY_MS)
-  const params = useMemo(() => ({ limit: 100, start: 1, include_products: true }), [])
-  const { data, isLoading, error } = useCategories(params)
+  // Shared with the header's category menu so the two mount off one request
+  // rather than two — see CATEGORY_TREE_PARAMS.
+  const { data, isLoading, error } = useCategories(CATEGORY_TREE_PARAMS)
 
   const categories = useMemo(
     () =>

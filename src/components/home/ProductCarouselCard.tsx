@@ -21,9 +21,14 @@ const deliveryDay = () =>
 /**
  * Product card used by the home carousels.
  *
- * Figma geometry, taken from the 246x439 instance: a 1px `#E5E5E5` outside
- * stroke on white, ~8px corners, and a 227:154 image well filled `#E7E7E7`
- * with the shot inset rather than bled to its edges.
+ * Figma geometry, taken from the 246.32 x 439.46 instance: a 1.09 `#E5E5E5`
+ * outside stroke on `#FFFFFF`, 8.68 corners, and a 227 x 155 image well whose
+ * fill is the image itself, bled to the well's edges.
+ *
+ * That well carries `padding 32.55 / 27.13` in the file, which is autolayout
+ * padding for anything nested inside it — not an inset on the fill. A frame
+ * whose Fill is an image covers the frame regardless. Reading it as an inset
+ * is what left the product floating in a field of white.
  *
  * The sale badge, discount chip and struck-through price are all conditional
  * on the ERP returning `promo_price`. No product currently carries one, so
@@ -38,7 +43,11 @@ const ProductCarouselCard = ({ product }: ProductCarouselCardProps) => {
       <Link
         to={to}
         state={{ productId: product.id }}
-        className="relative block aspect-[227/154] shrink-0 bg-surface-placeholder"
+        /* White behind the shot, per the Figma — its image well is filled with
+           the image itself, and #E7E7E7 appears nowhere in the frame's colours.
+           The grey is kept only for a card with no photo, where a plain white
+           gap would read as a broken card rather than a missing image. */
+        className={`relative block aspect-[227/155] shrink-0 ${image ? "bg-white" : "bg-surface-placeholder"}`}
       >
         {originalPrice && (
           <span className="absolute right-3 top-3 z-10 rounded bg-brand-700 px-2.5 py-1 text-[11px] font-semibold text-white">
@@ -46,15 +55,20 @@ const ProductCarouselCard = ({ product }: ProductCarouselCardProps) => {
           </span>
         )}
         {image && (
-          /* Inset by the well's own padding, per the Figma, and absolute so the
-             shot cannot drive the well's height — an img is a replaced element
-             and its intrinsic size otherwise wins over the `aspect-ratio` box,
-             leaving every card a different depth. */
+          /* Absolute so the shot cannot drive the well's height — an img is a
+             replaced element and its intrinsic size otherwise wins over the
+             `aspect-ratio` box, leaving every card a different depth. */
           <img
             src={image}
             alt={name}
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-contain p-7"
+            /* `cover`, to fill the well as the Figma's image fill does. It
+               crops, which suits this catalogue: the ERP's shots are products
+               centred on white, so what a wide well trims off a squarer photo
+               is the empty margin above and below rather than the product.
+               A tall product would lose its ends — worth revisiting if the
+               range ever grows past rack gear. */
+            className="absolute inset-0 h-full w-full object-cover"
             onError={(event) => {
               event.currentTarget.style.visibility = "hidden"
             }}

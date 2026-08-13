@@ -7,6 +7,28 @@ export const API_ENDPOINTS = {
     BASE: '/api/v1/products',
     BY_CODE: (code: string) => `/api/v1/products/code/${code}`,
     BY_ID: (id: string) => `/api/v1/products/view/${id}`,
+    // Admin-curated accessory recommendations, already grouped — each group is
+    // a tab in the "Shop Bundles or Accessories" section.
+    ACCESSORIES: (id: string) => `/api/v1/products/accessories/${id}`,
+    // Quality certification badges assigned to the product.
+    CERTIFICATIONS: (id: string) => `/api/v1/products/certifications/${id}`,
+    // Products curated as columns of "Compare to Similar Items".
+    COMPARISONS: (id: string) => `/api/v1/products/comparisons/${id}`,
+    // Approved customer reviews, with the summary the histogram is drawn from.
+    REVIEWS: (id: string) => `/api/v1/products/reviews/${id}`,
+    // Published Q&A pairs, written in the ERP under Products → Questions & Answers.
+    QUESTIONS: (id: string) => `/api/v1/products/questions/${id}`,
+    // Datasheets and manuals, from Products → Resources & Downloads.
+    RESOURCES: (id: string) => `/api/v1/products/resources/${id}`,
+    // The configurator rows — Condition, Wall Mounting Bracket, Power Adaptor —
+    // grouped by heading, from Products → Product Options.
+    OPTIONS: (id: string) => `/api/v1/products/options/${id}`,
+    // The pale-blue band under the price. Answers with the product's own badges
+    // when it has any, otherwise the site-wide set — so one request either way.
+    TRUST_BADGES: (id: string) => `/api/v1/products/trust_badges/${id}`,
+    // Submitting one. It is held for approval in the ERP, so nothing posted
+    // here appears in the list above until someone lets it through.
+    SUBMIT_REVIEW: '/api/v1/products/reviews',
     FEATURED: '/api/v1/products/featured',
     LATEST: '/api/v1/products/latest',
     BEST_SELLERS: '/api/v1/products/best-sellers',
@@ -82,6 +104,22 @@ export const API_ENDPOINTS = {
 
   WEBSITE: {
     SEND_CONTACT: '/api/v1/website/send_contact',
+    // Artwork blocks managed in the ERP under Front End → Promo Banners.
+    // Without `?placement=` the response is keyed by placement, so the product
+    // page takes the mosaic and the strip in one request.
+    PROMO_BANNERS: '/api/v1/website/promo_banners',
+    // "Industry News & Insights" cards. Site-wide, not per product — the same
+    // cards run under every product page.
+    INDUSTRY_NEWS: '/api/v1/website/industry_news',
+  },
+
+  // Saved products. Keyed on a token the browser keeps, not on a customer —
+  // the storefront has no login for the ERP to identify anyone by.
+  WISHLIST: {
+    BASE: '/api/v1/wishlist',
+    ADD: '/api/v1/wishlist/add',
+    REMOVE: '/api/v1/wishlist/remove',
+    CLEAR: '/api/v1/wishlist/clear',
   },
 } as const;
 

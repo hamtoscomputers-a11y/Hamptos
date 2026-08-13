@@ -81,7 +81,13 @@ const HeroSlider = ({ slides, isLoading = false }: HeroSliderProps) => {
               <img
                 src={slide.image}
                 alt={slide.title || ""}
-                className={`w-full object-cover object-center ${HERO_ASPECT}`}
+                // The artwork's headline and CTA sit against the left edge; at
+                // sub-`lg` widths the box is proportionally taller than the
+                // banner's native 3:1 art, so `object-cover` has to crop
+                // width to fill it. Centered cropping trims that copy first —
+                // anchoring left instead crops the product photography on the
+                // right, which has room to spare.
+                className={`w-full object-cover object-left ${HERO_ASPECT}`}
                 loading={index === 0 ? "eager" : "lazy"}
               />
             </CarouselItem>

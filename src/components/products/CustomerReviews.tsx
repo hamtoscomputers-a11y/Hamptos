@@ -1,53 +1,68 @@
-import { Link } from "react-router-dom"
+import { useState } from "react"
 import { Check, SquarePen } from "lucide-react"
 import RatingStars from "./RatingStars"
-import type { ProductReview } from "./ProductReviews"
+import WriteReviewDialog from "./WriteReviewDialog"
+import { useProductReviews } from "@/api/hooks/useProducts"
+import type { ProductReviewSummary } from "@/api/types"
 
 interface CustomerReviewsProps {
-  /**
-   * The ERP exposes no review source, so this is empty in practice and the
-   * Figma's own sample content stands in. Pass real reviews and the summary,
-   * the histogram and the list all derive from them instead.
-   */
-  reviews?: ProductReview[]
+  /** Whose reviews to show. Without it the section renders its empty state. */
+  productId?: string
+  /** Named in the modal, so the reviewer can see what they are reviewing. */
+  productName?: string
+  /** Overrides the ERP's reviews. Used by stories and tests, not by the page. */
+  reviews?: DisplayReview[]
 }
 
-const STAR_LEVELS = [5, 4, 3, 2, 1]
+/** One row of the list, in the shape this section draws. */
+interface DisplayReview {
+  id: string | number
+  author: string
+  /** Already formatted for display. */
+  date: string
+  rating: number
+  body: string
+  verified: boolean
+}
 
-/** The Figma's sample reviews, reproduced verbatim. Replaced by real data. */
-const PLACEHOLDER_REVIEWS: ProductReview[] = [
-  { id: 1, author: "John Doe", date: "4/25/26", rating: 4, body: "Works Perfectly" },
-  {
-    id: 2,
-    author: "John Doe",
-    date: "4/25/26",
-    rating: 5,
-    body: "We can choose the delivery company according to our address. Convenient.",
-  },
-  {
-    id: 3,
-    author: "John Doe",
-    date: "4/25/26",
-    rating: 5,
-    body: "Your seller qupted price very fast. The price was also ok. Recommend it.",
-  },
-  {
-    id: 4,
-    author: "John Doe",
-    date: "4/25/26",
-    rating: 5,
-    body: "Found this site through a Bing search, you have so many discount activities espicially in some special holiday, I have been concerned about you for a bit long time.",
-  },
-  { id: 5, author: "John Doe", date: "4/25/26", rating: 5, body: "Works Perfectly" },
-]
+const STAR_LEVELS = [5, 4, 3, 2, 1] as const
+
+const EMPTY_SUMMARY: ProductReviewSummary = {
+  average: null,
+  total: 0,
+  counts: { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 },
+}
 
 /**
- * The Figma's summary counts 44 reviews while listing 5, so the placeholder
- * summary is carried separately rather than derived from the list above.
+ * `4/25/26`, as the design writes it.
+ *
+ * The ERP sends `YYYY-MM-DD HH:MM:SS`, which Safari will not parse — hence the
+ * split rather than `new Date(value)`. An unparseable value is shown as it
+ * arrived instead of as "Invalid Date".
  */
-const PLACEHOLDER_SUMMARY = { average: 4.8, total: 44, counts: [33, 11, 0, 0, 0] }
+const formatReviewDate = (value: string) => {
+  const [datePart] = (value || "").split(" ")
+  const [year, month, day] = datePart.split("-").map(Number)
 
-/** Solid green disc with a white tick — the Figma's #34CF00 verified mark. */
+  if (!year || !month || !day) {
+    return value
+  }
+
+  return `${month}/${day}/${String(year).slice(-2)}`
+}
+
+/** A usable average, or null for "no rating" — never 0.0 by accident. */
+const toAverage = (value: unknown): number | null => {
+  if (value === null || value === undefined || value === "") {
+    return null
+  }
+
+  const parsed = Number(value)
+
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+/** Solid green disc with a white tick — the design's #34CF00 verified mark. */
 const VerifiedMark = () => (
   <span className="flex h-[13px] w-[13px] flex-shrink-0 items-center justify-center rounded-full bg-review-verified">
     <Check size={9} strokeWidth={3.5} className="text-white" aria-hidden />
@@ -63,18 +78,51 @@ const VerifiedMark = () => (
  *
  * This section runs on its own palette: #0073ED stars and bars, #D9D9D9 tracks,
  * #DDDDDD empty stars, #8896A1 meta text, #34CF00 verified marks.
+ *
+ * Reviews come from the ERP, which publishes only what has been approved under
+ * Products → Customer Reviews. A product with none renders the empty state
+ * rather than sample content — the section is on a live shop, and invented
+ * reviews would read as real ones.
  */
-const CustomerReviews = ({ reviews }: CustomerReviewsProps) => {
-  const hasRealReviews = Boolean(reviews?.length)
-  const list = hasRealReviews ? (reviews as ProductReview[]) : PLACEHOLDER_REVIEWS
+const CustomerReviews = ({ productId, productName, reviews }: CustomerReviewsProps) => {
+  const [writeOpen, setWriteOpen] = useState(false)
+  const { data, isLoading } = useProductReviews(productId ?? "")
 
-  const summary = hasRealReviews
+  const list: DisplayReview[] =
+    reviews ??
+    (data?.data ?? []).map((review) => ({
+      id: review.id,
+      author: review.author,
+      date: formatReviewDate(review.created_at),
+      // Coerced rather than trusted: PHP hands back numbers as strings often
+      // enough, and one bad row should not take the section down.
+      rating: Number(review.rating) || 0,
+      // The headline stands in when someone rated without writing anything, so
+      // the row is never a bare pair of dates and stars.
+      body: review.body ?? review.title ?? "",
+      verified: review.verified_buyer,
+    }))
+
+  // The counts span every approved review, while the list above is the newest
+  // page of them — so a product with 44 reviews shows five and still says 44.
+  const summaryFromApi = data?.summary ?? EMPTY_SUMMARY
+  const summary = reviews
     ? {
-        average: list.reduce((sum, review) => sum + review.rating, 0) / list.length,
+        average: list.length ? list.reduce((sum, review) => sum + review.rating, 0) / list.length : null,
         total: list.length,
-        counts: STAR_LEVELS.map((level) => list.filter((review) => Math.round(review.rating) === level).length),
+        counts: Object.fromEntries(
+          STAR_LEVELS.map((level) => [String(level), list.filter((review) => Math.round(review.rating) === level).length]),
+        ) as ProductReviewSummary["counts"],
       }
-    : PLACEHOLDER_SUMMARY
+    : {
+        ...summaryFromApi,
+        // Guarded the same way as the ratings above: anything that is not a
+        // number reads as unrated rather than throwing on `toFixed`. Checked
+        // before coercion, since `Number(null)` is 0 and would print an
+        // average of 0.0 for a product nobody has rated.
+        average: toAverage(summaryFromApi.average),
+        total: Number(summaryFromApi.total) || 0,
+      }
 
   return (
     <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-[50px]" aria-labelledby="customer-reviews-heading">
@@ -86,33 +134,41 @@ const CustomerReviews = ({ reviews }: CustomerReviewsProps) => {
           Customer Reviews
         </h2>
 
-        {/* x1396 + 120 = 1516, the column's right edge — so it sits flush right. */}
-        <Link
-          to="/get-quote?source=write-a-review"
-          className="mt-1 flex flex-shrink-0 items-center gap-[5px] text-[14px] text-review-star hover:underline"
+        {/* x1396 + 120 = 1516, the column's right edge — so it sits flush right.
+            A button rather than a link: it opens the form in place instead of
+            sending someone away from the product they are reviewing. */}
+        <button
+          type="button"
+          onClick={() => setWriteOpen(true)}
+          disabled={!productId}
+          className="mt-1 flex flex-shrink-0 items-center gap-[5px] text-[14px] text-review-star hover:underline disabled:cursor-not-allowed disabled:opacity-50"
         >
           <SquarePen size={16} aria-hidden />
           Write a review
-        </Link>
+        </button>
       </div>
 
       {/* 30px under the heading. Rules top and bottom, nothing on the sides. */}
       <div className="mt-[30px] flex flex-col items-center gap-8 border-y border-black/50 py-6 lg:h-[175px] lg:flex-row lg:justify-center lg:gap-[104px] lg:py-0">
         <div className="flex-shrink-0 text-center">
-          <p className="text-[28px] font-semibold leading-none text-black">{summary.average.toFixed(1)}</p>
+          <p className="text-[28px] font-semibold leading-none text-black">
+            {summary.average !== null ? summary.average.toFixed(1) : "—"}
+          </p>
           <RatingStars
-            rating={summary.average}
+            rating={summary.average ?? 0}
             size={24}
             className="mt-2 justify-center"
             fillClass="text-review-star"
             emptyClass="text-surface-mist"
           />
-          <p className="mt-2 text-[12px] text-black">({summary.total} Reviews)</p>
+          <p className="mt-2 text-[12px] text-black">
+            ({summary.total} {summary.total === 1 ? "Review" : "Reviews"})
+          </p>
         </div>
 
         <ul className="w-full max-w-[672px]">
-          {STAR_LEVELS.map((level, index) => {
-            const count = summary.counts[index] ?? 0
+          {STAR_LEVELS.map((level) => {
+            const count = summary.counts[String(level) as keyof ProductReviewSummary["counts"]] ?? 0
             const share = summary.total ? (count / summary.total) * 100 : 0
 
             return (
@@ -128,36 +184,56 @@ const CustomerReviews = ({ reviews }: CustomerReviewsProps) => {
         </ul>
       </div>
 
-      <ul>
-        {list.map((review) => (
-          <li
-            key={review.id}
-            className="flex flex-col gap-4 border-b border-black/50 py-5 sm:flex-row sm:gap-[96px] lg:h-[120px] lg:py-[18px]"
-          >
-            <div className="w-[116px] flex-shrink-0">
-              <p className="text-[12px] font-medium text-black">{review.author}</p>
-              <p className="mt-1 text-[11px] text-review-meta">Posted on {review.date}</p>
-              <p className="mt-2.5 flex items-center gap-1.5 text-[11px] text-review-meta">
-                <VerifiedMark />
-                Verified Buyer
-              </p>
-            </div>
-
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <RatingStars
-                  rating={review.rating}
-                  size={12}
-                  fillClass="text-review-star"
-                  emptyClass="text-surface-mist"
-                />
-                <span className="text-[12px] text-black">{review.rating.toFixed(1)}</span>
+      {list.length > 0 ? (
+        <ul>
+          {list.map((review) => (
+            <li
+              key={review.id}
+              className="flex flex-col gap-4 border-b border-black/50 py-5 sm:flex-row sm:gap-[96px] lg:min-h-[120px] lg:py-[18px]"
+            >
+              <div className="w-[116px] flex-shrink-0">
+                <p className="text-[12px] font-medium text-black">{review.author}</p>
+                <p className="mt-1 text-[11px] text-review-meta">Posted on {review.date}</p>
+                {/* Only where it was earned. The badge means the email given
+                    matched a customer invoiced for this product, so showing it
+                    on every row would make it mean nothing. */}
+                {review.verified && (
+                  <p className="mt-2.5 flex items-center gap-1.5 text-[11px] text-review-meta">
+                    <VerifiedMark />
+                    Verified Buyer
+                  </p>
+                )}
               </div>
-              <p className="mt-2.5 text-[12px] leading-[1.4] text-black">{review.body}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <RatingStars
+                    rating={review.rating}
+                    size={12}
+                    fillClass="text-review-star"
+                    emptyClass="text-surface-mist"
+                  />
+                  <span className="text-[12px] text-black">{review.rating.toFixed(1)}</span>
+                </div>
+                {review.body && <p className="mt-2.5 text-[12px] leading-[1.4] text-black">{review.body}</p>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="border-b border-black/50 py-8 text-[13px] text-review-meta">
+          {isLoading && productId ? "Loading reviews…" : "No reviews yet. Be the first to review this product."}
+        </p>
+      )}
+
+      {productId && (
+        <WriteReviewDialog
+          open={writeOpen}
+          onOpenChange={setWriteOpen}
+          productId={productId}
+          productName={productName}
+        />
+      )}
     </section>
   )
 }

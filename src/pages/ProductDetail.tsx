@@ -7,7 +7,9 @@ import { useProductsByCategory } from "@/api/hooks/useCategories"
 import ProductGallery from "@/components/products/ProductGallery"
 import ProductInfo from "@/components/products/ProductInfo"
 import BundleAccessories from "@/components/products/BundleAccessories"
+import ProductOverview from "@/components/products/ProductOverview"
 import PromoMosaic from "@/components/products/PromoMosaic"
+import PromoStrip from "@/components/products/PromoStrip"
 import QuickSpecs from "@/components/products/QuickSpecs"
 import ProductDetailsSection from "@/components/products/ProductDetailsSection"
 import AccessoriesTable from "@/components/products/AccessoriesTable"
@@ -23,7 +25,9 @@ import ResourcesDownloads from "@/components/products/ResourcesDownloads"
 import RelatedProducts from "@/components/products/RelatedProducts"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
-import { useDispatch } from "react-redux"
+import { toggleWishlistItem } from "@/store/wishlistSlice"
+import type { AppDispatch, RootState } from "@/store"
+import { useDispatch, useSelector } from "react-redux"
 import { toast } from "@/hooks/use-toast"
 import { Helmet } from 'react-helmet-async';
 
@@ -44,7 +48,9 @@ const ProductDetail = () => {
     "brand,category,photos",
     { enabled: !passedProductData && !!productId }
   );
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
+  // Read before the early returns below, so the hook order stays stable.
+  const wishlistItems = useSelector((state: RootState) => state.wishlist.items)
 
   // Use passed data if available, otherwise use fetched data
   const apiResponse = passedProductData || responseData
@@ -112,18 +118,39 @@ const ProductDetail = () => {
     image: imageUrl,
     brand: brandName,
     product_details: (data as any)?.product_details || "",
+    // The ERP's Product Overview field. Null until it has been written, which
+    // is why the section falls back to the description's first paragraph.
+    overview: (data as any)?.overview || "",
     details: (data as any)?.details || "",
     inStock: Number(data.quantity || 0) > 0,
     isOnSale: !!showOriginalPrice,
-    // The ERP exposes no rating or review fields — left undefined rather than
-    // invented, so the summary renders its empty state until a source exists.
-    rating: undefined as number | undefined,
-    reviews: undefined as number | undefined,
+    // No rating fields here: the product endpoint carries none, and the rating
+    // line reads the review summary straight from its own endpoint instead.
     meta: (data as any)?.metadata || "",
     BXGY: (data as any)?.BXGY || null,
     key_information: (data as any)?.key_information || "",
   }
   console.log(product)
+
+  const isWishlisted = wishlistItems.some((item) => item.id === Number(product.id))
+
+  const handleToggleWishlist = () => {
+    dispatch(
+      toggleWishlistItem({
+        id: Number(product.id),
+        name: product.name,
+        brand: product.brand,
+        price: product.price,
+        promoPrice: product.originalPrice,
+        image: product.image,
+        slug: (data as any)?.slug,
+      }),
+    )
+    toast({
+      title: isWishlisted ? "Removed from wishlist" : "Saved to wishlist",
+      description: product.name,
+    })
+  }
 
   const handleAddToCart = () => {
     dispatch(
@@ -176,6 +203,7 @@ const ProductDetail = () => {
             <ProductInfo
               name={product.name}
               brand={product.brand}
+              productId={String(product.id)}
               brandId={brandId}
               model={product.code}
               price={product.price}
@@ -185,22 +213,28 @@ const ProductDetail = () => {
               quantity={quantity}
               onQuantityChange={setQuantity}
               onAddToCart={handleAddToCart}
+              isWishlisted={isWishlisted}
+              onToggleWishlist={handleToggleWishlist}
             />
           </div>
         </div>
 
-        {/* Curated bundle rail, filled from live catalogue products. */}
-        <BundleAccessories
-          products={relatedCategoryData?.products || []}
-          fallbackProducts={relatedPoolData?.data || []}
-          currentId={String(product.id)}
-          isLoading={relatedLoading}
-        />
+        {/* Accessories curated in the ERP under Products → Accessories. Hidden
+            entirely when none are set up for this product. */}
+        <BundleAccessories currentId={String(product.id)} />
 
         {/* Promo mosaic, in place of the old detail tabs. Nothing is lost: the
             tabs' `key_information` and `product_details` now render in Quick
             Specs, Product Details and the specification table below. */}
         <PromoMosaic />
+
+        {/* Promo strip. Copy and artwork are props with the Figma's content as
+            defaults — the ERP has no banner endpoint to read them from. */}
+        <PromoStrip />
+
+        {/* Product Overview — the ERP's `overview`, or the first paragraph of
+            the product description where that has not been written yet. */}
+        <ProductOverview overview={product.overview} productDetails={product.product_details} />
 
         {/* Quick Specs — the figure and its spec table. */}
         <QuickSpecs
@@ -220,19 +254,12 @@ const ProductDetail = () => {
           productDetails={product.product_details || product.details}
         />
 
-        {/* The Accessories — catalogue products grouped by their ERP category. */}
-        <AccessoriesTable
-          products={relatedCategoryData?.products || []}
-          fallbackProducts={relatedPoolData?.data || []}
-          currentId={String(product.id)}
-          code={product.code}
-          name={product.name}
-        />
+        {/* The Accessories — the curated groups again, as a reference table. */}
+        <AccessoriesTable currentId={String(product.id)} code={product.code} name={product.name} />
 
-        {/* Compare to Similar Items — this product's specs beside four others'. */}
+        {/* Compare to Similar Items — this product's specs beside the ones
+            chosen for it in the ERP. */}
         <CompareSimilarItems
-          products={relatedCategoryData?.products || []}
-          fallbackProducts={relatedPoolData?.data || []}
           currentId={String(product.id)}
           code={product.code}
           name={product.name}
@@ -242,7 +269,7 @@ const ProductDetail = () => {
         {/* Get More Information — the contact prompt under the comparison. */}
         <GetMoreInformation code={product.code} name={product.name} />
 
-        <QualityCertifications />
+        <QualityCertifications currentId={String(product.id)} />
 
         {/* The full spec table, two-up and striped. */}
         <ProductSpecTable
@@ -254,18 +281,18 @@ const ProductDetail = () => {
 
         <GetMoreInformation code={product.code} name={product.name} variant="wide" />
 
-        <QualityCertifications />
+        <QualityCertifications currentId={String(product.id)} />
 
         {/* Support banner — the photo overflows the fill upward. */}
         <TechnicalSupportBanner />
 
-        <CustomerReviews />
+        <CustomerReviews productId={String(product.id)} productName={product.name} />
 
-        <QuestionsAnswers name={product.name} code={product.code} />
+        <QuestionsAnswers productId={String(product.id)} />
 
         <IndustryNews />
 
-        <ResourcesDownloads />
+        <ResourcesDownloads productId={String(product.id)} />
 
         {/* Related Products — the home page's rail, on the Figma's white split
             treatment, filled from the pools already fetched for this page. */}
@@ -280,6 +307,7 @@ const ProductDetail = () => {
           align="split"
           showExplore
           exploreHref="/products"
+          insetClassName="px-4 sm:px-6 md:px-8"
         />
 
         {/* The Figma closes the product page on the same newsletter panel the

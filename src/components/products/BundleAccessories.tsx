@@ -4,15 +4,12 @@ import { useDispatch } from "react-redux"
 import { formatAed } from "@/components/home/productCard"
 import { addToCart } from "@/store/cartSlice"
 import { toast } from "@/hooks/use-toast"
+import { useProductAccessories } from "@/api/hooks/useProducts"
+import type { AccessoryProduct } from "@/api/types"
 
 interface BundleAccessoriesProps {
-  /** Same-category products — the first choice to fill the accessory cards. */
-  products: any[]
-  /** Catalogue-wide pool, used to top up when the category holds too few others. */
-  fallbackProducts?: any[]
-  /** Current product id, excluded so the bundle never recommends the page's own item. */
+  /** Current product id — the accessories are looked up against it. */
   currentId: string
-  isLoading: boolean
 }
 
 interface Accessory {
@@ -22,27 +19,29 @@ interface Accessory {
   image: string
   price: number
   inStock: boolean
-  raw: any
+  raw: AccessoryProduct
 }
 
 const API_URI = import.meta.env.VITE_REACT_APP_API_URI
 
-/** Map a raw ERP product to the accessory card's shape — only real fields. */
-const toAccessory = (p: any): Accessory => {
-  const priceValue = p?.unit_price || p?.net_price || p?.price
-  const price =
-    p?.promo_price && Number(p.promo_price) < Number(priceValue) ? Number(p.promo_price) : Number(priceValue)
+/**
+ * Map an accessory row to the card's shape.
+ *
+ * The API nulls `promo_price` unless the promotion is running today, so a
+ * present value can be taken as the live price without re-checking dates.
+ */
+const toAccessory = (p: AccessoryProduct): Accessory => {
+  const listPrice = Number(p.price) || 0
+  const promo = p.promo_price === null || p.promo_price === undefined ? null : Number(p.promo_price)
   const image =
-    p?.image_url || (p?.image ? `${API_URI}/assets/uploads/${p.image}` : "/placeholder.svg?height=140&width=200")
-  const brand = typeof p?.brand === "object" ? p?.brand?.name : p?.brand
-  const category = typeof p?.category === "object" ? p?.category?.name : ""
+    p.image_url || (p.image ? `${API_URI}/assets/uploads/${p.image}` : "/placeholder.svg?height=140&width=200")
   return {
-    id: String(p?.id ?? ""),
-    name: p?.name ?? "",
-    subtitle: category || brand || "",
+    id: String(p.id ?? ""),
+    name: p.name ?? "",
+    subtitle: p.category_name || p.brand_name || "",
     image,
-    price: Number(price) || 0,
-    inStock: Number(p?.quantity || 0) > 0,
+    price: promo && promo > 0 ? promo : listPrice,
+    inStock: Number(p.quantity || 0) > 0,
     raw: p,
   }
 }
@@ -90,38 +89,31 @@ const AccessoryCard = ({ item, qty, onQty }: { item: Accessory; qty: number; onQ
   </div>
 )
 
-/** The two accessory groups. The ERP has no such grouping, so these are presentational tabs. */
-const TABS = [
-  { key: "mount", label: "Mount Kit" },
-  { key: "antennas", label: "Antennas" },
-] as const
-
 /**
- * "Shop Bundles or Accessories Recommended by Experts": a curated-looking rail
- * built from live catalogue products, with a running combo total. The grouping
- * tabs and the "recommended by experts" framing are presentational.
+ * "Shop Bundles or Accessories Recommended by Experts".
+ *
+ * Every card here is a deliberate recommendation made in the ERP under
+ * Products → Accessories, not a category neighbour: the tabs are the admin's
+ * free-text group names, so a product with "Mount Kit" and "Antennas" groups
+ * gets exactly those two tabs and switching between them changes the cards.
+ *
+ * A product with no accessories set up shows no section at all — the heading
+ * promises a recommendation, so an uncurated rail would be a false one.
  */
-const BundleAccessories = ({ products, fallbackProducts = [], currentId, isLoading }: BundleAccessoriesProps) => {
+const BundleAccessories = ({ currentId }: BundleAccessoriesProps) => {
   const dispatch = useDispatch()
-  const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("mount")
+  const { data: groups, isLoading } = useProductAccessories(currentId)
+  const [tabIndex, setTabIndex] = useState(0)
 
-  // Same-category products first; top up from the catalogue pool when the
-  // category holds nothing but this product. De-duplicated, current one dropped.
-  const accessories = useMemo(() => {
-    const seen = new Set([currentId])
-    const picked: any[] = []
-    for (const pool of [products || [], fallbackProducts]) {
-      for (const p of pool) {
-        const id = String(p?.id ?? "")
-        if (!id || seen.has(id)) continue
-        seen.add(id)
-        picked.push(p)
-        if (picked.length >= 4) break
-      }
-      if (picked.length >= 4) break
-    }
-    return picked.map(toAccessory)
-  }, [products, fallbackProducts, currentId])
+  const tabs = groups ?? []
+  // A product's groups can change under a cached page; clamp rather than
+  // render an empty tab.
+  const activeIndex = tabIndex < tabs.length ? tabIndex : 0
+
+  const accessories = useMemo(
+    () => (tabs[activeIndex]?.products ?? []).map(toAccessory),
+    [tabs, activeIndex],
+  )
 
   const [qtys, setQtys] = useState<Record<string, number>>({})
   const qtyOf = (id: string) => qtys[id] ?? 1
@@ -139,9 +131,11 @@ const BundleAccessories = ({ products, fallbackProducts = [], currentId, isLoadi
             name: a.name,
             price: a.price,
             image: a.image,
-            brand: typeof a.raw?.brand === "object" ? a.raw.brand?.name : a.raw?.brand,
-            BXGY: a.raw?.BXGY || null,
-            quantity_available: Number(a.raw?.quantity || 0),
+            brand: a.raw.brand_name,
+            // The accessories endpoint is a lean join and carries no BXGY
+            // promotion; the cart treats null as "no offer".
+            BXGY: null,
+            quantity_available: Number(a.raw.quantity || 0),
           },
           quantity: qtyOf(a.id),
         }),
@@ -150,8 +144,9 @@ const BundleAccessories = ({ products, fallbackProducts = [], currentId, isLoadi
     toast({ title: "Combo added to cart!", description: `${selectedCount} accessories added` })
   }
 
-  // Nothing to recommend — drop the section rather than show an empty frame.
-  if (!isLoading && accessories.length === 0) return null
+  // Nothing curated for this product — drop the section rather than show an
+  // empty frame or fill it with products nobody recommended.
+  if (!isLoading && tabs.length === 0) return null
 
   return (
     <section className="container mx-auto px-4 sm:px-6 md:px-8 py-10">
@@ -159,24 +154,24 @@ const BundleAccessories = ({ products, fallbackProducts = [], currentId, isLoadi
         Shop Bundles or Accessories Recommended by Experts
       </h2>
 
-      {/* Grouping tabs — presentational; both show the same live pool.
+      {/* One tab per accessory group, in the order the API returns them.
           The rule beneath is the Figma's thin solid brand-blue divider. */}
-      <div className="mt-5 flex items-center gap-3.5 border-b border-brand-700 pb-5">
-        {TABS.map((t) => (
+      <div className="mt-5 flex flex-wrap items-center gap-3.5 border-b border-brand-700 pb-5">
+        {tabs.map((group, i) => (
           <button
-            key={t.key}
+            key={group.name}
             type="button"
-            onClick={() => setTab(t.key)}
-            aria-pressed={tab === t.key}
+            onClick={() => setTabIndex(i)}
+            aria-pressed={i === activeIndex}
             // The active tab carries a transparent border so it matches the
             // outlined tab's 46px box — otherwise the two tops sit 1px apart.
             className={`rounded-lg border px-5 py-[15px] text-[14px] font-semibold leading-none transition-colors ${
-              tab === t.key
+              i === activeIndex
                 ? "border-transparent bg-brand-700 text-white"
                 : "border-brand-700 bg-white text-brand-700 hover:bg-surface-accent"
             }`}
           >
-            {t.label}
+            {group.name}
           </button>
         ))}
       </div>

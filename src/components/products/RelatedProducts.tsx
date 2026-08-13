@@ -23,6 +23,8 @@ interface RelatedProductsProps {
   align?: "split" | "center"
   showExplore?: boolean
   exploreHref?: string
+  /** Padding on the content column, so the rail lines up with the page it sits on. */
+  insetClassName?: string
 }
 
 const MAX_ITEMS = 10
@@ -43,6 +45,7 @@ const RelatedProducts = ({
   align = "center",
   showExplore = false,
   exploreHref,
+  insetClassName,
 }: RelatedProductsProps) => {
   const related = useMemo(() => {
     const shown = new Set(shownIds.map(String))
@@ -63,6 +66,7 @@ const RelatedProducts = ({
       align={align}
       showExplore={showExplore}
       exploreHref={exploreHref}
+      insetClassName={insetClassName}
     />
   )
 }

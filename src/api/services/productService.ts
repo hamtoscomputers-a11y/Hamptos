@@ -1,11 +1,23 @@
 import api from '../axios';
 import { API_ENDPOINTS, buildPaginatedUrl, buildUrl } from '../endpoints';
+import { getDeviceToken } from '../utils';
 import type {
+  AccessoryGroup,
+  Certification,
+  ComparisonProduct,
   Product,
   PaginatedResponse,
   ProductQueryParams,
+  ProductOption,
+  ProductOptionGroup,
+  ProductQuestion,
+  ProductReviewApi,
+  ProductResource,
+  ProductReviewsResponse,
+  ProductReviewSubmission,
   SearchQueryParams,
   SearchResult,
+  TrustBadge,
   SearchSuggestionsResponse,
 } from '../types';
 
@@ -38,6 +50,184 @@ export class ProductService {
     
     const response = await api.get(url);
     return response.data.data || response.data;
+  }
+
+  /**
+   * Accessory groups curated in the ERP for one product. Its own call rather
+   * than an `include` on the product, because the detail page usually receives
+   * its product through router state and never fetches it.
+   */
+  static async getProductAccessories(id: string): Promise<AccessoryGroup[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.ACCESSORIES(id));
+    return response.data?.data || [];
+  }
+
+  /** Quality certification badges assigned to a product in the ERP. */
+  static async getProductCertifications(id: string): Promise<Certification[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.CERTIFICATIONS(id));
+    return response.data?.data || [];
+  }
+
+  /** Products curated as the comparison table's columns. */
+  static async getProductComparisons(id: string): Promise<ComparisonProduct[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.COMPARISONS(id));
+    return response.data?.data || [];
+  }
+
+  /**
+   * The Q&A pairs written for a product in the ERP.
+   *
+   * Shape-checked for the same reason as the reviews below: until this endpoint
+   * is deployed, the ERP answers it with the product catalogue at HTTP 200, and
+   * a catalogue row has neither a question nor an answer on it.
+   */
+  static async getProductQuestions(id: string): Promise<ProductQuestion[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.QUESTIONS(id));
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+
+    return rows.filter(
+      (row): row is ProductQuestion =>
+        !!row &&
+        typeof row === 'object' &&
+        typeof (row as ProductQuestion).question === 'string' &&
+        typeof (row as ProductQuestion).answer === 'string',
+    );
+  }
+
+  /**
+   * A product's datasheets and manuals.
+   *
+   * Checked row by row rather than trusted for the same reason the reviews call
+   * is: an ERP without this endpoint deployed answers with the product
+   * catalogue at 200, and a catalogue row has no `url` — so it drops out here
+   * instead of rendering as a download that leads nowhere.
+   */
+  static async getProductResources(id: string): Promise<ProductResource[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.RESOURCES(id));
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+
+    return rows.filter(
+      (row): row is ProductResource =>
+        !!row &&
+        typeof row === 'object' &&
+        typeof (row as ProductResource).title === 'string' &&
+        typeof (row as ProductResource).url === 'string' &&
+        (row as ProductResource).url.length > 0,
+    );
+  }
+
+  /**
+   * A product's configurator rows — the Condition / Wall Mounting Bracket /
+   * Power Adaptor buttons — already grouped by heading.
+   *
+   * Guarded the same way the resources call is: an ERP without this endpoint
+   * deployed answers with the product catalogue at 200, and a catalogue row has
+   * no `options` array — so it drops out here rather than rendering a row of
+   * buttons named after other products.
+   *
+   * A group whose options all fail the check is dropped too: a heading with no
+   * buttons under it is worse than no heading.
+   */
+  static async getProductOptions(id: string): Promise<ProductOptionGroup[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.OPTIONS(id));
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+
+    return rows
+      .filter(
+        (row): row is ProductOptionGroup =>
+          !!row &&
+          typeof row === 'object' &&
+          typeof (row as ProductOptionGroup).name === 'string' &&
+          (row as ProductOptionGroup).name.length > 0 &&
+          Array.isArray((row as ProductOptionGroup).options),
+      )
+      .map((group) => ({
+        name: group.name,
+        options: group.options.filter(
+          (option): option is ProductOption =>
+            !!option && typeof option === 'object' && typeof option.name === 'string' && option.name.length > 0,
+        ),
+      }))
+      .filter((group) => group.options.length > 0);
+  }
+
+  /**
+   * The trust band under the price. The ERP resolves the override-or-default
+   * choice, so this is one request whichever set comes back.
+   *
+   * Guarded like the calls above: an ERP without this endpoint deployed answers
+   * with the product catalogue at 200, and a catalogue row has no `title`.
+   * Returning an empty array there is what lets the component fall back to its
+   * built-in badges rather than drawing a band full of product names.
+   */
+  static async getTrustBadges(id: string): Promise<TrustBadge[]> {
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.TRUST_BADGES(id));
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+
+    return rows
+      .filter(
+        (row): row is TrustBadge =>
+          !!row &&
+          typeof row === 'object' &&
+          typeof (row as TrustBadge).title === 'string' &&
+          (row as TrustBadge).title.length > 0 &&
+          typeof (row as TrustBadge).icon === 'string',
+      )
+      .map((row) => ({ ...row, subtitle: typeof row.subtitle === 'string' ? row.subtitle : '' }));
+  }
+
+  /**
+   * A product's approved reviews and their summary.
+   *
+   * The summary comes back with the list rather than being derived from it: the
+   * page returns the newest handful, and counting the bars from those would
+   * show a histogram of the last five reviews instead of all of them.
+   *
+   * Every row is checked for the fields a review actually has, rather than
+   * trusted because the request returned 200. The ERP's REST layer falls back
+   * to `index_get` when a method it does not have is asked for, so a backend
+   * without this endpoint deployed answers `/products/reviews/65` with the
+   * *product catalogue* — 200, `{data: [...]}`, and not one rating in it.
+   * Mapping that blindly took the whole product page down.
+   */
+  static async getProductReviews(id: string, limit = 20): Promise<ProductReviewsResponse> {
+    const response = await api.get(buildUrl(API_ENDPOINTS.PRODUCTS.REVIEWS(id), { limit }));
+
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+    const data = rows.filter(
+      (row): row is ProductReviewApi =>
+        !!row &&
+        typeof row === 'object' &&
+        typeof (row as ProductReviewApi).author === 'string' &&
+        Number.isFinite(Number((row as ProductReviewApi).rating)),
+    );
+
+    // Only trusted alongside rows that survived the check — a summary from a
+    // response that was not this endpoint's would put a count on an empty list.
+    const summary = response.data?.summary;
+    const usable = data.length === rows.length && summary && typeof summary === 'object';
+
+    return {
+      data,
+      summary: usable
+        ? summary
+        : { average: null, total: data.length, counts: { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 } },
+    };
+  }
+
+  /**
+   * Submits a review. It is queued for approval in the ERP, so the caller must
+   * not expect it to turn up in `getProductReviews` afterwards.
+   *
+   * The device token goes along so the ERP can refuse a second review of the
+   * same product from the same browser.
+   */
+  static async submitProductReview(review: ProductReviewSubmission): Promise<{ status: boolean; message: string }> {
+    const response = await api.post(API_ENDPOINTS.PRODUCTS.SUBMIT_REVIEW, {
+      ...review,
+      device_token: getDeviceToken(),
+    });
+    return response.data;
   }
 
   // Get featured products
