@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { LayoutGrid } from "lucide-react"
+import { isRealImage } from "@/components/home/categoryImage"
 import {
   Carousel,
   CarouselContent,
@@ -103,14 +104,20 @@ const RelatedCategories = ({ categoryId, categoryName }: RelatedCategoriesProps)
                       the Related Products rail above it line up rather than
                       stepping against each other. */}
                   <span className="relative flex aspect-[247/169] w-full items-center justify-center overflow-hidden bg-surface-line">
-                    {/* Most categories have no artwork uploaded yet — 3 of 12
-                        at the time of writing. A bare tint reads as an image
-                        that failed to load, so an imageless tile draws a mark
-                        instead and looks deliberate until the artwork lands. */}
+                    {/* Drawn under the image, so it shows through only when a
+                        category has no artwork. A bare tint reads as an image
+                        that failed to load; a mark reads as deliberate, and it
+                        costs nothing once every category has a picture. */}
                     <LayoutGrid size={30} className="text-ink-steel/35" aria-hidden />
-                    {category.image && (
+                    {/* `image_url`, not `image`: the ERP returns the bare file
+                        name in `image` and only `image_url` carries the host,
+                        so the plain field renders as a relative path that 404s
+                        against the storefront's own origin. `isRealImage`
+                        filters the ERP's `no_image.png` sentinel, which it
+                        sends in place of an empty field. */}
+                    {isRealImage(category.image_url) && (
                       <img
-                        src={category.image}
+                        src={category.image_url}
                         alt=""
                         aria-hidden
                         loading="lazy"
