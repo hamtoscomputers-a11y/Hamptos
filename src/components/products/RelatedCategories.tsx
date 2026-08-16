@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom"
-import { ChevronRight } from "lucide-react"
+import { LayoutGrid } from "lucide-react"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 import { useCategories, CATEGORY_TREE_PARAMS } from "@/api/hooks/useCategories"
 import type { Category } from "@/api/types"
 
@@ -71,25 +78,60 @@ const RelatedCategories = ({ categoryId, categoryName }: RelatedCategoriesProps)
   return (
     /* The only section on the page that needs its own bottom padding: it is the
        last one, and the newsletter panel below is full-bleed, so without it the
-       chips sit hard against the blue. */
+       rail would sit hard against the blue. */
     <section className="container mx-auto px-4 pb-[50px] pt-[50px] sm:px-6 md:px-8" aria-label="Related Categories">
       <h2 className="text-[28px] font-medium leading-[28.9px] tracking-[-0.02em] text-black">Related Categories</h2>
 
-      <div className="mt-4 flex flex-wrap gap-2.5">
-        {categories.map((category) => (
-          <Link
-            key={category.id}
-            to={`/products?category=${category.id}`}
-            className="group inline-flex items-center gap-1.5 rounded-lg border border-surface-line bg-white px-4 py-2.5 text-[14px] text-ink-slate transition-colors hover:border-brand-700 hover:text-brand-700"
-          >
-            {category.name}
-            <ChevronRight
-              size={16}
-              aria-hidden
-              className="transition-transform group-hover:translate-x-0.5"
-            />
-          </Link>
-        ))}
+      {/* Five-up, matching the Related Products rail directly above so the two
+          read as a pair rather than two different ideas about what a row of
+          links looks like. Arrows sit in the page margin at the widths where
+          that margin exists, and overlap the track below them. */}
+      <div className="mt-5">
+        <Carousel opts={{ align: "start", loop: false }}>
+          <CarouselContent className="-ml-[15px]">
+            {categories.map((category) => (
+              <CarouselItem key={category.id} className="basis-1/2 pl-[15px] md:basis-1/3 lg:basis-1/5">
+                <Link
+                  to={`/products?category=${category.id}`}
+                  className="group flex h-full flex-col overflow-hidden rounded-lg border border-surface-line bg-white transition-shadow hover:shadow-sm"
+                >
+                  {/* Same 247x169 well the product cards use, so this rail and
+                      the Related Products rail above it line up rather than
+                      stepping against each other. */}
+                  <span className="relative flex aspect-[247/169] w-full items-center justify-center overflow-hidden bg-surface-line">
+                    {/* Most categories have no artwork uploaded yet — 3 of 12
+                        at the time of writing. A bare tint reads as an image
+                        that failed to load, so an imageless tile draws a mark
+                        instead and looks deliberate until the artwork lands. */}
+                    <LayoutGrid size={30} className="text-ink-steel/35" aria-hidden />
+                    {category.image && (
+                      <img
+                        src={category.image}
+                        alt=""
+                        aria-hidden
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                        onError={(event) => {
+                          event.currentTarget.style.visibility = "hidden"
+                        }}
+                      />
+                    )}
+                  </span>
+
+                  <span className="block px-5 py-4 text-[14px] font-medium leading-[20px] text-ink-jet transition-colors group-hover:text-brand-700">
+                    {category.name}
+                  </span>
+                </Link>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+
+          {/* Parked clear of the track at 2xl, where the page has margin to put
+              them in; below that they overlap the image well rather than the
+              name, which is where the product rail puts them too. */}
+          <CarouselPrevious className="left-1 top-[38%] hidden h-9 w-9 -translate-y-1/2 border-surface-arrow bg-white/90 text-ink-steel shadow-sm hover:bg-brand-100 hover:text-brand-700 sm:flex 2xl:-left-[57px] 2xl:top-1/2 2xl:bg-white 2xl:shadow-none" />
+          <CarouselNext className="right-1 top-[38%] hidden h-9 w-9 -translate-y-1/2 border-surface-arrow bg-white/90 text-ink-steel shadow-sm hover:bg-brand-100 hover:text-brand-700 sm:flex 2xl:-right-[57px] 2xl:top-1/2 2xl:bg-white 2xl:shadow-none" />
+        </Carousel>
       </div>
     </section>
   )
