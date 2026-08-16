@@ -187,7 +187,14 @@ const ProductInfo = ({
 
   return (
     <div className="min-w-0">
-      <h1 className="text-[24px] font-medium leading-[1.05] tracking-[-0.02em] text-black md:text-[28px]">{name}</h1>
+      {/* "… in UAE" is appended rather than stored on the product, so it lands
+          on all 430 without anyone renaming them, and cannot end up doubled on
+          the products whose ERP name already carries it. This is the page's
+          `h1`, which is what a search engine weighs most heavily, and the
+          market is the thing customers search alongside the model number. */}
+      <h1 className="text-[24px] font-medium leading-[1.05] tracking-[-0.02em] text-black md:text-[28px]">
+        {/\bin\s+uae\b/i.test(name) ? name : `${name} in UAE`}
+      </h1>
 
       {/* Identity line — all live: brand link, ERP code as the model, stock. */}
       <div className="mt-3.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[14px]">

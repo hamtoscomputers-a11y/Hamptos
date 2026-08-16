@@ -185,20 +185,6 @@ const ProductDetail = () => {
 
   const categoryName = typeof data.category === "object" && data.category ? (data.category as any).name : ""
 
-  // "MikroTik CRS326-4C+20G+2Q+RM 2.5 Gigabit Port Switch Price in UAE" —
-  // composed rather than typed, so it is right on all 430 products with nothing
-  // written for them.
-  //
-  // The product's own name rather than brand + category: the category is a
-  // shelf label ("Server and Storage"), so the heading came out describing the
-  // shelf rather than the thing on it, and the shopper has the real name in
-  // front of them at the top of the page. It is also what people actually type
-  // into a search engine, which is what this section is for.
-  //
-  // Whitespace is collapsed because ERP names carry stray double spaces, which
-  // HTML hides on the page but not anywhere else this string is reused.
-  const priceSectionLead = String(product.name || "").replace(/\s+/g, " ").trim()
-  const priceSectionTitle = priceSectionLead ? `${priceSectionLead} Price in UAE` : "Price in UAE"
 
   // Get photos - API returns photos array with photo_url
   const photos: string[] = data.photos && Array.isArray(data.photos) 
@@ -334,15 +320,11 @@ const ProductDetail = () => {
           layout="checklist"
         />
 
-        {/* The SEO price paragraph. Its heading is composed from the product's
-            own brand and category — "Huawei Firewall Price in UAE" — so it
-            reads correctly on all 430 products with nothing typed, leaving the
-            shop only the paragraph to write. */}
-        <ProductContentSection
-          title={priceSectionTitle}
-          blocks={sections.price_uae ?? []}
-          layout="prose"
-        />
+        {/* The client's section 10, "{Product} Price in UAE", is deliberately
+            not here. It restated the product name a second time to say what the
+            price already says a few centimetres above it, so the market moved
+            into the page's `h1` instead — which is where a search engine weighs
+            it most anyway — and the section came out. */}
 
         <ProductContentSection
           title="UAE Availability, Delivery & Warranty"
