@@ -76,10 +76,14 @@ const RelatedCategories = ({ categoryId, categoryName }: RelatedCategoriesProps)
   if (isLoading || !categories.length) return null
 
   return (
-    /* The only section on the page that needs its own bottom padding: it is the
-       last one, and the newsletter panel below is full-bleed, so without it the
-       rail would sit hard against the blue. */
-    <section className="container mx-auto px-4 pb-[50px] pt-[50px] sm:px-6 md:px-8" aria-label="Related Categories">
+    /* No top padding, unlike every other section on this page. The Related
+       Products rail directly above is the one section that carries its own
+       `py-12`, so a `pt-[50px]` here stacked on that 48px and opened a 98px
+       hole where the rest of the page runs at 50.
+       Bottom padding it does need: it is the last section, and the newsletter
+       panel below is full-bleed, so without it the cards sit hard against the
+       blue. */
+    <section className="container mx-auto px-4 pb-[50px] sm:px-6 md:px-8" aria-label="Related Categories">
       <h2 className="text-[28px] font-medium leading-[28.9px] tracking-[-0.02em] text-black">Related Categories</h2>
 
       {/* Five-up, matching the Related Products rail directly above so the two
