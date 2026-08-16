@@ -185,12 +185,19 @@ const ProductDetail = () => {
 
   const categoryName = typeof data.category === "object" && data.category ? (data.category as any).name : ""
 
-  // "Huawei Firewall Price in UAE" — composed rather than typed, so it is right
-  // on all 430 products with nothing written for them. Whitespace is collapsed
-  // because category names in the ERP carry stray double spaces ("Server and
-  //  Storage"), which HTML would hide on the page but not in the page title or
-  // anywhere else this string is reused.
-  const priceSectionLead = [product.brand, categoryName].filter(Boolean).join(" ").replace(/\s+/g, " ").trim()
+  // "MikroTik CRS326-4C+20G+2Q+RM 2.5 Gigabit Port Switch Price in UAE" —
+  // composed rather than typed, so it is right on all 430 products with nothing
+  // written for them.
+  //
+  // The product's own name rather than brand + category: the category is a
+  // shelf label ("Server and Storage"), so the heading came out describing the
+  // shelf rather than the thing on it, and the shopper has the real name in
+  // front of them at the top of the page. It is also what people actually type
+  // into a search engine, which is what this section is for.
+  //
+  // Whitespace is collapsed because ERP names carry stray double spaces, which
+  // HTML hides on the page but not anywhere else this string is reused.
+  const priceSectionLead = String(product.name || "").replace(/\s+/g, " ").trim()
   const priceSectionTitle = priceSectionLead ? `${priceSectionLead} Price in UAE` : "Price in UAE"
 
   // Get photos - API returns photos array with photo_url
