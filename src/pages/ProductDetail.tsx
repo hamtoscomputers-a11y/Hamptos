@@ -32,7 +32,7 @@ import type { AppDispatch, RootState } from "@/store"
 import { useDispatch, useSelector } from "react-redux"
 import { toast } from "@/hooks/use-toast"
 import { Helmet } from 'react-helmet-async';
-import { BadgeCheck, Headphones, Layers, Truck } from "lucide-react"
+import { BadgeCheck, Headphones, Layers } from "lucide-react"
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -326,12 +326,12 @@ const ProductDetail = () => {
             into the page's `h1` instead — which is where a search engine weighs
             it most anyway — and the section came out. */}
 
-        <ProductContentSection
-          title="UAE Availability, Delivery & Warranty"
-          blocks={sections.availability ?? []}
-          layout="iconRow"
-          fallbackIcon={Truck}
-        />
+        {/* The client's section 11, "UAE Availability / Delivery / Warranty",
+            is deliberately not here either. The trust band under the price
+            already carries genuine-stock and warranty wording, and running both
+            let them disagree — the band said two years while this section said
+            five. That content belongs in one place, and Trust Badges is already
+            per-product and already sits where a buyer looks for it. */}
 
         <GetMoreInformation code={product.code} name={product.name} variant="wide" />
 
