@@ -13,6 +13,9 @@ import type {
   ProductQuestion,
   ProductReviewApi,
   ProductResource,
+  ProductSectionBlock,
+  ProductSectionGroup,
+  ProductSectionKey,
   ProductReviewsResponse,
   ProductReviewSubmission,
   SearchQueryParams,
@@ -149,6 +152,64 @@ export class ProductService {
         ),
       }))
       .filter((group) => group.options.length > 0);
+  }
+
+  /**
+   * The written sections of the product page, keyed by section so the page can
+   * pick out the one it is drawing.
+   *
+   * Sections the ERP does not know about are dropped rather than rendered: the
+   * page places each one deliberately, and a slug it has no home for would
+   * otherwise have to land somewhere arbitrary.
+   *
+   * Guarded like the calls above: an ERP without this endpoint deployed answers
+   * with the product catalogue at 200, and a catalogue row has no `section` —
+   * so an old backend yields an empty map and every new section simply stays
+   * off the page, rather than drawing product names as headings.
+   */
+  static async getProductSections(id: string): Promise<Partial<Record<ProductSectionKey, ProductSectionBlock[]>>> {
+    const KNOWN: ProductSectionKey[] = [
+      'why_choose',
+      'features',
+      'use_cases',
+      'who_for',
+      'price_uae',
+      'availability',
+      'support',
+    ];
+
+    const response = await api.get(API_ENDPOINTS.PRODUCTS.SECTIONS(id));
+    const rows: unknown[] = Array.isArray(response.data?.data) ? response.data.data : [];
+
+    const bySection: Partial<Record<ProductSectionKey, ProductSectionBlock[]>> = {};
+
+    rows
+      .filter(
+        (row): row is ProductSectionGroup =>
+          !!row &&
+          typeof row === 'object' &&
+          KNOWN.includes((row as ProductSectionGroup).section) &&
+          Array.isArray((row as ProductSectionGroup).items),
+      )
+      .forEach((group) => {
+        const items = group.items.filter(
+          (item): item is ProductSectionBlock =>
+            !!item &&
+            typeof item === 'object' &&
+            typeof item.heading === 'string' &&
+            typeof item.body === 'string' &&
+            // The ERP drops these too, but a card with neither a heading nor a
+            // paragraph would render as an empty box, so it is checked here as
+            // well rather than trusted.
+            (item.heading.length > 0 || item.body.length > 0),
+        );
+
+        if (items.length > 0) {
+          bySection[group.section] = items;
+        }
+      });
+
+    return bySection;
   }
 
   /**

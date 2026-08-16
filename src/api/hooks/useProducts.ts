@@ -107,6 +107,22 @@ export const useProductOptions = (id: string) => {
 };
 
 /**
+ * Every written section of the product page in one request, keyed by section.
+ *
+ * One query rather than seven: they come from a single table and the page
+ * draws them in one pass, so separate hooks would buy nothing but seven times
+ * the latency and seven cache entries to invalidate together.
+ */
+export const useProductSections = (id: string) => {
+  return useQuery({
+    queryKey: ['products', 'sections', id],
+    queryFn: () => ProductService.getProductSections(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
  * The trust band under the price. Mostly site-wide wording that changes maybe
  * twice a year, so it is cached longer than the per-product sections above.
  */

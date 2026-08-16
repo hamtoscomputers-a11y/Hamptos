@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams, Link, useLocation } from "react-router-dom"
-import { useProductById, useProducts } from "@/api/hooks/useProducts"
+import { useProductById, useProducts, useProductSections } from "@/api/hooks/useProducts"
 import { useProductsByCategory } from "@/api/hooks/useCategories"
 import ProductGallery from "@/components/products/ProductGallery"
 import ProductInfo from "@/components/products/ProductInfo"
@@ -23,6 +23,8 @@ import QuestionsAnswers from "@/components/products/QuestionsAnswers"
 import IndustryNews from "@/components/products/IndustryNews"
 import ResourcesDownloads from "@/components/products/ResourcesDownloads"
 import RelatedProducts from "@/components/products/RelatedProducts"
+import ProductContentSection from "@/components/products/ProductContentSection"
+import RelatedCategories from "@/components/products/RelatedCategories"
 import NewsletterPanel from "@/components/home/NewsletterPanel"
 import { addToCart } from "@/store/cartSlice"
 import { toggleWishlistItem } from "@/store/wishlistSlice"
@@ -30,6 +32,7 @@ import type { AppDispatch, RootState } from "@/store"
 import { useDispatch, useSelector } from "react-redux"
 import { toast } from "@/hooks/use-toast"
 import { Helmet } from 'react-helmet-async';
+import { BadgeCheck, Headphones, Layers, Truck } from "lucide-react"
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -66,6 +69,12 @@ const ProductDetail = () => {
     include: "brand,category,photos",
   })
   const { data: relatedPoolData } = useProducts({ limit: 20, start: 0, include: "brand,category,photos" })
+
+  // The written sections typed under the product's Page Content tab. One
+  // request for all seven, keyed by section; anything the shop has not written
+  // is simply absent, and the section it feeds does not render.
+  const { data: sectionData } = useProductSections(String((data as any)?.id || ""))
+  const sections = sectionData ?? {}
 
   // Scroll to top when component mounts and when tab changes
   useEffect(() => {
@@ -176,6 +185,14 @@ const ProductDetail = () => {
 
   const categoryName = typeof data.category === "object" && data.category ? (data.category as any).name : ""
 
+  // "Huawei Firewall Price in UAE" — composed rather than typed, so it is right
+  // on all 430 products with nothing written for them. Whitespace is collapsed
+  // because category names in the ERP carry stray double spaces ("Server and
+  //  Storage"), which HTML would hide on the page but not in the page title or
+  // anywhere else this string is reused.
+  const priceSectionLead = [product.brand, categoryName].filter(Boolean).join(" ").replace(/\s+/g, " ").trim()
+  const priceSectionTitle = priceSectionLead ? `${priceSectionLead} Price in UAE` : "Price in UAE"
+
   // Get photos - API returns photos array with photo_url
   const photos: string[] = data.photos && Array.isArray(data.photos) 
     ? data.photos.map((p: any) => p.photo_url || p.photo).filter(Boolean)
@@ -245,6 +262,22 @@ const ProductDetail = () => {
           keyInformation={product.key_information}
         />
 
+        {/* Why Choose This Product / Features & Capabilities — the client's
+            sections 5 and 6, typed under the product's Page Content tab. Both
+            vanish entirely until the shop has written them. */}
+        <ProductContentSection
+          title="Why Choose This Product?"
+          blocks={sections.why_choose ?? []}
+          layout="checklist"
+        />
+
+        <ProductContentSection
+          title="Features & Capabilities"
+          blocks={sections.features ?? []}
+          layout="cards"
+          fallbackIcon={BadgeCheck}
+        />
+
         {/* Product Details — the front-panel figure over the ERP's own prose. */}
         <ProductDetailsSection
           code={product.code}
@@ -279,12 +312,56 @@ const ProductDetail = () => {
           keyInformation={product.key_information}
         />
 
+        {/* Sections 8 to 11, after the specification table exactly as the
+            client's running order has them. */}
+        <ProductContentSection
+          title="Use Cases / Applications"
+          blocks={sections.use_cases ?? []}
+          layout="cards"
+          fallbackIcon={Layers}
+        />
+
+        <ProductContentSection
+          title="Who Is This Product For?"
+          blocks={sections.who_for ?? []}
+          layout="checklist"
+        />
+
+        {/* The SEO price paragraph. Its heading is composed from the product's
+            own brand and category — "Huawei Firewall Price in UAE" — so it
+            reads correctly on all 430 products with nothing typed, leaving the
+            shop only the paragraph to write. */}
+        <ProductContentSection
+          title={priceSectionTitle}
+          blocks={sections.price_uae ?? []}
+          layout="prose"
+        />
+
+        <ProductContentSection
+          title="UAE Availability, Delivery & Warranty"
+          blocks={sections.availability ?? []}
+          layout="iconRow"
+          fallbackIcon={Truck}
+        />
+
         <GetMoreInformation code={product.code} name={product.name} variant="wide" />
 
         <QualityCertifications currentId={String(product.id)} />
 
-        {/* Support banner — the photo overflows the fill upward. */}
-        <TechnicalSupportBanner />
+        {/* Installation / Support. The shop's own wording replaces the standard
+            banner rather than sitting beside it — two support blocks on one
+            page would read as a mistake. Untyped, the banner stays as it was. */}
+        {sections.support?.length ? (
+          <ProductContentSection
+            title="Installation & Support"
+            blocks={sections.support}
+            layout="cards"
+            fallbackIcon={Headphones}
+          />
+        ) : (
+          /* Support banner — the photo overflows the fill upward. */
+          <TechnicalSupportBanner />
+        )}
 
         <CustomerReviews productId={String(product.id)} productName={product.name} />
 
@@ -309,6 +386,11 @@ const ProductDetail = () => {
           exploreHref="/products"
           insetClassName="px-4 sm:px-6 md:px-8"
         />
+
+        {/* Related Categories — the client's last section. Nothing is typed for
+            it: the row is this product's sibling categories, so it is right on
+            every product and stays right as the catalogue is reorganised. */}
+        <RelatedCategories categoryId={relatedCategoryId} categoryName={categoryName} />
 
         {/* The Figma closes the product page on the same newsletter panel the
             homepage uses — full-bleed, rounded across the top, against the footer. */}

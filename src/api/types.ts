@@ -214,6 +214,37 @@ export interface ProductOptionGroup {
   options: ProductOption[];
 }
 
+/**
+ * Which written section of the product page a block belongs to. These match
+ * the slugs in the ERP's `Products::productSectionTypes()`; anything else the
+ * API sends is ignored rather than rendered somewhere arbitrary.
+ */
+export type ProductSectionKey =
+  | 'why_choose'
+  | 'features'
+  | 'use_cases'
+  | 'who_for'
+  | 'price_uae'
+  | 'availability'
+  | 'support';
+
+/** One card within a written section: an optional mark, a heading, a paragraph. */
+export interface ProductSectionBlock {
+  id: number;
+  /** Icon key, mapped to a Lucide component. Empty means the section's own mark. */
+  icon: string;
+  /** The bold line. Empty on the price paragraph, whose heading is composed. */
+  heading: string;
+  /** Sanitised HTML from the ERP's editor. May be empty when there is a heading. */
+  body: string;
+}
+
+/** One written section and the cards typed into it, in the shop's own order. */
+export interface ProductSectionGroup {
+  section: ProductSectionKey;
+  items: ProductSectionBlock[];
+}
+
 /** One badge on the pale-blue trust band under the price. */
 export interface TrustBadge {
   id: number;
