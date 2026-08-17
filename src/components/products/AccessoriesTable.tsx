@@ -38,13 +38,13 @@ const AccessoriesTable = ({ currentId, code, name }: AccessoriesTableProps) => {
       <div className="mt-[30px]">
         <p className="text-[14px] font-light leading-[1.421] text-ink-slate">{caption}</p>
 
-        <div className="mt-2.5 overflow-x-auto">
+        {/* Same as Quick Specs: the Figma's 17.3% code gutter is ~60px on a
+            phone, so an 8-digit part code sits on the divider. Widen it until
+            `md` and wrap long names instead of letting them overflow. */}
+        <div className="mt-2.5">
           <table className="w-full table-fixed border-collapse text-[12px] leading-[15px] text-black">
-            {/* The first row is a colSpan-2 group heading, so `table-fixed` would
-                split the table evenly off it. The colgroup pins the Figma's
-                226-of-1304 part-code gutter regardless of which row leads. */}
             <colgroup>
-              <col className="w-[17.3%]" />
+              <col className="w-[38%] sm:w-[28%] md:w-[17.3%]" />
               <col />
             </colgroup>
             <tbody>
@@ -53,14 +53,14 @@ const AccessoriesTable = ({ currentId, code, name }: AccessoriesTableProps) => {
                   <th
                     scope="colgroup"
                     colSpan={2}
-                    className="border border-surface-grid px-3 py-[11px] text-left align-top font-medium"
+                    className="break-words border border-surface-grid px-2 py-[11px] text-left align-top font-medium md:px-3"
                   >
                     {group.name}
                   </th>
                 </tr>,
                 ...group.products.map((product) => (
                   <tr key={product.id}>
-                    <td className="border border-surface-grid px-3 py-[11px] align-top">
+                    <td className="break-all border border-surface-grid px-2 py-[11px] align-top md:break-normal md:px-3">
                       <Link
                         to={`/product/${product.slug || createSlug(product.name)}`}
                         state={{ productId: product.id }}
@@ -69,7 +69,9 @@ const AccessoriesTable = ({ currentId, code, name }: AccessoriesTableProps) => {
                         {product.code}
                       </Link>
                     </td>
-                    <td className="border border-surface-grid px-2.5 py-[11px] align-top">{product.name}</td>
+                    <td className="break-words border border-surface-grid px-2 py-[11px] align-top md:px-2.5">
+                      {product.name}
+                    </td>
                   </tr>
                 )),
               ])}

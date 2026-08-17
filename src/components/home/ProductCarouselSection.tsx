@@ -172,7 +172,7 @@ const ProductCarouselSection = ({
   const styles = TONE[tone]
 
   return (
-    <section ref={containerRef} aria-label={title} className={frameClassName ?? `py-12 ${styles.section}`}>
+    <section ref={containerRef} aria-label={title} className={frameClassName ?? `py-6 md:py-12 ${styles.section}`}>
       <div className={`container mx-auto ${insetClassName}`}>
         <header
           className={`flex flex-wrap gap-4 ${

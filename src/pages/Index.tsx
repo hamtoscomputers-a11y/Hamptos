@@ -53,7 +53,7 @@ const Index = () => {
 
       {/* One full-bleed `#F8F8F8` band holding the brand wall and the servers
           rail: 36 above, 54 between the two, 70 below, per the Figma frame. */}
-      <div className="flex flex-col gap-[54px] bg-surface-band pb-[70px] pt-9">
+      <div className="flex flex-col gap-8 bg-surface-band pb-10 pt-6 md:gap-[54px] md:pb-[70px] md:pt-9">
         <BrandWall />
         <NewServersSection />
       </div>
@@ -70,7 +70,7 @@ const Index = () => {
         slide={clearanceSlide}
         aspectClassName="aspect-[1300/285]"
         contained
-        className="mt-[79px] mb-12"
+        className="mt-8 mb-8 md:mt-[79px] md:mb-12"
       />
 
       <NewWirelessSection />

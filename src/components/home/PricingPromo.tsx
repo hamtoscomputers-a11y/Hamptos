@@ -28,7 +28,7 @@ const COPY = {
 const PricingPromo = () => (
   <section aria-label={COPY.headline} className="bg-white py-8">
     <div className="container mx-auto px-4">
-      <div className="rounded-[37px] bg-surface-panel px-8 py-14 sm:px-12 lg:px-[67px] lg:pb-[109px] lg:pt-[111px]">
+      <div className="rounded-[37px] bg-surface-panel px-5 py-8 sm:px-12 sm:py-14 lg:px-[67px] lg:pb-[109px] lg:pt-[111px]">
         <div className="max-w-[734px]">
           {/* One heading, two weights: the Figma sets the first line bold and
               lets the rest run regular, so they read as a single sentence

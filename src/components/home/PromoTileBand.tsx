@@ -5,14 +5,21 @@ import { isRouter } from "./productRanges";
 const TITLE = "New Routers Collections";
 
 /** 15px corners on every tile, over the `#D3D3D3` placeholder fill. */
-const TILE = "block overflow-hidden rounded-[15px] bg-surface-tile";
+const TILE =
+  "relative block min-h-0 min-w-0 overflow-hidden rounded-[15px] bg-surface-tile";
 
 /**
- * Row heights from the Figma, 250 and 244. Below `lg` the block stacks, so the
- * tiles take a banner aspect instead of a fixed height.
+ * One box per Figma slot. Desktop keeps the 250 / 244 row heights. Below `lg`
+ * each tile uses its own ratio so a 348-wide gaming card is not forced into
+ * the 936-wide banner crop — that squash made the next image paint over it.
  */
-const ROW_ONE = "aspect-[936/250] lg:aspect-auto lg:h-[250px]";
-const ROW_TWO = "aspect-[440/244] lg:aspect-auto lg:h-[244px]";
+const TILE_BOX = [
+  "aspect-[16/9] sm:aspect-[2.2/1] lg:aspect-auto lg:h-[250px]",
+  "aspect-[348/250] lg:aspect-auto lg:h-[250px]",
+  "aspect-[344/244] lg:aspect-auto lg:h-[244px]",
+  "aspect-[440/244] lg:aspect-auto lg:h-[244px]",
+  "aspect-[484/244] lg:aspect-auto lg:h-[244px]",
+] as const;
 
 /**
  * One tile.
@@ -42,10 +49,10 @@ const PromoTile = ({
       src={slide.image}
       alt={slide.caption || ""}
       loading="lazy"
-      // Same left-anchored headline convention as the hero art (see
-      // HeroSlider) — these tiles crop the source banner hard to fit a much
-      // squarer box, and a centered crop cuts the copy off mid-word.
-      className="h-full w-full object-cover object-left"
+      // Absolute fill + overflow-hidden on the tile: in a stacked grid the
+      // image's intrinsic height would otherwise spill into the next card.
+      // object-left keeps left-anchored headlines (same as the hero art).
+      className="absolute inset-0 h-full w-full object-cover object-left"
       onError={(event) => {
         event.currentTarget.style.visibility = "hidden";
       }}
@@ -94,9 +101,8 @@ interface PromoTileBandProps {
  * it for the hero, so taking it as a prop costs no second request.
  *
  * The tile block straddles the band's top edge: 180 of the upper row's 250 sits
- * on the white section above, the rest on the blue. That overlap only applies
- * from `lg` — once the tiles stack there is no second column to read it
- * against, so the band simply starts above them.
+ * on the white section above, the rest on the blue. Phones use a smaller lift
+ * so the first card still sits on the seam without covering the rail above.
  */
 const PromoTileBand = ({ slides, isLoading }: PromoTileBandProps) => {
   const { data, isLoading: bannersLoading } = usePromoBanners();
@@ -125,42 +131,45 @@ const Band = ({ slides, isLoading }: PromoTileBandProps) => (
   /* `flex` is load-bearing: without it the tile block's negative top margin
        collapses through this element and drags the blue up with it, so the
        band starts level with the tiles instead of 180 below their top. */
-  <div className="mt-12 flex flex-col bg-brand-700 lg:mt-[256px]">
+  <div className="mt-8 flex flex-col bg-brand-700 lg:mt-[256px]">
     <section
       aria-label="Promotional banners"
       className="container mx-auto px-4"
     >
-      <div className="space-y-[22px] lg:-mt-[180px]">
+      {/* Desktop straddles 180px onto the white above. Phones get a smaller
+          lift so the first card sits on the seam instead of leaving a blue
+          strip above it. */}
+      <div className="relative z-10 -mt-8 space-y-4 lg:-mt-[180px] lg:space-y-[22px]">
         {/* 936 | 348 */}
-        <div className="grid gap-4 lg:grid-cols-[936fr_348fr]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[936fr_348fr]">
           <PromoTile
             slide={slides[0]}
             isLoading={isLoading}
-            className={ROW_ONE}
+            className={TILE_BOX[0]}
           />
           <PromoTile
             slide={slides[1]}
             isLoading={isLoading}
-            className={ROW_ONE}
+            className={TILE_BOX[1]}
           />
         </div>
 
         {/* 344 | 440 | 484 */}
-        <div className="grid gap-4 lg:grid-cols-[344fr_440fr_484fr]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[344fr_440fr_484fr]">
           <PromoTile
             slide={slides[2]}
             isLoading={isLoading}
-            className={ROW_TWO}
+            className={TILE_BOX[2]}
           />
           <PromoTile
             slide={slides[3]}
             isLoading={isLoading}
-            className={ROW_TWO}
+            className={TILE_BOX[3]}
           />
           <PromoTile
             slide={slides[4]}
             isLoading={isLoading}
-            className={ROW_TWO}
+            className={TILE_BOX[4]}
           />
         </div>
       </div>
@@ -169,7 +178,7 @@ const Band = ({ slides, isLoading }: PromoTileBandProps) => (
     {/* 130 between the tiles and the rail, 114 of blue below it — measured
           off the Figma, where the band ends 114 under the cards and the banner
           follows 79 later. */}
-    <div className="pb-[114px] pt-[130px]">
+    <div className="pb-10 pt-8 md:pb-[114px] md:pt-[130px]">
       <NewCollectionRail
         title={TITLE}
         match={isRouter}

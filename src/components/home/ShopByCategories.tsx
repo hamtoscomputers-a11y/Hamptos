@@ -66,7 +66,7 @@ const ShopByCategories = () => {
   if (error || (!isLoading && categories.length === 0)) return null
 
   return (
-    <section aria-label={TITLE} className="bg-white py-12">
+    <section aria-label={TITLE} className="bg-white py-6 md:py-12">
       <div className="container mx-auto px-4">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:gap-[106px]">
           {/* 422x209: heading, three lines of body, then the CTA. */}
