@@ -62,21 +62,25 @@ const QuickSpecs = ({ code, image, name, categoryName, keyInformation }: QuickSp
       <div className="mt-[30px]">
         <p className="text-[14px] font-light leading-[1.421] text-ink-slate">{caption}</p>
 
-        {/* 10px under the caption, per the block's vertical gap. Scrolls rather
-            than squashing the two columns on a narrow viewport. */}
-        <div className="mt-2.5 overflow-x-auto">
+        {/* 10px under the caption. On phones the Figma's 18.6% label gutter is
+            only ~60px, so a single word like Manufacturer paints into the
+            value cell. Give the label column room and wrap long tokens. */}
+        <div className="mt-2.5">
           <table className="w-full table-fixed border-collapse text-[12px] leading-[15px] text-black">
+            <colgroup>
+              <col className="w-[42%] sm:w-[30%] md:w-[18.6%]" />
+              <col />
+            </colgroup>
             <tbody>
               {rows.map((row, index) => (
                 <tr key={`${row.label}-${index}`}>
-                  {/* 242 of the Figma's 1304 — the label gutter. */}
                   <th
                     scope="row"
-                    className="w-[18.6%] border border-surface-grid px-3 py-[11px] text-left align-top font-medium"
+                    className="break-words border border-surface-grid px-2 py-[11px] text-left align-top font-medium md:px-3"
                   >
                     {row.label}
                   </th>
-                  <td className="whitespace-pre-line border border-surface-grid px-2.5 py-[11px] align-top">
+                  <td className="break-words whitespace-pre-line border border-surface-grid px-2 py-[11px] align-top md:px-2.5">
                     {row.value}
                   </td>
                 </tr>

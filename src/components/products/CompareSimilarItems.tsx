@@ -85,7 +85,7 @@ const CompareSimilarItems = ({ currentId, code, name, keyInformation }: CompareS
         <p className="text-[14px] font-light leading-[1.421] text-ink-slate">Table 3 shows the comparison.</p>
 
         <div className="mt-2.5 overflow-x-auto">
-          <table className="w-full table-fixed border-collapse text-[12px] leading-[15px] text-black">
+          <table className="w-full min-w-[560px] table-fixed border-collapse text-[12px] leading-[15px] text-black">
             {/* 225 of the Figma's 1304 for the spec gutter; the product columns
                 share what is left, five of 216 at the Figma's width. */}
             <colgroup>
@@ -96,7 +96,7 @@ const CompareSimilarItems = ({ currentId, code, name, keyInformation }: CompareS
             </colgroup>
             <tbody>
               <tr>
-                <th scope="row" className="border border-surface-grid px-3 py-[11px] text-left align-top font-medium">
+                <th scope="row" className="break-words border border-surface-grid px-2 py-[11px] text-left align-top font-medium md:px-3">
                   Product Name
                 </th>
                 {columns.map((column) => (
@@ -118,13 +118,13 @@ const CompareSimilarItems = ({ currentId, code, name, keyInformation }: CompareS
 
               {specLabels.map((label) => (
                 <tr key={label}>
-                  <th scope="row" className="border border-surface-grid px-3 py-[11px] text-left align-top font-medium">
+                  <th scope="row" className="break-words border border-surface-grid px-2 py-[11px] text-left align-top font-medium md:px-3">
                     {label}
                   </th>
                   {columns.map((column) => (
                     <td
                       key={`${column.id}-${label}`}
-                      className="whitespace-pre-line border border-surface-grid px-3 py-[11px] align-top"
+                      className="break-words whitespace-pre-line border border-surface-grid px-2 py-[11px] align-top md:px-3"
                     >
                       {column.specs.get(label) ?? ""}
                     </td>
