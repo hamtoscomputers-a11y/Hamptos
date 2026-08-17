@@ -7,6 +7,8 @@ export const API_ENDPOINTS = {
     BASE: '/api/v1/products',
     BY_CODE: (code: string) => `/api/v1/products/code/${code}`,
     BY_ID: (id: string) => `/api/v1/products/view/${id}`,
+    // Storefront URL slug: name-slug from createSlug, or the ERP code/slug.
+    BY_SLUG: (slug: string) => `/api/v1/products/slug/${encodeURIComponent(slug)}`,
     // Admin-curated accessory recommendations, already grouped — each group is
     // a tab in the "Shop Bundles or Accessories" section.
     ACCESSORIES: (id: string) => `/api/v1/products/accessories/${id}`,

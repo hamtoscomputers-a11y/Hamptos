@@ -31,6 +31,17 @@ export const useProductById = (id: string, include?: string, options?: { enabled
   });
 };
 
+export const useProductBySlug = (slug: string, include?: string, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: ['products', 'slug', slug, include],
+    queryFn: () => ProductService.getProductBySlug(slug, include),
+    enabled: options?.enabled !== undefined ? options.enabled : !!slug,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
+};
+
 /**
  * Accessory groups curated for a product. Cached for a while: the groups change
  * only when someone edits them in the ERP, and the product page already fires

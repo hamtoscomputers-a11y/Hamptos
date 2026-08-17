@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams, Link, useLocation } from "react-router-dom"
-import { useProductById, useProducts, useProductSections } from "@/api/hooks/useProducts"
+import { useProductById, useProductBySlug, useProducts, useProductSections } from "@/api/hooks/useProducts"
 import { useProductsByCategory } from "@/api/hooks/useCategories"
 import ProductGallery from "@/components/products/ProductGallery"
 import ProductInfo from "@/components/products/ProductInfo"
@@ -39,18 +39,22 @@ const ProductDetail = () => {
   const location = useLocation()
   const [quantity, setQuantity] = useState(1)
 
-  // Get product data from location state or fetch by ID
+  // Click-through from a card passes the id (and sometimes the payload) in
+  // router state. A direct URL, refresh or shared link has only `:slug`.
   const stateData = location.state as { productData?: any; productId?: string } | null
   const productId = stateData?.productId
   const passedProductData = stateData?.productData
+  const include = "brand,category,photos"
 
-  // Fetch product details from API if not passed in state
-  // Only fetch if we have a productId and no passed data
-  const { data: responseData, isLoading, error } = useProductById(
-    productId || "", 
-    "brand,category,photos",
-    { enabled: !passedProductData && !!productId }
-  );
+  const byId = useProductById(productId || "", include, {
+    enabled: !passedProductData && !!productId,
+  })
+  const bySlug = useProductBySlug(slug || "", include, {
+    enabled: !passedProductData && !productId && !!slug,
+  })
+  const responseData = productId ? byId.data : bySlug.data
+  const isLoading = productId ? byId.isLoading : bySlug.isLoading
+  const error = productId ? byId.error : bySlug.error
   const dispatch = useDispatch<AppDispatch>()
   // Read before the early returns below, so the hook order stays stable.
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items)
@@ -161,18 +165,34 @@ const ProductDetail = () => {
     })
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = ({
+    unitPrice,
+    listPrice,
+    optionSummary,
+    optionsKey,
+  }: {
+    unitPrice: number
+    listPrice: number
+    optionSummary?: string
+    optionsKey?: string
+  }) => {
+    const onSale = listPrice > unitPrice
     dispatch(
       addToCart({
         item: {
           id: Number(product.id),
           name: product.name,
-          price: product.price,
-          promoPrice: product.originalPrice,
+          // CartPage charges `promoPrice || price` and strikes through `price`
+          // when promoPrice is set. So `price` is the list, `promoPrice` is
+          // the amount actually charged.
+          price: onSale ? listPrice : unitPrice,
+          promoPrice: onSale ? unitPrice : undefined,
           image: product.image,
           brand: product.brand,
           BXGY: product.BXGY,
           quantity_available: availableQty,
+          optionSummary,
+          optionsKey,
         },
         quantity: quantity,
       }),
@@ -334,8 +354,6 @@ const ProductDetail = () => {
             per-product and already sits where a buyer looks for it. */}
 
         <GetMoreInformation code={product.code} name={product.name} variant="wide" />
-
-        <QualityCertifications currentId={String(product.id)} />
 
         {/* Installation / Support. The shop's own wording replaces the standard
             banner rather than sitting beside it — two support blocks on one

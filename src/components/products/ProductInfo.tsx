@@ -42,7 +42,17 @@ interface ProductInfoProps {
   availableQty: number
   quantity: number
   onQuantityChange: (quantity: number) => void
-  onAddToCart: () => void
+  /**
+   * `unitPrice` is what the customer pays per item (promo or list, plus picked
+   * options). `listPrice` is the struck-through amount when a promo is running.
+   * CartPage charges `promoPrice || price`, so the parent maps these onto that.
+   */
+  onAddToCart: (payload: {
+    unitPrice: number
+    listPrice: number
+    optionSummary?: string
+    optionsKey?: string
+  }) => void
   /** Whether this product is saved; the page owns the wishlist, as it does the cart. */
   isWishlisted?: boolean
   onToggleWishlist?: () => void
@@ -184,6 +194,27 @@ const ProductInfo = ({
 
   const subtotal = (price + optionsTotal) * quantity
   const maxQty = Math.max(1, availableQty || 1)
+  const listPrice = (typeof originalPrice === "number" ? originalPrice : price) + optionsTotal
+  const unitPrice = price + optionsTotal
+  const optionSummary = (optionGroups ?? [])
+    .map((group) => {
+      const option = group.options[chosen[group.name] ?? 0]
+      return option ? `${group.name}: ${option.name}` : null
+    })
+    .filter((line): line is string => Boolean(line))
+    .join(" · ")
+  const optionsKey = (optionGroups ?? [])
+    .map((group) => String(group.options[chosen[group.name] ?? 0]?.id ?? ""))
+    .filter(Boolean)
+    .join(",")
+
+  const handleAddToCart = () =>
+    onAddToCart({
+      unitPrice,
+      listPrice,
+      optionSummary: optionSummary || undefined,
+      optionsKey: optionsKey || undefined,
+    })
 
   return (
     <div className="min-w-0">
@@ -327,7 +358,7 @@ const ProductInfo = ({
 
         <button
           type="button"
-          onClick={onAddToCart}
+          onClick={handleAddToCart}
           className="flex h-[38px] items-center gap-2 rounded-md bg-brand-700 px-4 text-[13px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-brand-800"
         >
           Add to Cart

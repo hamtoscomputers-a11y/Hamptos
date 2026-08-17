@@ -33,9 +33,12 @@ const CartPage: React.FC = () => {
     }
   }, [cart, navigate])
 
-  const handleQuantityChange = async (id: number, newQuantity: number) => {
+  const lineKey = (id: number, optionsKey?: string, isFree?: boolean) =>
+    `${id}-${optionsKey || ""}-${isFree ? "free" : ""}`
+
+  const handleQuantityChange = async (id: number, newQuantity: number, optionsKey?: string) => {
     setUpdatingItems((prev) => new Set(prev).add(id))
-    dispatch(updateQuantity({ id, quantity: newQuantity }))
+    dispatch(updateQuantity({ id, quantity: newQuantity, optionsKey }))
     setTimeout(() => {
       setUpdatingItems((prev) => {
         const newSet = new Set(prev)
@@ -45,9 +48,9 @@ const CartPage: React.FC = () => {
     }, 200)
   }
 
-  const handleRemoveItem = async (id: number) => {
+  const handleRemoveItem = async (id: number, optionsKey?: string) => {
     setUpdatingItems((prev) => new Set(prev).add(id))
-    dispatch(removeFromCart(id))
+    dispatch(removeFromCart({ id, optionsKey }))
     setTimeout(() => {
       setUpdatingItems((prev) => {
         const newSet = new Set(prev)
@@ -159,7 +162,7 @@ const CartPage: React.FC = () => {
 
                 return (
                   <div
-                    key={item.id + (item.is_free ? "-free" : "")}
+                    key={lineKey(item.id, item.optionsKey, item.is_free)}
                     className={`px-4 py-4 transition-opacity sm:px-5 sm:py-5 ${
                       isUpdating ? "pointer-events-none opacity-50" : ""
                     }`}
@@ -188,6 +191,9 @@ const CartPage: React.FC = () => {
                             <h3 className="line-clamp-2 text-[14px] font-semibold leading-[19px] text-ink-title">
                               {item.name}
                             </h3>
+                            {item.optionSummary && (
+                              <p className="mt-1 text-[12px] leading-[16px] text-ink-body">{item.optionSummary}</p>
+                            )}
                             {item.is_free && (
                               <span className="mt-1.5 inline-block rounded bg-success-light px-1.5 py-px text-[10px] font-semibold uppercase text-success-dark">
                                 Free
@@ -203,7 +209,7 @@ const CartPage: React.FC = () => {
 
                           {!item.is_free && (
                             <button
-                              onClick={() => handleRemoveItem(item.id)}
+                              onClick={() => handleRemoveItem(item.id, item.optionsKey)}
                               disabled={isUpdating}
                               className="-mr-1 flex-shrink-0 p-1 text-red-600 transition-colors hover:text-red-700 disabled:opacity-50"
                               aria-label={`Remove ${item.name} from cart`}
@@ -229,7 +235,7 @@ const CartPage: React.FC = () => {
                           {!item.is_free ? (
                             <div className="flex h-[34px] items-center rounded border border-surface-control">
                               <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.optionsKey)}
                                 disabled={item.quantity <= 1 || isUpdating}
                                 className="flex h-full w-9 items-center justify-center text-ink transition-colors hover:bg-surface-subtle disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="Decrease quantity"
@@ -240,7 +246,7 @@ const CartPage: React.FC = () => {
                                 {item.quantity}
                               </span>
                               <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.optionsKey)}
                                 // The product page caps quantity at the stock the
                                 // ERP reports; the cart has to agree, or an order
                                 // can be placed for more than exists.

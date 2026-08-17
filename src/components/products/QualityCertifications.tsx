@@ -13,9 +13,6 @@ interface QualityCertificationsProps {
  * Products → Certifications, each rendered as its uploaded logo. A product with
  * none assigned shows no section — the Figma's grey discs were placeholders for
  * artwork, not a design element to keep.
- *
- * The section appears twice on the page, so both instances read the same cached
- * query rather than fetching twice.
  */
 const QualityCertifications = ({ currentId }: QualityCertificationsProps) => {
   const { data, isLoading } = useProductCertifications(currentId)

@@ -1,6 +1,7 @@
 import api from '../axios';
 import { API_ENDPOINTS, buildPaginatedUrl, buildUrl } from '../endpoints';
 import { getDeviceToken } from '../utils';
+import { createSlug } from '@/lib/utils';
 import type {
   AccessoryGroup,
   Certification,
@@ -53,6 +54,43 @@ export class ProductService {
     
     const response = await api.get(url);
     return response.data.data || response.data;
+  }
+
+  /**
+   * Resolve a storefront `/product/:slug` URL. Direct opens have the name-slug
+   * (or the ERP code) and no numeric id — view/{id} cannot answer those.
+   *
+   * Prefers `/products/slug/{slug}` once that is on the ERP. Until it is
+   * deployed, live still answers unknown methods with the catalogue at 200, so
+   * a shape check falls through to a name-slug match on the product list and
+   * then view/{id} for the same payload a card click would have loaded.
+   */
+  static async getProductBySlug(slug: string, include?: string): Promise<Product> {
+    try {
+      const url = buildUrl(API_ENDPOINTS.PRODUCTS.BY_SLUG(slug), {
+        include,
+      });
+      const response = await api.get(url);
+      const data = response.data.data || response.data;
+      if (data && typeof data === 'object' && !Array.isArray(data) && data.id && data.name) {
+        return data;
+      }
+    } catch {
+      // ERP without slug_get, or a 404 — resolve from the catalogue below.
+    }
+
+    const list = await ProductService.getProducts({ limit: 500, start: 1 });
+    const rows: Product[] = Array.isArray(list.data) ? list.data : [];
+    const match = rows.find((product) => {
+      const nameSlug = createSlug(product.name || '');
+      return nameSlug === slug || product.slug === slug || product.code === slug || String(product.id) === slug;
+    });
+
+    if (!match?.id) {
+      throw new Error(`Product not found for slug ${slug}`);
+    }
+
+    return ProductService.getProductById(String(match.id), include);
   }
 
   /**
