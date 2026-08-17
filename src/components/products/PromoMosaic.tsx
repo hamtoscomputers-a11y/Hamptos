@@ -124,7 +124,7 @@ const PromoMosaic = ({ tiles }: PromoMosaicProps) => {
   const [topLeft, bottomLeft, centre, topRight, bottomRight] = list
 
   return (
-    <section className="container mx-auto px-4 sm:px-6 md:px-8 py-10" aria-label="Why buy from Hamtos">
+    <section className="container mx-auto px-4 sm:px-6 md:px-8 py-4 md:py-10" aria-label="Why buy from Hamtos">
       {/* Fixed rows only from `lg`; below that the tiles keep their aspect and
           stack, so the block never squashes. */}
       <div className="grid grid-cols-1 gap-[20.88px] sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[276.67px_276.67px]">

@@ -42,7 +42,7 @@ const ProductOverview = ({ overview, productDetails }: ProductOverviewProps) => 
   if (!text) return null
 
   return (
-    <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-[50px]" aria-labelledby="product-overview-heading">
+    <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-6 md:pt-[50px]" aria-labelledby="product-overview-heading">
       <h2
         id="product-overview-heading"
         className="text-[28px] font-medium leading-[28.9px] tracking-[-0.02em] text-black"

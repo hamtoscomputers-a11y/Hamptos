@@ -5,8 +5,8 @@ import { usePromoBanners } from "@/api/hooks/useProducts"
 interface PromoStripProps {
   /**
    * Overrides the ERP's artwork for the 237 x 150 left panel. Bundled asset,
-   * absolute URL, or a path under `public/`. The panel keeps its width when the
-   * file is missing, so the strip does not reflow once artwork is dropped in.
+   * absolute URL, or a path under `public/`. Missing artwork is omitted so
+   * mobile does not keep an empty grey band the height of the photo.
    */
   image?: string
   /** Describes the artwork. Empty by default — the copy lives in the DOM, not in the image. */
@@ -61,13 +61,17 @@ const PromoStrip = ({ image, imageAlt, lines, tags, cta }: PromoStripProps) => {
     href: banner?.link || "/products",
   }
 
+  const showImage = Boolean(resolvedImage) && resolvedImage !== failedSrc
+
   return (
-    <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-[50px]" aria-label="Wireless products">
+    <section className="container mx-auto px-4 sm:px-6 md:px-8 pt-3 md:pt-[50px]" aria-label="Wireless products">
       <div className="flex flex-col overflow-hidden rounded-[10px] bg-surface-line md:h-[150px] md:flex-row md:items-stretch">
-        {/* 237 of the Figma's 1304. Reserved even without artwork, so the fill
-            reads as one band rather than the copy jumping to the edge. */}
-        <div className="h-[150px] w-full flex-shrink-0 md:w-[237px]">
-          {resolvedImage !== failedSrc && (
+        {/* 237 of the Figma's 1304. Shorter on small screens so the stacked
+            card is the photo + copy, not a 150px image over empty grey.
+            The box is omitted when artwork 404s, so mobile does not keep a
+            blank grey band the height of the missing photo. */}
+        {showImage && (
+          <div className="h-[88px] w-full flex-shrink-0 md:h-[150px] md:w-[237px]">
             <img
               src={resolvedImage}
               alt={resolvedAlt}
@@ -75,10 +79,10 @@ const PromoStrip = ({ image, imageAlt, lines, tags, cta }: PromoStripProps) => {
               onError={() => setFailedSrc(resolvedImage)}
               className="h-full w-full object-cover"
             />
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="flex flex-1 flex-col gap-5 px-[30px] py-6 md:flex-row md:items-center md:justify-between md:gap-8 md:py-0">
+        <div className="flex flex-col gap-2 px-3.5 py-3 md:flex-1 md:flex-row md:items-center md:justify-between md:gap-8 md:px-[30px] md:py-0">
           {/* 772 at the Figma's width; 3px between rows, 26px between tags. */}
           <div className="min-w-0 md:max-w-[772px]">
             {resolvedLines.map((line) => (
@@ -88,7 +92,7 @@ const PromoStrip = ({ image, imageAlt, lines, tags, cta }: PromoStripProps) => {
             ))}
 
             {resolvedTags.length > 0 && (
-              <ul className="mt-[3px] flex flex-wrap gap-x-[26px] gap-y-[3px]">
+              <ul className="mt-1.5 flex flex-wrap gap-x-5 gap-y-0.5 md:mt-[3px] md:gap-x-[26px] md:gap-y-[3px]">
                 {resolvedTags.map((tag) => (
                   <li key={tag} className="text-[14px] leading-[18px] text-brand-700">
                     {/* The bullet is part of the blue keyword in the Figma, not a
