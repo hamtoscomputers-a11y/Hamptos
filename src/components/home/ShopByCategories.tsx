@@ -39,11 +39,15 @@ const isRealImage = (url?: string) => !!url && !/no_image/i.test(url)
  * "Shop By Categories" — copy block on the left, a scrolling row of category
  * tiles on the right.
  *
- * The Figma draws the tiles as plain grey boxes with no label, which is how a
- * placeholder reads before artwork lands: only 3 of the ERP's 28 categories
- * have a real image, the rest return `no_image.png`. So the name is rendered
- * into the tile rather than left to the artwork — a wall of unlabelled grey
- * squares is not navigable.
+ * Artwork is per category and comes from the ERP, so the row is only as good as
+ * what has been uploaded. Worth knowing when a tile looks wrong: the picture is
+ * almost never the code's doing. On 2026-08-18 nine of the ten home categories
+ * carried byte-identical copies of one switch photo under different filenames,
+ * which rendered as the same picture repeated down the row.
+ *
+ * The Figma draws the tiles as bare artwork with no label. The name is rendered
+ * anyway — a row of unlabelled pictures is not navigable, and the link would
+ * otherwise have no accessible text.
  */
 const ShopByCategories = () => {
   const { setApi, pauseProps } = useCarouselAutoplay(AUTOPLAY_MS)
@@ -106,27 +110,46 @@ const ShopByCategories = () => {
                     <CarouselItem key={category.id} className={`basis-auto ${TILE_GAP.item}`}>
                       <Link
                         to={`/products?category=${category.id}`}
-                        /* `#D9D9D9`, the same value the `surface-line` token
-                           already carries, used here as the tile fill. */
-                        className={`group relative flex items-end overflow-hidden bg-surface-line transition-colors hover:bg-surface-control ${TILE}`}
+                        /* White behind the artwork, not `#D9D9D9`: the tiles are
+                           product shots cut out on white, so the tile has to
+                           continue that background rather than box it in grey.
+                           A category with no artwork still falls back to grey. */
+                        /* No border on a tile that has artwork: the tiles are
+                           exported from the Figma with their own rounded frame
+                           already drawn in, and adding one here put a card
+                           inside a card. A category with no artwork still needs
+                           the grey fill to have any shape at all. */
+                        className={`group flex flex-col overflow-hidden transition-colors ${
+                          category.image ? "bg-white" : "bg-surface-line hover:bg-surface-control"
+                        } ${TILE}`}
                       >
                         {category.image && (
-                          <img
-                            src={category.image}
-                            alt=""
-                            aria-hidden
-                            loading="lazy"
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                            onError={(event) => {
-                              event.currentTarget.style.visibility = "hidden"
-                            }}
-                          />
+                          /* The artwork gets its own row rather than the whole
+                             tile, so the name below can never land on top of the
+                             product. Tiles drawn at the tile's own 246x256 would
+                             otherwise run their subject straight under the text. */
+                          <span className="flex min-h-0 flex-1 items-center justify-center">
+                            <img
+                              src={category.image}
+                              alt=""
+                              aria-hidden
+                              loading="lazy"
+                              /* `contain`, not `cover`: the ERP also holds older
+                                 landscape photos, and cropping those to fill a
+                                 portrait tile cut the product in half. */
+                              className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+                              onError={(event) => {
+                                event.currentTarget.style.visibility = "hidden"
+                              }}
+                            />
+                          </span>
                         )}
+                        {/* The name is kept even though the Figma tiles carry
+                            none: a row of unlabelled pictures is not navigable,
+                            and the link would have no accessible text at all. */}
                         <span
-                          className={`relative w-full px-6 pb-6 text-[16px] font-semibold leading-[22px] ${
-                            category.image
-                              ? "bg-gradient-to-t from-black/70 to-transparent pt-10 text-white"
-                              : "text-ink-jet"
+                          className={`w-full px-6 text-[16px] font-semibold leading-[22px] text-ink-jet ${
+                            category.image ? "pb-5" : "mt-auto pb-6"
                           }`}
                         >
                           {category.name}
