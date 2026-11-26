@@ -1,6 +1,7 @@
 "use client"
 
 import { useParams, useNavigate } from "react-router-dom"
+import Seo from "@/components/Seo"
 import { useProductsByBrand, useBrands } from "@/api/hooks/useProducts"
 import ProductGrid from "@/components/ProductGrid"
 import { Button } from "@/components/ui/button"
@@ -94,6 +95,7 @@ const BrandProductsPage = () => {
           Back
         </Button>
         <div className="text-center text-gray-500">
+          <Seo title="Brand not found | Hamtos Computers" noindex />
           <h1 className="text-2xl font-bold mb-2">Brand not found</h1>
           <p className="text-sm">The brand with ID {brandId} could not be found.</p>
         </div>
@@ -150,6 +152,10 @@ const BrandProductsPage = () => {
         Back
       </Button>
 
+      <Seo
+        title={`${brandName} Products in UAE | Hamtos Computers`}
+        description={`Shop ${brandName} networking and IT hardware from Hamtos Computers, distributor in Dubai with delivery across the UAE.`}
+      />
       <h1 className="text-3xl font-bold text-gray-900 mb-2">{brandName} Products</h1>
       <p className="text-gray-600 mb-6">
         Showing {products.length} products from {brandName}

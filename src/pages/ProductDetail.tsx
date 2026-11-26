@@ -31,7 +31,8 @@ import { toggleWishlistItem } from "@/store/wishlistSlice"
 import type { AppDispatch, RootState } from "@/store"
 import { useDispatch, useSelector } from "react-redux"
 import { toast } from "@/hooks/use-toast"
-import { Helmet } from 'react-helmet-async';
+import Seo, { SITE_NAME, SITE_URL, toDescription } from "@/components/Seo"
+import { createSlug } from "@/lib/utils"
 import { BadgeCheck, Headphones, Layers } from "lucide-react"
 
 const ProductDetail = () => {
@@ -95,7 +96,12 @@ const ProductDetail = () => {
     return <div className="container mx-auto px-4 py-8 text-center text-gray-600">Loading product details...</div>
   if ((error || !data) && !passedProductData) {
     console.error('Product detail error:', { error, responseData, data, productId, slug })
-    return <div className="container mx-auto px-4 py-8 text-center text-red-500">Failed to load product details.</div>
+    return (
+      <div className="container mx-auto px-4 py-8 text-center text-red-500">
+        <Seo title="Product not found | Hamtos Computers" noindex />
+        Failed to load product details.
+      </div>
+    )
   }
 
   // Debug: Log the received data
@@ -214,12 +220,62 @@ const ProductDetail = () => {
   // After fetching product data - use quantity from API
   const availableQty = Number(data.quantity || 0)
 
+  // One canonical URL per product: the name slug the product cards link to.
+  // The same product also opens at its ERP code (/product/00294645); both
+  // forms point search engines here.
+  const canonicalUrl = `${SITE_URL}/product/${createSlug(product.name || "")}`
+  const seoDescription =
+    toDescription(product.meta) ||
+    toDescription(product.overview) ||
+    toDescription(product.details) ||
+    toDescription(product.product_details) ||
+    `Buy ${product.name} from ${SITE_NAME}, IT and networking hardware distributor in Dubai, UAE.`
+  const categoryId = typeof data.category === "object" && data.category ? (data.category as any).id : ""
+  const productJsonLd: Record<string, unknown>[] = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      ...(product.image.startsWith("http") ? { image: [product.image, ...photos.filter((u) => u.startsWith("http"))] } : {}),
+      description: seoDescription,
+      ...(product.code ? { sku: product.code } : {}),
+      ...(brandName && brandName !== "Hamtos" ? { brand: { "@type": "Brand", name: brandName } } : {}),
+      ...(product.price > 0
+        ? {
+            offers: {
+              "@type": "Offer",
+              url: canonicalUrl,
+              priceCurrency: "AED",
+              price: product.price.toFixed(2),
+              availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+              seller: { "@type": "Organization", name: SITE_NAME },
+            },
+          }
+        : {}),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+        ...(categoryName && categoryId
+          ? [{ "@type": "ListItem", position: 2, name: categoryName, item: `${SITE_URL}/products?category=${categoryId}` }]
+          : []),
+        { "@type": "ListItem", position: categoryName && categoryId ? 3 : 2, name: product.name, item: canonicalUrl },
+      ],
+    },
+  ]
+
   return (
     <>
-      <Helmet>
-        <title> {product.meta}</title>
-        <meta name="description" content={product.meta} />
-      </Helmet>
+      <Seo
+        title={`${product.name} | ${SITE_NAME} UAE`}
+        description={seoDescription}
+        canonical={canonicalUrl}
+        image={product.image.startsWith("http") ? product.image : undefined}
+        type="product"
+        jsonLd={productJsonLd}
+      />
       <div className="min-h-screen bg-white">
         <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,560px)_minmax(0,1fr)] lg:gap-x-12">

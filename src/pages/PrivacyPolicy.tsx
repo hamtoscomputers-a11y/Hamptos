@@ -1,12 +1,12 @@
-import { Helmet } from 'react-helmet-async';
+import Seo from '@/components/Seo';
 
 const PrivacyPolicy = () => {
   return (
     <>
-      <Helmet>
-        <title>Privacy Policy - Hamtos Computers</title>
-        <meta name="description" content="Privacy Policy for Hamtos Computers - Learn how we collect, use, and protect your personal information." />
-      </Helmet>
+      <Seo
+        title="Privacy Policy - Hamtos Computers"
+        description="Privacy Policy for Hamtos Computers - Learn how we collect, use, and protect your personal information."
+      />
       <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 max-w-8xl">
           <div className="bg-white rounded-lg shadow-sm p-6 sm:p-8 md:p-10">

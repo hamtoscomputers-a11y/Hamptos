@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import Seo from "@/components/Seo"
 import ProductFilters from "@/components/products/ProductFilters"
 import ListingToolbar, { SORT_OPTIONS, type SortValue } from "@/components/products/ListingToolbar"
 import TypeChip from "@/components/products/TypeChip"
@@ -667,8 +668,24 @@ const ProductsPage = () => {
     })
   }
 
+  const listingHeading = (() => {
+    if (search && brand) return `Search Results for "${search}" - ${brandName} Products`
+    if (search && category) return `Search Results for "${search}" - ${categoryName}`
+    if (search) return `Search Results for "${search}"`
+    if (brand && category) return `${brandName} Products in ${categoryName}`
+    if (brand) return `${brandName} Products`
+    if (category) return categoryName
+    return "All Products"
+  })()
+  const listingSubject = brand || category ? listingHeading : "IT & Networking Products"
+
   return (
     <>
+    <Seo
+      title={`${listingHeading} | Hamtos Computers UAE`}
+      description={`Shop ${listingSubject} from Hamtos Computers, IT and networking hardware distributor in Dubai. Delivery across the UAE.`}
+      noindex={!!search}
+    />
     <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 py-6 sm:py-8 flex flex-col lg:flex-row gap-6 lg:gap-8">
       {/* Mobile Filter Button */}
       <div className="lg:hidden flex justify-end mb-4">
@@ -730,17 +747,7 @@ const ProductsPage = () => {
 
       {/* Main Content */}
       <div ref={resultsRef} className="flex-1 scroll-mt-6">
-        <h2 className="mb-3 text-xl font-bold text-brand-700 sm:text-2xl">
-          {(() => {
-            if (search && brand) return `Search Results for "${search}" - ${brandName} Products`
-            if (search && category) return `Search Results for "${search}" - ${categoryName}`
-            if (search) return `Search Results for "${search}"`
-            if (brand && category) return `${brandName} Products in ${categoryName}`
-            if (brand) return `${brandName} Products`
-            if (category) return categoryName
-            return "All Products"
-          })()}
-        </h2>
+        <h1 className="mb-3 text-xl font-bold text-brand-700 sm:text-2xl">{listingHeading}</h1>
 
         <ListingToolbar
           rangeStart={totalFilteredProducts === 0 ? 0 : (page - 1) * limit + 1}

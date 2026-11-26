@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+import Seo from "@/components/Seo";
 import { useEffect } from "react";
 
 const NotFound = () => {
@@ -13,6 +14,7 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <Seo title="Page not found | Hamtos Computers" noindex />
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">404</h1>
         <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>

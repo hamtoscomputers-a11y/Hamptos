@@ -16,6 +16,29 @@ import PromoTileBand from "@/components/home/PromoTileBand"
 import ShopByCategories from "@/components/home/ShopByCategories"
 
 import { usePromoBanners, useWebsiteSlider } from "@/api/hooks/useProducts"
+import Seo, { SITE_NAME, SITE_URL } from "@/components/Seo"
+
+const homeJsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_NAME,
+    legalName: "Hamtos Computers Trading LLC",
+    url: `${SITE_URL}/`,
+    logo: `${SITE_URL}/logo.png`,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: `${SITE_URL}/`,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${SITE_URL}/products?search={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  },
+]
 
 const Index = () => {
   const { data: sliderData, isLoading: slidesLoading } = useWebsiteSlider()
@@ -36,6 +59,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      <Seo canonical={`${SITE_URL}/`} jsonLd={homeJsonLd} />
       {/* The page's only h1. The design opens straight on the hero artwork,
           which carries its headline inside the image, so there is no visible
           heading for a screen reader or a crawler to read. */}

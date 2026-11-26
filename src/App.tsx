@@ -17,6 +17,7 @@ import TermsAndConditions from './pages/TermsAndConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import ReturnsAndRefundPolicy from './pages/ReturnsAndRefundPolicy';
 import { HelmetProvider } from 'react-helmet-async';
+import Seo from '@/components/Seo';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -60,13 +61,13 @@ const App = () => (
               <Route path="/electronics" element={<Navigate to="/products" replace />} />
               <Route path="/new-releases" element={<Navigate to="/products" replace />} />
               <Route path="/clearance-sale" element={<Navigate to="/products" replace />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/cart/checkout" element={<CheckoutPage />} />
+              <Route path="/cart" element={<><Seo title="Shopping Cart | Hamtos Computers" noindex /><CartPage /></>} />
+              <Route path="/cart/checkout" element={<><Seo title="Checkout | Hamtos Computers" noindex /><CheckoutPage /></>} />
               <Route path="/product/:slug" element={<ProductDetail />} />
               <Route path="products" element={<AllProductsPage />} />
               <Route path="/brand/:brandId/products" element={<BrandProductsPage />} />
-              <Route path="/order-confirmation" element={<OrderConfirmation />} />
-              <Route path="/get-quote" element={<QuoteRequest />} />
+              <Route path="/order-confirmation" element={<><Seo title="Order Confirmation | Hamtos Computers" noindex /><OrderConfirmation /></>} />
+              <Route path="/get-quote" element={<><Seo title="Request a Quote | Hamtos Computers" description="Request a quote for IT and networking hardware from Hamtos Computers, distributor in Dubai, UAE." /><QuoteRequest /></>} />
               <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/returns-and-refund-policy" element={<ReturnsAndRefundPolicy />} />

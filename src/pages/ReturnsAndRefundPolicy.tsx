@@ -1,12 +1,12 @@
-import { Helmet } from 'react-helmet-async';
+import Seo from '@/components/Seo';
 
 const ReturnsAndRefundPolicy = () => {
   return (
     <>
-      <Helmet>
-        <title>Returns and Refund Policy - Hamtos Computers</title>
-        <meta name="description" content="Returns and Refund Policy for Hamtos Computers - Learn about our return, exchange, and refund procedures." />
-      </Helmet>
+      <Seo
+        title="Returns and Refund Policy - Hamtos Computers"
+        description="Returns and Refund Policy for Hamtos Computers - Learn about our return, exchange, and refund procedures."
+      />
       <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 max-w-8xl">
           <div className="bg-white rounded-lg shadow-sm p-6 sm:p-8 md:p-10">
